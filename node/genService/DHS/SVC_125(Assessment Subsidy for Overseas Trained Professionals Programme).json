@@ -1,0 +1,18 @@
+{
+  "documentType": "ServiceInformation",
+  "service": {
+    "type": "SVC",
+    "id": "SVC_125",
+    "name": "Assessment Subsidy for Overseas Trained Professionals Programme",
+    "acronym": null,
+    "tagline": null,
+    "description": "Assessment Subsidy for Overseas Trained Professionals Programme (ASDOT) is to enable eligible overseas trained Australian residents to obtain recognition of their qualifications for the purposes of registration and/or employment in Australia. The programme provides grants for approved assessments and/or examinations that are necessary to qualify for employment in Australia, by professions that are self-regulated by law.",
+    "oldID": 125,
+    "colourStyle": null,
+    "lineStyle": null,
+    "shapeStyle": "ellipse",
+    "hoverFieldStyle": null
+  },
+  "Dimension": [],
+  "Component": []
+}

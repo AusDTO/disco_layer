@@ -1,0 +1,37 @@
+{
+  "documentType": "ServiceInformation",
+  "service": {
+    "type": "SVC",
+    "id": "SVC_152",
+    "name": "Medicare Allied Health Initiative",
+    "acronym": null,
+    "tagline": null,
+    "description": "The Medicare Allied Health Initiative allows chronically ill people who are being managed by their general practitioner (GP) under a Chronic Disease Management (CDM) plan access Medicare rebates for allied health services.",
+    "oldID": 21,
+    "colourStyle": null,
+    "lineStyle": null,
+    "shapeStyle": "ellipse",
+    "hoverFieldStyle": null
+  },
+  "Dimension": [
+    {
+      "dist": 1,
+      "id": "THM_HTH",
+      "name": "Your health",
+      "desc": null
+    },
+    {
+      "dist": 2,
+      "id": "MP_MCA",
+      "name": "Medicare",
+      "desc": null
+    },
+    {
+      "dist": 3,
+      "id": "ORG_DHS",
+      "name": "Human Services",
+      "desc": ""
+    }
+  ],
+  "Component": []
+}

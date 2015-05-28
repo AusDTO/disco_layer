@@ -1,0 +1,37 @@
+{
+  "documentType": "ServiceInformation",
+  "service": {
+    "type": "SVC",
+    "id": "SVC_092",
+    "name": "Telephone Allowance",
+    "acronym": null,
+    "tagline": null,
+    "description": "Telephone Allowance (TAL) is a payment made quarterly to eligible telephone subscribers with their first income support payment issued on or after the following dates of each year: 1 January; 20 March; 1 July; and 20 September.",
+    "oldID": 92,
+    "colourStyle": null,
+    "lineStyle": null,
+    "shapeStyle": "ellipse",
+    "hoverFieldStyle": null
+  },
+  "Dimension": [
+    {
+      "dist": 1,
+      "id": "THM_CRS",
+      "name": "Cross Theme",
+      "desc": null
+    },
+    {
+      "dist": 2,
+      "id": "MP_CSP",
+      "name": "Child Support",
+      "desc": null
+    },
+    {
+      "dist": 3,
+      "id": "ORG_DHS",
+      "name": "Human Services",
+      "desc": ""
+    }
+  ],
+  "Component": []
+}

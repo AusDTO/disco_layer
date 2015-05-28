@@ -1,0 +1,18 @@
+{
+  "documentType": "ServiceInformation",
+  "service": {
+    "type": "SVC",
+    "id": "SVC_109",
+    "name": "Centrelink Information Exchange Service",
+    "acronym": null,
+    "tagline": null,
+    "description": "The Centrelink Information Exchange Service helps businesses securely exchange documents and electronic files with DHS.",
+    "oldID": 109,
+    "colourStyle": null,
+    "lineStyle": null,
+    "shapeStyle": "ellipse",
+    "hoverFieldStyle": null
+  },
+  "Dimension": [],
+  "Component": []
+}

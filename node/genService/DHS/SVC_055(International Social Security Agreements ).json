@@ -1,0 +1,18 @@
+{
+  "documentType": "ServiceInformation",
+  "service": {
+    "type": "SVC",
+    "id": "SVC_055",
+    "name": "International Social Security Agreements ",
+    "acronym": null,
+    "tagline": null,
+    "description": "International Social Security Agreements are international treaties made between Australia and another country, relating to social security. Agreements generally come about through the wish to coordinate the social security systems of each country to close gaps in coverage for people who work in and move between the countries. Both countries seek to share responsibility for a customer's overall retirement income and may pay a part pension based on how long the customer has lived and/or worked in each country.",
+    "oldID": 55,
+    "colourStyle": null,
+    "lineStyle": null,
+    "shapeStyle": "ellipse",
+    "hoverFieldStyle": null
+  },
+  "Dimension": [],
+  "Component": []
+}

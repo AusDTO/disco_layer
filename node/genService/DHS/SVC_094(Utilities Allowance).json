@@ -1,0 +1,37 @@
+{
+  "documentType": "ServiceInformation",
+  "service": {
+    "type": "SVC",
+    "id": "SVC_094",
+    "name": "Utilities Allowance",
+    "acronym": null,
+    "tagline": null,
+    "description": "Utilities Allowance (UA) is paid to certain customers to assist in meeting the cost of regular bills such as gas, electricity and water.",
+    "oldID": 94,
+    "colourStyle": null,
+    "lineStyle": null,
+    "shapeStyle": "ellipse",
+    "hoverFieldStyle": null
+  },
+  "Dimension": [
+    {
+      "dist": 1,
+      "id": "THM_CRS",
+      "name": "Cross Theme",
+      "desc": null
+    },
+    {
+      "dist": 2,
+      "id": "MP_CSP",
+      "name": "Child Support",
+      "desc": null
+    },
+    {
+      "dist": 3,
+      "id": "ORG_DHS",
+      "name": "Human Services",
+      "desc": ""
+    }
+  ],
+  "Component": []
+}

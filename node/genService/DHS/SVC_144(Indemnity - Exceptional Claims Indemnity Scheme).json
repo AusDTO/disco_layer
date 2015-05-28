@@ -1,0 +1,37 @@
+{
+  "documentType": "ServiceInformation",
+  "service": {
+    "type": "SVC",
+    "id": "SVC_144",
+    "name": "Indemnity - Exceptional Claims Indemnity Scheme",
+    "acronym": null,
+    "tagline": null,
+    "description": "The Exceptional Claims Indemnity Scheme (ECS) assists medical defence organisations and medical indemnity insurers where settlement amounts of claims exceed a practitioner's indemnity insurance contract limit.",
+    "oldID": 13,
+    "colourStyle": null,
+    "lineStyle": null,
+    "shapeStyle": "ellipse",
+    "hoverFieldStyle": null
+  },
+  "Dimension": [
+    {
+      "dist": 1,
+      "id": "THM_HPR",
+      "name": "Health professionals",
+      "desc": null
+    },
+    {
+      "dist": 2,
+      "id": "MP_MCA",
+      "name": "Medicare",
+      "desc": null
+    },
+    {
+      "dist": 3,
+      "id": "ORG_DHS",
+      "name": "Human Services",
+      "desc": ""
+    }
+  ],
+  "Component": []
+}

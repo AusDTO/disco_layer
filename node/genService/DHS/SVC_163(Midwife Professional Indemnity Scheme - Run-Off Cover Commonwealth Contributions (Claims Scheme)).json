@@ -1,0 +1,37 @@
+{
+  "documentType": "ServiceInformation",
+  "service": {
+    "type": "SVC",
+    "id": "SVC_163",
+    "name": "Midwife Professional Indemnity Scheme - Run-Off Cover Commonwealth Contributions (Claims Scheme)",
+    "acronym": null,
+    "tagline": null,
+    "description": "The Midwife Professional Indemnity Scheme - Run-Off Cover Commonwealth Contributions (Claims Scheme) (ROC) is designed to assist an eligible Insurer in respect of claims made against midwives who are retired; were not engaged in private practice during the preceding 3 years; have a permanent disability; are deceased; are on maternity leave, or have permanently left private midwifery practice in Australia. ROC Commonwealth contributions reimburse the Insurer 100% of an eligible claim. Under the ROC scheme eligible claims will be paid by the Australian Government.  A levy placed on total premium costs is payable by the Insurer annually.  Levies collected will fund midwife Run-off Cover claims. ",
+    "oldID": 32,
+    "colourStyle": null,
+    "lineStyle": null,
+    "shapeStyle": "ellipse",
+    "hoverFieldStyle": null
+  },
+  "Dimension": [
+    {
+      "dist": 1,
+      "id": "THM_HPR",
+      "name": "Health professionals",
+      "desc": null
+    },
+    {
+      "dist": 2,
+      "id": "MP_MCA",
+      "name": "Medicare",
+      "desc": null
+    },
+    {
+      "dist": 3,
+      "id": "ORG_DHS",
+      "name": "Human Services",
+      "desc": ""
+    }
+  ],
+  "Component": []
+}

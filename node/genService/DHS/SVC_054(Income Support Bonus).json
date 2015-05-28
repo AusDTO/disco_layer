@@ -1,0 +1,37 @@
+{
+  "documentType": "ServiceInformation",
+  "service": {
+    "type": "SVC",
+    "id": "SVC_054",
+    "name": "Income Support Bonus",
+    "acronym": null,
+    "tagline": null,
+    "description": "The Income Support Bonus (ISB) is a non-taxable, lump sum payment paid to qualifying income support recipients in March and September each year.",
+    "oldID": 54,
+    "colourStyle": null,
+    "lineStyle": null,
+    "shapeStyle": "ellipse",
+    "hoverFieldStyle": null
+  },
+  "Dimension": [
+    {
+      "dist": 1,
+      "id": "THM_CRS",
+      "name": "Cross Theme",
+      "desc": null
+    },
+    {
+      "dist": 2,
+      "id": "MP_CSP",
+      "name": "Child Support",
+      "desc": null
+    },
+    {
+      "dist": 3,
+      "id": "ORG_DHS",
+      "name": "Human Services",
+      "desc": ""
+    }
+  ],
+  "Component": []
+}

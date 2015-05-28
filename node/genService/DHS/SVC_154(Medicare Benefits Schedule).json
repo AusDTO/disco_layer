@@ -1,0 +1,37 @@
+{
+  "documentType": "ServiceInformation",
+  "service": {
+    "type": "SVC",
+    "id": "SVC_154",
+    "name": "Medicare Benefits Schedule",
+    "acronym": null,
+    "tagline": null,
+    "description": "The Medicare Benefits Schedule (MBS) is a Department of Health publication that lists services that are subsidised by the Australian Government under Medicare. You can use MBS Online to check if a service is listed under Medicare.",
+    "oldID": 23,
+    "colourStyle": null,
+    "lineStyle": null,
+    "shapeStyle": "ellipse",
+    "hoverFieldStyle": null
+  },
+  "Dimension": [
+    {
+      "dist": 1,
+      "id": "THM_HTH",
+      "name": "Your health",
+      "desc": null
+    },
+    {
+      "dist": 2,
+      "id": "MP_MCA",
+      "name": "Medicare",
+      "desc": null
+    },
+    {
+      "dist": 3,
+      "id": "ORG_DHS",
+      "name": "Human Services",
+      "desc": ""
+    }
+  ],
+  "Component": []
+}

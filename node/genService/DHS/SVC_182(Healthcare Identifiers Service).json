@@ -1,0 +1,37 @@
+{
+  "documentType": "ServiceInformation",
+  "service": {
+    "type": "SVC",
+    "id": "SVC_182",
+    "name": "Healthcare Identifiers Service",
+    "acronym": null,
+    "tagline": null,
+    "description": "The Healthcare Identifiers Service (HI Service) is a national system for uniquely identifying healthcare providers (healthcare provider organisations and individual healthcare providers) and individuals. The department manages the allocation, maintenance and disclosure of healthcare identifiers to healthcare providers and the public.",
+    "oldID": 51,
+    "colourStyle": null,
+    "lineStyle": null,
+    "shapeStyle": "ellipse",
+    "hoverFieldStyle": null
+  },
+  "Dimension": [
+    {
+      "dist": 1,
+      "id": "THM_HPR",
+      "name": "Health professionals",
+      "desc": null
+    },
+    {
+      "dist": 2,
+      "id": "MP_MCA",
+      "name": "Medicare",
+      "desc": null
+    },
+    {
+      "dist": 3,
+      "id": "ORG_DHS",
+      "name": "Human Services",
+      "desc": ""
+    }
+  ],
+  "Component": []
+}

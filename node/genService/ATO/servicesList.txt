@@ -1,0 +1,193 @@
+Debt Collection: 86ms
+Default Assessment: 56ms
+Demand Lodgment: 57ms
+Demand Payment: 42ms
+Failure to Lodge: 46ms
+Imposition of Interest - penalty: 46ms
+Investigation: 46ms
+Litigation: 46ms
+Overdue Reminder: 42ms
+Pre-Due Date Reminder: 45ms
+Prosecution: 43ms
+Refer to Mercantile Agents: 42ms
+Information Collection: 41ms
+Information Referral: 43ms
+Objections: 42ms
+Assurance Audit: 41ms
+Audit: 43ms
+Compliance Agreement: 42ms
+Comprehensive Audit: 41ms
+Comprehensive Review: 42ms
+Correspondence Audit: 40ms
+Correspondence Review: 41ms
+Cross Agency Advice: 40ms
+Cross Agency Audit: 42ms
+Cross Agency Review: 42ms
+Data Matching: 43ms
+Intervention Prevention Audit: 43ms
+Obligation Enforcement: 44ms
+Obligation Review: 42ms
+Phone Review: 46ms
+Pre & Post Issue Audit: 45ms
+Review: 49ms
+Specific Audit: 42ms
+Specific Review: 40ms
+Voluntary Disclosure: 43ms
+Advisory Visit: 43ms
+Employer Obligations: 41ms
+External Forum: 42ms
+General Advice: 41ms
+Rulings & Interpretative Assistance: 43ms
+ATO.gov.au: 41ms
+AUSkey: 42ms
+Australian Business Register (ABR): 40ms
+BAS Agent Portal: 42ms
+Business Portal: 41ms
+Electronic Commerce Interface (ECI): 41ms
+Electronic Lodgment Service (ELS): 42ms
+E-Products: 41ms
+E-Record: 40ms
+E-tax: 42ms
+Magnetic Information Processing Service (MIPS): 42ms
+Standard Business Reporting: 43ms
+Tax Agent Portal: 44ms
+Activity Statement: 44ms
+Annual TFN Withholding Report: 44ms
+BDE File Transfer: 45ms
+Compulsory Release Authority Form: 53ms
+Confirmation On Delivery (CoD) Form: 51ms
+Excise Return: 91ms
+First Home Saver Account (FHSA) Form: 70ms
+Fringe Benefit Tax Return: 61ms
+Income Tax Return: 95ms
+Lodgment Program: 144ms
+Member Contribution Statement (MCS): 159ms
+Non-Resident Withholding Tax (NRWT) Annual Report: 152ms
+PAYG Withholding Variation: 148ms
+Payment Summary: 146ms
+Payment Variation Advice (PVA): 103ms
+Resource Rent Tax (RRT) Form: 58ms
+Superannuation Guarantee Charge (SGC) Statement: 45ms
+Superannuation Standard Choice Form: 44ms
+Tax File Number (TFN) Declaration: 45ms
+Taxable Payments Annual Report: 46ms
+Unclaimed Superannuation Money (USM) Form - Statement: 55ms
+Voluntary Release Authority Form: 46ms
+Account Balance or Details Explanation: 44ms
+Higher Education Loan Account (HELA): 42ms
+Confirmation of Payment: 41ms
+Excess Contributions Tax (ECT): 40ms
+First Home Saver Account (FHSA): 42ms
+Higher Education Loan Account (HELA): 43ms
+Income Tax Account: 42ms
+Integrated Client Account: 43ms
+Notice of Assessment: 42ms
+Penalty or Interest Calculation: 42ms
+Statement of Account: 43ms
+Super Account: 41ms
+Client List: 41ms
+Complex Registrations (GST Grouping, GST Joint Venture, Branching, Consolidations): 40ms
+Deregistration or Winding Up: 42ms
+Identity: 42ms
+Register for ABN: 42ms
+Register for Other Obligation(s): 42ms
+Register for TFN: 41ms
+General Advice: 41ms
+Lost Members Register (LMR): 41ms
+Advice to Government: 42ms
+General Advice: 42ms
+Social Media Posts and Responses: 41ms
+Tax Practitioner Communication: 41ms
+Valuation and Related Services: 43ms
+Freedom of Information (FOI) Request: 43ms
+Lodge Compensation Claim: 44ms
+Lodge Complaint: 44ms
+Lodge Compliment: 42ms
+Lodge Feedback: 42ms
+Non-ATO matters: 42ms
+Tax Evasion Referral Centre (TERC): 42ms
+Publications Orders: 43ms
+Publications Requests: 43ms
+Annual GST Information Report: 42ms
+Annual GST Return: 40ms
+Business Activity Statement: 42ms
+Instalment Activity Statement: 41ms
+Excise Return: 41ms
+First Home Saver Account (FHSA) Form: 42ms
+Higher Education Loan Accounts (HELA) Form: 42ms
+PAYG Instalment Eligibility Form: 42ms
+Resource Rent Tax (RRT) Form: 42ms
+Wine Equalisation Tax (WET) Refund Form: 41ms
+Annual Reporting: 41ms
+PAYGW Variation Form: 42ms
+Taxable Payments Annual Report: 42ms
+TFN Reporting: 42ms
+Auditor, Actuary Contravention Report (ACR) Form: 43ms
+Contributions Related Form: 43ms
+Direct Claim Form: 42ms
+Division 293 End Benefits Notice - Superannuation Provider Tax Form: 42ms
+Electronic Portability Form (EPF): 43ms
+Fund Nominations: 43ms
+Lost Members Statement (LMS): 42ms
+Low Income Superannuation Contribution (LISC) Form: 41ms
+Member Contribution Statement (MCS): 41ms
+New Member Account Form: 42ms
+Payment Variation Advice (PVA): 41ms
+Release Authority and Statement: 42ms
+Remission Form: 43ms
+Superannuation Guarantee (SG) Form: 42ms
+Superannuation Guarantee Charge (SGC) Statement: 43ms
+Unclaimed Superannuation Money (USM) Form, Statement: 43ms
+Withholding Tax (WHT): 42ms
+Lodge Fringe Benefit Tax Return: 42ms
+Lodge Fringe Benefits Tax Related Form: 43ms
+Lodge Income Tax Return: 42ms
+Lodge Income Tax Return Related Form: 42ms
+Lodge Income Tax Return Related Schedules: 42ms
+Non-Lodgment Advice: 42ms
+Hardship,  Priority Processing: 40ms
+More Time to Lodge: 42ms
+Credit Refund Request: 42ms
+Debt Insolvency: 42ms
+Direct Claim Request: 41ms
+General: 43ms
+Interest Payable By Commissioner: 41ms
+Missing Payments: 41ms
+Payment Request: 41ms
+Replacement Cheque: 42ms
+Transfer Payment or Credit: 42ms
+Debt Insolvency: 41ms
+General: 41ms
+Payment Arrangements: 41ms
+Release from Debt: 43ms
+Remission of Interest & Penalty: 43ms
+Activity Statement Payment: 43ms
+First Home Savers Account (FHSA) Payment: 42ms
+Fringe Benefits Tax (FBT) Payment: 43ms
+Income Tax Payment: 42ms
+Other Payment: 42ms
+Refunds Returned to ATO: 42ms
+Superannuation Payment: 41ms
+Withholding Tax Payment: 39ms
+Credit Offset: 41ms
+Credit Offset (in $): 42ms
+First Home Saver Account (FHSA): 42ms
+Overpaid Dividends: 44ms
+Refund: 42ms
+Refund (in $): 43ms
+Superannuation Co-Contributions: 42ms
+Superannuation Guarantee: 40ms
+Superannuation Holding Account (SHA): 41ms
+Tax Return Refund (in $): 41ms
+Cancel ABN: 41ms
+Register for ABN: 41ms
+Cancel Other Obligations: 42ms
+Register for Other Obligation(s): 43ms
+Register for TFN: 40ms
+Client Detail(s): 43ms
+Client List: 41ms
+Complex Registrations (GST Grouping, GST Joint Venture, Branching, Consolidations): 40ms
+Tax Practitioner Board: 41ms
+Tax Role(s): 42ms
+ATO Online: 41ms
+AUSkey: 42ms

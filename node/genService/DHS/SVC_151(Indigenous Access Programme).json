@@ -1,0 +1,49 @@
+{
+  "documentType": "ServiceInformation",
+  "service": {
+    "type": "SVC",
+    "id": "SVC_151",
+    "name": "Indigenous Access Programme",
+    "acronym": null,
+    "tagline": null,
+    "description": "The Indigenous Access Program improves the health of Aboriginal and Torres Strait Islander Australians through better access to Medicare services.  Aboriginal or a Torres Strait Islander can get better access to Medicare services to help with their health. Medicare services include the Pharmaceutical Benefits Scheme, the Australian Organ Donor Register, the Australian Childhood Immunisation Register and other services.",
+    "oldID": 20,
+    "colourStyle": null,
+    "lineStyle": null,
+    "shapeStyle": "ellipse",
+    "hoverFieldStyle": null
+  },
+  "Dimension": [
+    {
+      "dist": 1,
+      "id": "THM_HTH",
+      "name": "Your health",
+      "desc": null
+    },
+    {
+      "dist": 1,
+      "id": "THM_IND",
+      "name": "Indigenous Australians",
+      "desc": null
+    },
+    {
+      "dist": 2,
+      "id": "MP_MCA",
+      "name": "Medicare",
+      "desc": null
+    },
+    {
+      "dist": 2,
+      "id": "MP_CLK",
+      "name": "Centrelink",
+      "desc": null
+    },
+    {
+      "dist": 3,
+      "id": "ORG_DHS",
+      "name": "Human Services",
+      "desc": ""
+    }
+  ],
+  "Component": []
+}

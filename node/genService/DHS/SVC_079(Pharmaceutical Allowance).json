@@ -1,0 +1,37 @@
+{
+  "documentType": "ServiceInformation",
+  "service": {
+    "type": "SVC",
+    "id": "SVC_079",
+    "name": "Pharmaceutical Allowance",
+    "acronym": null,
+    "tagline": null,
+    "description": "Pharmaceutical Allowance (PhA) is paid to assist customers financially with the purchase of prescription medicines through the Pharmaceutical Benefit Scheme (PBS).",
+    "oldID": 79,
+    "colourStyle": null,
+    "lineStyle": null,
+    "shapeStyle": "ellipse",
+    "hoverFieldStyle": null
+  },
+  "Dimension": [
+    {
+      "dist": 1,
+      "id": "THM_CRS",
+      "name": "Cross Theme",
+      "desc": null
+    },
+    {
+      "dist": 2,
+      "id": "MP_CSP",
+      "name": "Child Support",
+      "desc": null
+    },
+    {
+      "dist": 3,
+      "id": "ORG_DHS",
+      "name": "Human Services",
+      "desc": ""
+    }
+  ],
+  "Component": []
+}

@@ -1,0 +1,37 @@
+{
+  "documentType": "ServiceInformation",
+  "service": {
+    "type": "SVC",
+    "id": "SVC_165",
+    "name": "National Health Funding Administration Payment System",
+    "acronym": null,
+    "tagline": null,
+    "description": "The National Health Funding Administrator Payments System, supports the reforms to Australian Government and state and territory government funding arrangements for hospital services. The department provides program, corporate and support services to assist the Administrator of the National Health Funding Pool and the National Health Funding Body to carry out their functions.",
+    "oldID": 34,
+    "colourStyle": null,
+    "lineStyle": null,
+    "shapeStyle": "ellipse",
+    "hoverFieldStyle": null
+  },
+  "Dimension": [
+    {
+      "dist": 1,
+      "id": "THM_HPR",
+      "name": "Health professionals",
+      "desc": null
+    },
+    {
+      "dist": 2,
+      "id": "MP_MCA",
+      "name": "Medicare",
+      "desc": null
+    },
+    {
+      "dist": 3,
+      "id": "ORG_DHS",
+      "name": "Human Services",
+      "desc": ""
+    }
+  ],
+  "Component": []
+}

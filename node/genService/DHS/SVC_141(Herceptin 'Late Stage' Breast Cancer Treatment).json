@@ -1,0 +1,43 @@
+{
+  "documentType": "ServiceInformation",
+  "service": {
+    "type": "SVC",
+    "id": "SVC_141",
+    "name": "Herceptin 'Late Stage' Breast Cancer Treatment",
+    "acronym": null,
+    "tagline": null,
+    "description": "The Herceptin 'Late Stage' Breast Cancer Treatment Programme makes sure trastuzumab (Herceptin) is available free of charge for late stage metastatic breast cancer. This program is not part of the Pharmaceutical Benefits Scheme (PBS).  Herceptin must only be ordered by prescribers for eligible patients. All orders of Herceptin must be approved by Human Services before supply and no retrospective supplies of Herceptin will be approved by Human Services. ",
+    "oldID": 10,
+    "colourStyle": null,
+    "lineStyle": null,
+    "shapeStyle": "ellipse",
+    "hoverFieldStyle": null
+  },
+  "Dimension": [
+    {
+      "dist": 1,
+      "id": "THM_HPR",
+      "name": "Health professionals",
+      "desc": null
+    },
+    {
+      "dist": 1,
+      "id": "THM_HTH",
+      "name": "Your health",
+      "desc": null
+    },
+    {
+      "dist": 2,
+      "id": "MP_MCA",
+      "name": "Medicare",
+      "desc": null
+    },
+    {
+      "dist": 3,
+      "id": "ORG_DHS",
+      "name": "Human Services",
+      "desc": ""
+    }
+  ],
+  "Component": []
+}

@@ -1,0 +1,18 @@
+{
+  "documentType": "ServiceInformation",
+  "service": {
+    "type": "SVC",
+    "id": "SVC_032",
+    "name": "Centrelink Compensation Recovery",
+    "acronym": null,
+    "tagline": null,
+    "description": "The Centrelink Compensation Recovery program - debt recovery, recovers outstanding debts owed to the Australian Government. Debts occurs when a person has already received compensation for the injury or illness and also claims benefits from the government. It aims to prevent 'double dipping' in Income Support paid by the Commonwealth in relation to an injury or illness.",
+    "oldID": 32,
+    "colourStyle": null,
+    "lineStyle": null,
+    "shapeStyle": "ellipse",
+    "hoverFieldStyle": null
+  },
+  "Dimension": [],
+  "Component": []
+}

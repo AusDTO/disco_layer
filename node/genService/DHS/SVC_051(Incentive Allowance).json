@@ -1,0 +1,37 @@
+{
+  "documentType": "ServiceInformation",
+  "service": {
+    "type": "SVC",
+    "id": "SVC_051",
+    "name": "Incentive Allowance",
+    "acronym": null,
+    "tagline": null,
+    "description": "Incentive Allowance (IA) is a 'saved' payment (dating back to 1989) paid to customers who are in sheltered employment. The aim of IA was to provide an incentive for customers to enter into one of these activities. IA was abolished on 12 November 1991.",
+    "oldID": 51,
+    "colourStyle": null,
+    "lineStyle": null,
+    "shapeStyle": "ellipse",
+    "hoverFieldStyle": null
+  },
+  "Dimension": [
+    {
+      "dist": 1,
+      "id": "THM_DIS",
+      "name": "People with disability",
+      "desc": null
+    },
+    {
+      "dist": 2,
+      "id": "MP_CLK",
+      "name": "Centrelink",
+      "desc": null
+    },
+    {
+      "dist": 3,
+      "id": "ORG_DHS",
+      "name": "Human Services",
+      "desc": ""
+    }
+  ],
+  "Component": []
+}

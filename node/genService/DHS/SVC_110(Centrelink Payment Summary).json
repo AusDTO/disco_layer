@@ -1,0 +1,18 @@
+{
+  "documentType": "ServiceInformation",
+  "service": {
+    "type": "SVC",
+    "id": "SVC_110",
+    "name": "Centrelink Payment Summary",
+    "acronym": null,
+    "tagline": null,
+    "description": "Centrelink Payment Summaries (previously known as Group Certificates) are available on request for customers to access who were in receipt of a taxable payment and/or tax related components irrespective of whether tax has been deducted from the payments. Payment Summaries are also generated for customers who were previously on payments.",
+    "oldID": 110,
+    "colourStyle": null,
+    "lineStyle": null,
+    "shapeStyle": "ellipse",
+    "hoverFieldStyle": null
+  },
+  "Dimension": [],
+  "Component": []
+}

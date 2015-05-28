@@ -1,0 +1,160 @@
+Oriento = require('oriento');
+Crawler = require("simplecrawler");
+fs = require('fs');
+path = require('path');
+url = require('url');
+
+////// Run Setttings
+
+//TODO: Move to params
+debug = true;
+maxItems = 10000000;
+timeToRun = 2000;
+
+
+
+outOfTime = false;
+frozenUrls = new Array();
+completedUrls = new Array();
+
+//Console Stuffs 
+//TODO: Change to use node logger
+console.error = function(line) {
+	console.log("ERROR::" + line);
+}
+
+console.warn = function(line) {
+	console.log("WARN ::" + line);
+}
+console.info = function(line) {
+	console.log("INFO ::" + line);
+}
+console.debug = function(line) {
+	if (debug) { console.log("DEBUG::" + line)};
+}
+
+
+console.info("Job set to Run for " + timeToRun/1000 + " seconds");
+setTimeout(function(){
+	console.debug("Stopping New Queues");
+	outOfTime = true;
+}, timeToRun);
+
+//Orient DB setup
+//TODO: Change this to a require a new modele that is resposible for providing the database object
+console.debug("Connecting to orientDb");
+
+var server = Oriento({
+  host: 'localhost',
+  port: 2424,
+  username: 'root',
+  password: 'nokas123'
+});
+
+console.debug("Connected to OrientDb, Getting Database");
+
+dbs = server.list();
+if (dbs.filter(function(db){return db.name == "webContent"}).length == 0){
+	db = server.create({ name: 'webContent', type: 'graph', storage: 'plocal'}).then(function (db) {
+		console.log('Created: ' + db.name);
+		});
+} else {
+	db = server.use('webContent');
+}
+console.debug("Database connected, Setting up crawler");
+
+
+//Crawl Settings
+//TODO: Change this to a require that is just responisble for returning the crawl job
+//TODO: Extract settings to a config file
+crawlJob = Crawler.crawl("https://www.dto.gov.au/");
+crawlJob.interval = 1000;
+crawlJob.maxDepth = 3;
+crawlJob.userAgent = "DTO Testing Crawler - Contact Nigel 0418556653";
+//TODO: Fix hack use all domains in the simplecrawler module - maybe add an option
+
+
+
+//Exclude Domains
+crawlJob.addFetchCondition(function(parsedURL) {
+	//TODO: Exclude (or mark?) for state based domains.
+	return parsedURL.host.substring(parsedURL.host.length - 7) == ".gov.au";
+});
+
+//Stop after N urls
+crawlJob.addFetchCondition(function(parsedURL) {
+	
+	if (crawlJob.queue.length >= maxItems) { 
+		frozenUrls.push(parsedURL);
+		console.debug("Pushed Frozen");
+		return false;
+	} else {
+		completedUrls.push(parsedURL);
+		//console.debug("Pushed Completed");
+		return true;
+	}
+});
+
+//Stop after timeout
+crawlJob.addFetchCondition(function(parsedURL) {
+	if (outOfTime) { 
+		console.debug("Pushed Frozen");
+		frozenUrls.push(parsedURL);
+		return false;
+	} else {
+		completedUrls.push(parsedURL);
+		return true;
+	}
+});
+
+/*
+crawlJob.addFetchCondition(function(parsedURL) {
+		//exclude urls that are ready for refetch
+		//return next fetch for url > now
+});
+*/
+
+console.debug("Crawler Created");
+
+///////////////////// START CRAWL /////////////////////
+
+crawlJob
+	.on("crawlstart", function(){
+	//
+	})
+	.on("fetchcomplete", function(queueItem, responseBuffer, response){ 
+			 queueItem.document = responseBuffer.toString('base64');
+			 queueItem.lastFetchDateTime = "2015-05-21 09:00:00";
+			 queueItem.nextFetchDateTime = "2015-05-28 09:00:00";
+			 queueItem.stateData['@class'] = "webDocumentStateData";
+		db.delete()
+			.from('webDocumentContainer')
+			.where({url:queueItem.url})
+			.limit(1)
+			.scalar()
+			.then(function (total) {
+				//console.debug('deleted', total, 'entries');
+				//TODO: Should the insert be here instead
+			});
+		db.insert()
+			.into('webDocumentContainer')
+			.set(queueItem)
+			.one()	
+			.then(function (doc) {  
+				console.info("Url Completed: " + queueItem.url + " ("  + queueItem.stateData.contentLength + ")");
+			});
+	})
+	.on("queueadd", function(queueItem) {
+		//console.debug("Adding Item, now: " + crawlJob.queue.length);
+
+	})
+	.on("complete", function() {
+		//TODO: write the frozen ones to disk
+		console.info("Number of frozen Urls: " + frozenUrls.length)
+		console.debug("Number of completed Urls: " + completedUrls.length)
+		fs.writeFile(path.join(__dirname, "completedUrls.json"), JSON.stringify(completedUrls));
+		fs.writeFile(path.join(__dirname, "frozenUrls.json"), JSON.stringify(frozenUrls));
+		//TODO - Can logically exit when the frozen ones are saved (Because I am sure that the job is complete)
+		
+		});
+	

@@ -1,0 +1,18 @@
+{
+  "documentType": "ServiceInformation",
+  "service": {
+    "type": "SVC",
+    "id": "SVC_128",
+    "name": "Helping Young Parents",
+    "acronym": null,
+    "tagline": null,
+    "description": "The Helping Young Parents Programme (HYP) aims to assist and support young parents in overcoming barriers so they can complete their education to a Year 12 or equivalent qualification (Certificate II). The programme also encourages young parents to access services and opportunities available locally to assist in achieving education and training outcomes for themselves, and health and education outcomes for their children.  This initiative will support and engage a vulnerable group within the Australian population by linking them to the current service system and provide support that is tailored to the level of an individual's need.",
+    "oldID": 128,
+    "colourStyle": null,
+    "lineStyle": null,
+    "shapeStyle": "ellipse",
+    "hoverFieldStyle": null
+  },
+  "Dimension": [],
+  "Component": []
+}

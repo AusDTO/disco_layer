@@ -1,0 +1,18 @@
+{
+  "documentType": "ServiceInformation",
+  "service": {
+    "type": "SVC",
+    "id": "SVC_117",
+    "name": "Refugee Services",
+    "acronym": null,
+    "tagline": null,
+    "description": "Refugee Services provide assistance to those who have recently arrived as a refugee, humanitarian entrant or have been granted a Permanent Protection Visa to live in Australia.",
+    "oldID": 117,
+    "colourStyle": null,
+    "lineStyle": null,
+    "shapeStyle": "ellipse",
+    "hoverFieldStyle": null
+  },
+  "Dimension": [],
+  "Component": []
+}

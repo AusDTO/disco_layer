@@ -1,0 +1,37 @@
+{
+  "documentType": "ServiceInformation",
+  "service": {
+    "type": "SVC",
+    "id": "SVC_137",
+    "name": "Competitive Advantage Payment",
+    "acronym": null,
+    "tagline": null,
+    "description": "The Medical Indemnity (Competitive Advantage Payment) Bill 2005, provides that medical indemnity insurance groups that benefited from the Incurred But Not Reported (IBNR) indemnity scheme will make a series of payments to the Government to address the competitive advantage arising from that support. In addition, doctors who had a liability under the United Medical Protection Support Payment arrangements will now pay less. ",
+    "oldID": 6,
+    "colourStyle": null,
+    "lineStyle": null,
+    "shapeStyle": "ellipse",
+    "hoverFieldStyle": null
+  },
+  "Dimension": [
+    {
+      "dist": 1,
+      "id": "THM_HPR",
+      "name": "Health professionals",
+      "desc": null
+    },
+    {
+      "dist": 2,
+      "id": "MP_MCA",
+      "name": "Medicare",
+      "desc": null
+    },
+    {
+      "dist": 3,
+      "id": "ORG_DHS",
+      "name": "Human Services",
+      "desc": ""
+    }
+  ],
+  "Component": []
+}

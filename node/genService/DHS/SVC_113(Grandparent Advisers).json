@@ -1,0 +1,18 @@
+{
+  "documentType": "ServiceInformation",
+  "service": {
+    "type": "SVC",
+    "id": "SVC_113",
+    "name": "Grandparent Advisers",
+    "acronym": null,
+    "tagline": null,
+    "description": "Grandparent Advisers provide support for grandparents with full time caring responsibility for their grandchildren. Advisers can help by: understanding family circumstances to provide tailored information about payments and services; arranging appointments with our specialist staff, such as social workers; arranging referrals to other federal, state and community service providers.",
+    "oldID": 113,
+    "colourStyle": null,
+    "lineStyle": null,
+    "shapeStyle": "ellipse",
+    "hoverFieldStyle": null
+  },
+  "Dimension": [],
+  "Component": []
+}

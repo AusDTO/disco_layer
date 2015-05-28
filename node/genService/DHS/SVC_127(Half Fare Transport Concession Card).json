@@ -1,0 +1,37 @@
+{
+  "documentType": "ServiceInformation",
+  "service": {
+    "type": "SVC",
+    "id": "SVC_127",
+    "name": "Half Fare Transport Concession Card",
+    "acronym": null,
+    "tagline": null,
+    "description": "Half Fare Transport Concession Cards are available to NSW residents receiving unemployment or other eligible Commonwealth benefits at the maximum rate and looking for a job entitling them to a half-fare single and return travel on some buses, trains, light rail and ferry services. ",
+    "oldID": 127,
+    "colourStyle": null,
+    "lineStyle": null,
+    "shapeStyle": "ellipse",
+    "hoverFieldStyle": null
+  },
+  "Dimension": [
+    {
+      "dist": 1,
+      "id": "THM_CRS",
+      "name": "Cross Theme",
+      "desc": null
+    },
+    {
+      "dist": 2,
+      "id": "MP_CSP",
+      "name": "Child Support",
+      "desc": null
+    },
+    {
+      "dist": 3,
+      "id": "ORG_DHS",
+      "name": "Human Services",
+      "desc": ""
+    }
+  ],
+  "Component": []
+}

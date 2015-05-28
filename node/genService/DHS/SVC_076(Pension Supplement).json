@@ -1,0 +1,37 @@
+{
+  "documentType": "ServiceInformation",
+  "service": {
+    "type": "SVC",
+    "id": "SVC_076",
+    "name": "Pension Supplement",
+    "acronym": null,
+    "tagline": null,
+    "description": "Pension Supplement (PS) replaced Utilities Allowance (UA), Telephone Allowance (TAL) at the higher rate, Pharmaceutical Allowance (PhA) and the GST Supplement for some customers from 20 September 2009.",
+    "oldID": 76,
+    "colourStyle": null,
+    "lineStyle": null,
+    "shapeStyle": "ellipse",
+    "hoverFieldStyle": null
+  },
+  "Dimension": [
+    {
+      "dist": 1,
+      "id": "THM_CRS",
+      "name": "Cross Theme",
+      "desc": null
+    },
+    {
+      "dist": 2,
+      "id": "MP_CSP",
+      "name": "Child Support",
+      "desc": null
+    },
+    {
+      "dist": 3,
+      "id": "ORG_DHS",
+      "name": "Human Services",
+      "desc": ""
+    }
+  ],
+  "Component": []
+}
