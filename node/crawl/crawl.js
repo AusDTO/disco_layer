@@ -10,10 +10,8 @@ moment = require('moment');
 //TODO: Move to params
 debug = true;
 maxItems = 9999;
-//kill job at this many minutes
-timeToRun =  600; //in seconds
-fetchIncrement = 1;   //Days to wait for next fetch
-
+timeToRun =  600;		//in seconds
+fetchIncrement = 1;	//Days to wait for next fetch
 count = {
 		deferred: 0,
 		completed: 0,
@@ -21,7 +19,6 @@ count = {
 		serverError: 0,
 		missing: 0 ,
 		notDue: 0,
-
 	};
 
 dateFormat = "YYYY-MM-DD HH:mm:ss";
@@ -49,13 +46,13 @@ console.debug = function(line) {
 /////////////// FUNCTION TO ADD QUEUE ITEM ///////////////
 //TODO: Consider if this should become a DAO
 function addIfMissing(queueItem) { 
-	//TODO: Check statedata is empty before removing
+	//TODO: Check statedata is missing before nulling
 	queueItem.stateData = null;
-//	console.log("Trying to freeze: " + JSON.stringify(queueItem.url));
+//	console.debug("Trying to freeze: " + JSON.stringify(queueItem.url));
 		db.query('select count(*) as count from webDocumentContainer where url=:url', {params: { url: queueItem.url}})
 		.then(function (result){
 			if (result[0].count == 0) {
-				//console.log("Url needs to be stored: " + queueItem.url);
+				//console.debug("Url needs to be stored: " + queueItem.url);
 				//TODO: change back to query builder and scalar
 				db.query("INSERT INTO webDocumentContainer content " + JSON.stringify(queueItem));
 			} else { 
@@ -69,8 +66,6 @@ function addIfMissing(queueItem) {
 	setTimeout( function() {
 		crawlJob.stop();
 		console.debug("Time Expired, job stopped");
-		//fs.writeFile(path.join(__dirname, "queueDump.json"), JSON.stringify(crawlJob.queue));
-		//TODO: Need to add some coordination so that I can exit when callbacks are complete
 		//TODO: Consider alternative... crawlJob.queue.forEach(addItemToDB(item));
 		for (var i = 0; i < crawlJob.queue.length; i++) { 
 			addIfMissing(crawlJob.queue[i]);
@@ -78,7 +73,12 @@ function addIfMissing(queueItem) {
 			count.deferred += 1		
 			} //end for
 			
-			//close db, server
+			setTimeout(function() {
+				db.close();
+				server.close();
+				process.exit();
+			}, 1000);
+
 	}, timeToRun*1000); //end settimeout
 
 
@@ -97,20 +97,17 @@ function addIfMissing(queueItem) {
 
 		dbs = server.list();
 		if (dbs.filter(function(db){return db.name == "webContent"}).length == 0){
-			db = server.create({ name: 'webContent', type: 'graph', storage: 'plocal'}).then(function (db) {
-				console.log('Created: ' + db.name);
+			console.error('Unable to connect to database webContent, exiting')
+			process.exit()
+			//db = server.create({ name: 'webContent', type: 'graph', storage: 'plocal'}).then(function (db) {
+			//	console.debug('Created: ' + db.name);
 				});
 		} else {
 			db = server.use('webContent');
+			console.info("Database connected, Setting up crawler");
 		}
-		console.info("Database connected, Setting up crawler");
 
-
-	////////////////////////////////////////////////////
-	////////////////// SETUP CRAWL /////////////////////
-	////////////////////////////////////////////////////
-
-	///////////////////// GET ITEMS THAT ARE WAITING /////////////////////
+	///////////////////// GET ITEMS THAT ARE WAITING TO BE CRAWLED /////////////////////
 	console.debug('Starting setting up crawl');
 	console.debug('Query DB');
 	db.query('select url, nextFetchDateTime from webDocumentContainer ' +
@@ -124,27 +121,18 @@ function addIfMissing(queueItem) {
 		})
 		.then(function (results){
 			console.debug('DB Query Done');
-			console.info("Starting Crawl with first url");
-			//start job with first url in list
-			//results.length
 			if (results.length > 0) {
-				console.debug('Instantiating Crawler');
-				console.debug('Start Url: ' + results[0].url);
-				
-					//TODO: check this out, seems to be running badly
+				console.debug('Instantiating Crawler with ' + results[0].url);
+				//Check for database errors
+				//TODO: Extract settings to a config file				
 				crawlJob = new Crawler(results[0].url);
-
-				//TODO: Extract settings to a config file
-
 				crawlJob.interval = 1000;
 				crawlJob.maxDepth = 3;
 				crawlJob.userAgent = "DTO Testing Crawler - Contact Nigel 0418556653";
 				//TODO: Fix hack use all domains in the simplecrawler module - maybe add an option
 
+
 				console.debug('adding Fetch Conditions');
-				
-				
-					
 				
 				//Exclude Domains
 				crawlJob.addFetchCondition(function(parsedURL) {
@@ -156,13 +144,11 @@ function addIfMissing(queueItem) {
 				//Stop after N urls
 				crawlJob.addFetchCondition(function(parsedURL) {
 					if (crawlJob.queue.length >= maxItems) {
-				
 						delete parsedURL.uriPath;
 						parsedURL.pathname = parsedURL.path;
 						queueItem = parsedURL;
 						queueItem.url = nodeURL.format(parsedURL);
 						addIfMissing(queueItem)	;	
-						//console.debug("Deferred: " + queueItem.url)
 						count.deferred += 1;
 						return false;
 					} 
@@ -185,8 +171,7 @@ function addIfMissing(queueItem) {
 						} else {
 							if (!result[0].nextFetchDateTime) {
 								outcome = true;
-								//onsole.debug("Url(" + queueItem.url + ") found with no dts, returning: ");
-								
+								//console.debug("Url(" + queueItem.url + ") found with no dts, returning: ");
 							} else {
 								//console.debug("Url(" + queueItem.url + ") found with dts: " + result[0].nextFetchDateTime + ", returning: " + moment().isAfter(result[0].nextFetchDateTime));
 								outcome = moment().isAfter(result[0].nextFetchDateTime);
@@ -196,36 +181,27 @@ function addIfMissing(queueItem) {
 							console.debug('Url Not Due: ' + queueItem.url);
 							count.notDue++;
 						}
-
 					});
 				});
 
-
-				/*
-				crawlJob.addFetchCondition(function(parsedURL) {
-						//exclude urls that are ready for refetch
-						//return next fetch for url > now
-				});
-				*/
 				console.debug('Adding event handlers');
 				crawlJob
-					.on("fetchstart", function(){
-					})
-					.on("crawlstart", function(){
-						//console.debug("Crawler started event did fire");
-					})
-					.on("fetchredirect", function(){
-						//console.debug("A fetch redirected");	
+					.on("queueerror", function(errData, urlData){
+						console.error("There was a queue error, Queue Erorr URL/Data: " + JSON.stringify(errData) + JSON.stringify(urlData));
+						//console.debug("Queue Error Data: " + JSON.stringify(urlData));
+						count.error ++;
+						//TODO: If there is an error or 404, then we need to decide when to discard that entry and prevent recrawl. Might need a flag in the database.
 					})
 					.on("fetcherror", function(queueItem, response){
 						console.info("Url Fetch Error: " + queueItem.url);
 						//console.debug("Error Item" + JSON.stringify(queueItem));
+						//TODO: Maybe I should just flick it to the complete handler.
+
 						//TODO: decide what to do with server errors
 						//TODO: decide what to do with server errors
 						//need to store for at least a while.
 						//maybe easiet would be to check if is still in some pages outlinks.
 						//should be logged anyhow.
-						
 						count.serverError++;
 					})
 					.on("fetch404", function(){
@@ -236,17 +212,8 @@ function addIfMissing(queueItem) {
 						//should be logged anyhow.
 						count.missing++;
 					})
-					.on("queueadd", function(queueItem){
-						//console.debug("Queued - " + queueItem.url);
-					})
 					.on("fetchtimeout", function(queueItem){
 						console.debug("A fetch timed out");
-					})
-					.on("queueerror", function(errData, urlData){
-						console.error("There was a queue error, Queue Erorr URL/Data: " + JSON.stringify(errData) + JSON.stringify(urlData));
-						//console.debug("Queue Error Data: " + JSON.stringify(urlData));
-						count.error ++;
-						//TODO: If there is an error or 404, then we need to decide when to discard that entry and prevent recrawl. Might need a flag in the database.
 					})
 					.on("fetchclienterror", function(queueItem, errorData){
 						console.error("There was a fetch client error");
@@ -256,13 +223,13 @@ function addIfMissing(queueItem) {
 						count.error ++;
 					})
 					.on("fetchcomplete", function(queueItem, responseBuffer, response){ 
-							//console.debug("A fetch completed");	
-							queueItem.lastFetchDateTime = moment().format(dateFormat);
-							nextFetch = moment();
-							nextFetch.add(7, 'days')
-							queueItem.nextFetchDateTime = nextFetch.format(dateFormat);
-							queueItem.stateData['@class'] = "webDocumentStateData";
-							queueItem.document = responseBuffer.toString('base64');
+						//console.debug("A fetch completed");	
+						queueItem.lastFetchDateTime = moment().format(dateFormat);
+						nextFetch = moment();
+						nextFetch.add(7, 'days')
+						queueItem.nextFetchDateTime = nextFetch.format(dateFormat);
+						queueItem.stateData['@class'] = "webDocumentStateData";
+						queueItem.document = responseBuffer.toString('base64');
 							
 						db.delete()
 							.from('webDocumentContainer')
@@ -283,19 +250,30 @@ function addIfMissing(queueItem) {
 								console.info("Url Completed: " + queueItem.url + " ("  + queueItem.stateData.contentLength + ")");
 							});
 					})
-					.on("complete", function() {	//Did we just run out of things to do?
+					.on("complete", function() {
 						console.info("Stats: " + JSON.stringify(count));
 						setTimeout(function() {
 							db.close();
 							server.close();
 							process.exit();
 							}, 1000);
+					})
+					.on("queueadd", function(queueItem){
+						//console.debug("Queued - " + queueItem.url);
+					})
+					.on("fetchstart", function(){
+						//console.debug("Fetch Started");
+					})
+					.on("crawlstart", function(){
+						//console.debug("Crawler started event did fire");
+					})
+					.on("fetchredirect", function(){
+						//console.debug("A fetch redirected");	
 					});
+					
 				console.debug('Starting Crawler');
-				
-			/////// TESTING HACKERY //////	
-				
-				console.debug('Adding ' + results.length + ' extra items from DB');
+			
+				console.debug('Adding ' + (results.length - 1) + ' extra items from DB');
 				
 				for (var j = 1; j < results.length; j++) {
 						console.debug("Queueing: " + results[j].url);
@@ -306,31 +284,12 @@ function addIfMissing(queueItem) {
 						//console.debug("Attempting to add adding: " + JSON.stringify(parsedURL));
 						crawlJob.queue.add(parsedURL.protocol, parsedURL.hostname, parsedURL.port, parsedURL.pathname);	
 					}
-				
-			
 			} else {
 			console.info("Nothing ready to crawl, exiting");
 			}
 			
-			crawlJob.start();
-		
-		////////////////////////////////////////////////////////////////
-		////TODO: So the problem now is that i cant instantiate the queue.add without starting the crawlers
-		 //// Maybe i can manually setup the queue
-		
-		/*
-		
-		console.log(JSON.stringify(crawlJob.queue));
-		crawlJob.queue.add()
-		console.log(Object.getOwnPropertyNames(crawlJob.queue));
-		
-		*/
-		
-
-
-	console.debug("Crawler Created");
-	///////////////////// START CRAWL /////////////////////
-	//Need to deal with error statuses
+		crawlJob.start();
+		console.debug("Crawler Started");
 });
 
 
