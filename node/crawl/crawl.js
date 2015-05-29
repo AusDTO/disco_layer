@@ -4,12 +4,14 @@ fs = require('fs');
 path = require('path');
 nodeURL = require('url');
 moment = require('moment');
+dbName = "webContent";
+dbSchemaName = "webDocumentContainer";
 
 ////// Run Setttings
 
 //TODO: Move to params
 debug = true;
-maxItems = 9999;
+maxItems = 5;
 timeToRun =  600;		//in seconds
 fetchIncrement = 1;	//Days to wait for next fetch
 count = {
@@ -43,21 +45,37 @@ console.debug = function(line) {
 
 
 
-/////////////// FUNCTION TO ADD QUEUE ITEM ///////////////
+/////////////// FUNCTION TO DEFER QUEUE ITEM ///////////////
 //TODO: Consider if this should become a DAO
 function addIfMissing(queueItem) { 
 	//TODO: Check statedata is missing before nulling
 	queueItem.stateData = null;
-//	console.debug("Trying to freeze: " + JSON.stringify(queueItem.url));
-		db.query('select count(*) as count from webDocumentContainer where url=:url', {params: { url: queueItem.url}})
+		//	console.debug("Trying to freeze: " + JSON.stringify(queueItem.url));
+		db.select('count(*) as count')
+		.from(dbSchemaName)
+		.where({url: queueItem.url})
+		.scalar()
 		.then(function (result){
-			if (result[0].count == 0) {
+			if (count == 0) {
 				//console.debug("Url needs to be stored: " + queueItem.url);
 				//TODO: change back to query builder and scalar
-				db.query("INSERT INTO webDocumentContainer content " + JSON.stringify(queueItem));
+				db.insert()
+				.into(dbSchemaName)
+				.set(JSON.stringify(queueItem))
+				.one()
+				.catch(function(e){
+					console.error("Unable to insert document");
+					console. error(e);
+					process.exit(-1);
+				});
 			} else { 
 //				console.debug("Ignoring: " + queueItem.url + ' ||| ' + JSON.stringify(queueItem)); 
 			}
+		})
+		.catch(function(e){
+			console.error("Unable to check if document exits (a select count)");
+			console. error(e);
+			process.exit(-1);
 		}); //end select then
 	}
 
@@ -87,39 +105,53 @@ function addIfMissing(queueItem) {
 		console.debug("Connecting to orientDb");
 
 		var server = Oriento({
-		  host: 'localhost',
-		  port: 2424,
-		  username: 'root',
-		  password: 'nokas123'
-		});
+			host: 'localhost',
+			port: 2424,
+			username: 'root',
+			password: 'nokas123'});
+//		.catch(function(e) {
+//				console.error("Unable to connect to server @: " + server.host);
+//			});
 
 		console.debug("Connected to OrientDb, Getting Database");
 
-		dbs = server.list();
-		if (dbs.filter(function(db){return db.name == "webContent"}).length == 0){
-			console.error('Unable to connect to database webContent, exiting')
+		dbs = server.list() // note: does not throw, will always return
+		if (dbs.filter(function(db){return db.name == dbName}).length == 0){
+			console.error('Unable to connect to database " + dbName + ", exiting')
 			process.exit()
-			//db = server.create({ name: 'webContent', type: 'graph', storage: 'plocal'}).then(function (db) {
+			//db = server.create({ name: dbName, type: 'graph', storage: 'plocal'}).then(function (db) {
 			//	console.debug('Created: ' + db.name);
-				});
+			//	});
 		} else {
-			db = server.use('webContent');
+			db = server.use(dbName);
+			//TODO (B4 COMMIT):  Need to check that the database is actually in user properly. The use function throws so may need to promisify and catch - or just catchs.
+			
 			console.info("Database connected, Setting up crawler");
 		}
 
 	///////////////////// GET ITEMS THAT ARE WAITING TO BE CRAWLED /////////////////////
 	console.debug('Starting setting up crawl');
 	console.debug('Query DB');
-	db.query('select url, nextFetchDateTime from webDocumentContainer ' +
+/*	db.query('select url, nextFetchDateTime from webDocumentContainer ' +
 						'where nextFetchDateTime <=:comparisonDateTime ' +
 						'OR nextFetchDateTime IS NULL ' +
 						'ORDER BY nextFetchDateTime', 
 		{
 		params: {    
 			comparisonDateTime: moment().format(dateFormat), 
-			}
+			},
+			limit: 10
 		})
-		.then(function (results){
+		
+*/
+	db.select('url, nextFetchDateTime ')
+		.from(dbSchemaName)
+		.where("nextFetchDateTime <= '" + moment().format(dateFormat) + "'")
+		.or('nextFetchDateTime IS NULL ')
+		.order('nextFetchDateTime')
+		.limit(10) //B4 COMMIT: remove this before commit
+		.all()
+		.then(function (results) {
 			console.debug('DB Query Done');
 			if (results.length > 0) {
 				console.debug('Instantiating Crawler with ' + results[0].url);
@@ -164,7 +196,10 @@ function addIfMissing(queueItem) {
 					parsedURL.pathname = parsedURL.path;
 					queueItem = parsedURL;
 					queueItem.url = nodeURL.format(parsedURL);
-					db.query('select nextFetchDateTime as nextFetchDateTime count from webDocumentContainer where url=:url', {params: { url: queueItem.url}})
+					db.select('nextFetchDateTime as nextFetchDateTime')
+						.from(dbSchemaName)
+						.where("url:" + queueItem.url)
+						.one()
 					.then(function (result){
 						if(result.length == 0) {  //Assuming 0 or 1 as url is unique key
 							outcome = true;
@@ -230,7 +265,8 @@ function addIfMissing(queueItem) {
 						queueItem.nextFetchDateTime = nextFetch.format(dateFormat);
 						queueItem.stateData['@class'] = "webDocumentStateData";
 						queueItem.document = responseBuffer.toString('base64');
-							
+						
+			//TODO: This needs to be change to a check for existance and upsert						
 						db.delete()
 							.from('webDocumentContainer')
 							.where({url:queueItem.url})
@@ -240,7 +276,7 @@ function addIfMissing(queueItem) {
 								//console.debug('deleted', total, 'entries');
 								//TODO: Should the insert be here instead
 							});
-						//TODO: Use common inserting tool
+						//TODO: Use common upserting tool - this is a non-destructive only update changed data. There may also need to be a destructive upsert
 						db.insert()
 							.into('webDocumentContainer')
 							.set(queueItem)
@@ -248,6 +284,10 @@ function addIfMissing(queueItem) {
 							.then(function (doc) {
 								count.completed ++;				
 								console.info("Url Completed: " + queueItem.url + " ("  + queueItem.stateData.contentLength + ")");
+							})
+							.catch(function(e) {
+								console.error("Insert failed for some unknown reason")
+								console.error(e);
 							});
 					})
 					.on("complete", function() {
@@ -276,7 +316,7 @@ function addIfMissing(queueItem) {
 				console.debug('Adding ' + (results.length - 1) + ' extra items from DB');
 				
 				for (var j = 1; j < results.length; j++) {
-						console.debug("Queueing: " + results[j].url);
+						//console.debug("Queueing: " + results[j].url);
 						parsedURL = nodeURL.parse(results[j].url);
 						if (parsedURL.port == null) {
 							parsedURL.port = 80; 
@@ -289,7 +329,10 @@ function addIfMissing(queueItem) {
 			}
 			
 		crawlJob.start();
-		console.debug("Crawler Started");
-});
-
+		console.info("Crawler Started");
+})
+.catch(function(e) {
+	console.error("Unable to query database for some reason");
+	console.error(e);
+});	
 
