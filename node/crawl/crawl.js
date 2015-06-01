@@ -1,29 +1,35 @@
-Oriento = require('oriento');
-Crawler = require("simplecrawler");
-fs = require('fs');
-path = require('path');
-nodeURL = require('url');
-moment = require('moment');
-dbName = "webContent";
-dbSchemaName = "webDocumentContainer";
+
+
+"use strict";
+var Crawler = require("simplecrawler");
+var fs = require('fs');
+var path = require('path');
+var nodeURL = require('url');
+var moment = require('moment');
+var crawlDb = require('./crawldB');
+
+crawlDb = crawlDb.connect();
 
 ////// Run Setttings
 
 //TODO: Move to params
-debug = true;
-maxItems = 5;
-timeToRun =  600;		//in seconds
-fetchIncrement = 1;	//Days to wait for next fetch
-count = {
+var debug = true;
+var initQueueSize = 10;   //get this many from the database to kick the job off.
+var maxItems = 50;  //Stop the job after this many fetches.
+var timeToRun =  999;		//Stop the job after this many seconds
+var fetchIncrement = 7;	//Days to wait for next fetch
+var count = {
 		deferred: 0,
 		completed: 0,
 		error: 0,
 		serverError: 0,
 		missing: 0 ,
-		notDue: 0,
+		notDue: 0
 	};
 
-dateFormat = "YYYY-MM-DD HH:mm:ss";
+var regex = "(vic.gov\.au$|nsw\.gov\.au$|qld\.gov\.au$|tas\.gov\.au$|act\.gov\.au$|sa\.gov\.au$|wa\.gov\.au$|nt\.gov\.au$)"
+	
+var crawlJob = new Crawler("www.humanservices.gov.au");
 
 //Console Stuffs 
 //This sucks, why am I having to do the prefixing, there should be a module for this somewhere.
@@ -43,296 +49,186 @@ console.debug = function(line) {
 		};
 }
 
+////////////// STOP JOB AFTER CONFIGURED TIME ///////////////
+console.info("Job set to Run for " + timeToRun + " seconds");
+setTimeout( function() {
+	console.debug("Time Expired, job stopped");
+	crawlJob.stop();
+	for (var i = 0; i < crawlJob.queue.length; i++) { 
+		addIfMissing(crawlJob.queue[i]);
+		count.deferred ++;		
+		} //end for
+		
+		setTimeout(function() {
+			crawlDb.close();
+			process.exit();
+		}, 1000);
+}, timeToRun*1000); //end settimeout
 
 
-/////////////// FUNCTION TO DEFER QUEUE ITEM ///////////////
-//TODO: Consider if this should become a DAO
-function addIfMissing(queueItem) { 
-	//TODO: Check statedata is missing before nulling
-	queueItem.stateData = null;
-		//	console.debug("Trying to freeze: " + JSON.stringify(queueItem.url));
-		db.select('count(*) as count')
-		.from(dbSchemaName)
-		.where({url: queueItem.url})
-		.scalar()
-		.then(function (result){
-			if (count == 0) {
-				//console.debug("Url needs to be stored: " + queueItem.url);
-				//TODO: change back to query builder and scalar
-				db.insert()
-				.into(dbSchemaName)
-				.set(JSON.stringify(queueItem))
-				.one()
-				.catch(function(e){
-					console.error("Unable to insert document");
-					console. error(e);
-					process.exit(-1);
-				});
-			} else { 
-//				console.debug("Ignoring: " + queueItem.url + ' ||| ' + JSON.stringify(queueItem)); 
-			}
+
+////////////// SETUP CRAWLER  ///////////////
+	//Check for database errors
+	//TODO: Extract settings to a config file				
+	crawlJob.interval = 3000;
+	crawlJob.userAgent = "DTO Testing Crawler - Contact Nigel 0418556653";
+	crawlJob.filterByDomain = false;
+	
+	console.debug('adding Fetch Conditions');
+
+	//only non state gov.au domains
+	crawlJob.addFetchCondition(function(parsedURL) {
+		if (   parsedURL.host.substring(parsedURL.host.length - 7) == ".gov.au"   ) {
+				//search will be positive if found, positive
+				if (parsedURL.host.search(regex)  < 0 ) {
+					return true; //not a state
+				}else {
+					return false; //state domain
+					console.debug("State Domain Encountered: " + parsedURLhostname ); //a state
+				}
+			} else {
+				return false; //not gov.au
+			} 
+		});
+
+		crawlJob.addFetchCondition( function(parsedURL) {
+		//TODO: Works with queue length, that is not right. Only fetch queue length counts.
+		//fetchedQueueLength=crawlJob.queue.length
+		if (crawlJob.queue.length >= maxItems) {
+			delete parsedURL.uriPath;
+			parsedURL.pathname = parsedURL.path;
+			var queueItem = parsedURL;
+			queueItem.url = nodeURL.format(parsedURL);
+			crawlDb.addIfMissing(queueItem)	;	
+			count.deferred += 1;
+			return false;
+		} 
+		return true;
+	})
+
+/*
+	crawlJob.addFetchCondition( function(parsedURL) {
+		//TODO: This requires  additional db object - just require?
+		//console.debug("Checking if url already done: " + JSON.stringify(parsedURL));
+		//fix parsed url format used in simplecrawler
+		parsedURL.pathname = parsedURL.path;
+		parsedURL.url = nodeURL.format(parsedURL);
+		
+		crawlDb.checkNextFetchDate(parsedURL.url)
+		.then(function(result){
+			return result;
+		}); //has value
+
+		parsedURL.pathname = parsedURL.path;
+		var nextFetchDue = crawlDb.getNextFetchDate(nodeURL.format(parsedURL));
+		console.log("Url: " + nodeURL.format(parsedURL) + " is due at: " + nextFetchDue);
+		if (nextFetchDue) {
+			return moment().isAfter(nextFetchDue);
+		} else {
+			return true;
+		}
+
+		});
+*/
+
+	console.debug('Adding event handlers');
+	crawlJob
+		.on("queueerror", function(errData, urlData){
+			console.error("There was a queue error, Queue Erorr URL/Data: " + JSON.stringify(errData) + JSON.stringify(urlData));
+			count.error ++;
 		})
-		.catch(function(e){
-			console.error("Unable to check if document exits (a select count)");
-			console. error(e);
-			process.exit(-1);
-		}); //end select then
-	}
+		.on("fetcherror", function(queueItem, response){
+			crawlDb.upsert(queueItem);
+			console.info("Url Fetch Error: " + queueItem.url);
+			count.serverError++;
+		})
+		.on("fetch404", function(queueItem, response){
+			queueItem.lastFetchDateTime = moment().format();
+			var nextFetch = moment();
+			nextFetch.add(7, 'days')
+			queueItem.nextFetchDateTime = nextFetch.format();
+			queueItem.stateData['@class'] = "webDocumentStateData";
+			crawlDb.upsert(queueItem);
+			count.missing++;
+			console.info("Url was 404: " + queueItem.url);
+			})
+		.on("fetchtimeout", function(queueItem){
+			console.debug("A fetch timed out");
+			crawlDb.upsert(queueItem);
+			console.info("Url Timedout: " + queueItem.url);
 
-	/////////////// STOP JOB AFTER CONFIGURED TIME ///////////////
-	console.info("Job set to Run for " + timeToRun + " seconds");
-	setTimeout( function() {
-		crawlJob.stop();
-		console.debug("Time Expired, job stopped");
-		//TODO: Consider alternative... crawlJob.queue.forEach(addItemToDB(item));
-		for (var i = 0; i < crawlJob.queue.length; i++) { 
-			addIfMissing(crawlJob.queue[i]);
-			//console.debug("Deferred: " + crawlJob.queue[i]);
-			count.deferred += 1		
-			} //end for
+			})
+		.on("fetchclienterror", function(queueItem, errorData){
+			//console.debug("Fetch Client Error Item: " + JSON.stringify(queueItem));
+			//console.debug("Error Client Error Data: " + JSON.stringify(errorData));
+			queueItem.lastFetchDateTime = moment().format();
+			var nextFetch = moment();
+			nextFetch.add(7, 'days')
+			queueItem.nextFetchDateTime = nextFetch.format();
+			queueItem.stateData['@class'] = "webDocumentStateData";
 			
-			setTimeout(function() {
+			crawlDb.upsert(queueItem);
+			console.warn("Url Client Error: "  + queueItem.url);
+			count.error++;
+		})
+		.on("fetchcomplete", function(queueItem, responseBuffer, response) { 
+			queueItem.lastFetchDateTime = moment().format();
+			var nextFetch = moment();
+			nextFetch.add(7, 'days')
+			queueItem.nextFetchDateTime = nextFetch.format();
+			queueItem.stateData['@class'] = "webDocumentStateData";
+			//console.debug("DocumentContainer (- Document):" + JSON.stringify(queueItem));
+			queueItem.document = responseBuffer.toString('base64');
+			crawlDb.upsert(queueItem);
+			console.info("Url Completed: " + queueItem.url);
+			count.completed++;
+		})
+		.on("discoveryComplete", function() {
+			//This is where we can add the resources back to the document
+		})
+		.on("complete", function() {
+			console.info("Stats: " + JSON.stringify(count));
+			/*setTimeout(function() {
 				db.close();
 				server.close();
 				process.exit();
-			}, 1000);
-
-	}, timeToRun*1000); //end settimeout
-
-
-		/////////////// SETUP ORIENT ///////////////
-		//TODO: Change this to a require a new modele that is resposible for providing the database object
-		console.debug("Connecting to orientDb");
-
-		var server = Oriento({
-			host: 'localhost',
-			port: 2424,
-			username: 'root',
-			password: 'nokas123'});
-//		.catch(function(e) {
-//				console.error("Unable to connect to server @: " + server.host);
-//			});
-
-		console.debug("Connected to OrientDb, Getting Database");
-
-		dbs = server.list() // note: does not throw, will always return
-		if (dbs.filter(function(db){return db.name == dbName}).length == 0){
-			console.error('Unable to connect to database " + dbName + ", exiting')
-			process.exit()
-			//db = server.create({ name: dbName, type: 'graph', storage: 'plocal'}).then(function (db) {
-			//	console.debug('Created: ' + db.name);
-			//	});
-		} else {
-			db = server.use(dbName);
-			//TODO (B4 COMMIT):  Need to check that the database is actually in user properly. The use function throws so may need to promisify and catch - or just catchs.
-			
-			console.info("Database connected, Setting up crawler");
-		}
-
-	///////////////////// GET ITEMS THAT ARE WAITING TO BE CRAWLED /////////////////////
-	console.debug('Starting setting up crawl');
-	console.debug('Query DB');
-/*	db.query('select url, nextFetchDateTime from webDocumentContainer ' +
-						'where nextFetchDateTime <=:comparisonDateTime ' +
-						'OR nextFetchDateTime IS NULL ' +
-						'ORDER BY nextFetchDateTime', 
-		{
-		params: {    
-			comparisonDateTime: moment().format(dateFormat), 
-			},
-			limit: 10
+				}, 10000); */
 		})
-		
-*/
-	db.select('url, nextFetchDateTime ')
-		.from(dbSchemaName)
-		.where("nextFetchDateTime <= '" + moment().format(dateFormat) + "'")
-		.or('nextFetchDateTime IS NULL ')
-		.order('nextFetchDateTime')
-		.limit(10) //B4 COMMIT: remove this before commit
-		.all()
-		.then(function (results) {
-			console.debug('DB Query Done');
-			if (results.length > 0) {
-				console.debug('Instantiating Crawler with ' + results[0].url);
-				//Check for database errors
-				//TODO: Extract settings to a config file				
-				crawlJob = new Crawler(results[0].url);
-				crawlJob.interval = 1000;
-				crawlJob.maxDepth = 3;
-				crawlJob.userAgent = "DTO Testing Crawler - Contact Nigel 0418556653";
-				//TODO: Fix hack use all domains in the simplecrawler module - maybe add an option
-
-
-				console.debug('adding Fetch Conditions');
-				
-				//Exclude Domains
-				crawlJob.addFetchCondition(function(parsedURL) {
-				
-				//TODO: Exclude (or mark?) for state based domains.
-					return parsedURL.host.substring(parsedURL.host.length - 7) == ".gov.au";
-				});
-
-				//Stop after N urls
-				crawlJob.addFetchCondition(function(parsedURL) {
-					if (crawlJob.queue.length >= maxItems) {
-						delete parsedURL.uriPath;
-						parsedURL.pathname = parsedURL.path;
-						queueItem = parsedURL;
-						queueItem.url = nodeURL.format(parsedURL);
-						addIfMissing(queueItem)	;	
-						count.deferred += 1;
-						return false;
-					} 
-					return true;
-					
-				});
-
-				//Only fetch if its due
-				//TODO: This is not right, this needs a syncronous call or promise
-				crawlJob.addFetchCondition(function(parsedURL) {
-					//console.debug("Checking if url already done: " + JSON.stringify(parsedURL));
-					var outcome;
-					parsedURL.pathname = parsedURL.path;
-					queueItem = parsedURL;
-					queueItem.url = nodeURL.format(parsedURL);
-					db.select('nextFetchDateTime as nextFetchDateTime')
-						.from(dbSchemaName)
-						.where("url:" + queueItem.url)
-						.one()
-					.then(function (result){
-						if(result.length == 0) {  //Assuming 0 or 1 as url is unique key
-							outcome = true;
-						} else {
-							if (!result[0].nextFetchDateTime) {
-								outcome = true;
-								//console.debug("Url(" + queueItem.url + ") found with no dts, returning: ");
-							} else {
-								//console.debug("Url(" + queueItem.url + ") found with dts: " + result[0].nextFetchDateTime + ", returning: " + moment().isAfter(result[0].nextFetchDateTime));
-								outcome = moment().isAfter(result[0].nextFetchDateTime);
-							}
-						}
-						if (!outcome) {
-							console.debug('Url Not Due: ' + queueItem.url);
-							count.notDue++;
-						}
-					});
-				});
-
-				console.debug('Adding event handlers');
-				crawlJob
-					.on("queueerror", function(errData, urlData){
-						console.error("There was a queue error, Queue Erorr URL/Data: " + JSON.stringify(errData) + JSON.stringify(urlData));
-						//console.debug("Queue Error Data: " + JSON.stringify(urlData));
-						count.error ++;
-						//TODO: If there is an error or 404, then we need to decide when to discard that entry and prevent recrawl. Might need a flag in the database.
-					})
-					.on("fetcherror", function(queueItem, response){
-						console.info("Url Fetch Error: " + queueItem.url);
-						//console.debug("Error Item" + JSON.stringify(queueItem));
-						//TODO: Maybe I should just flick it to the complete handler.
-
-						//TODO: decide what to do with server errors
-						//TODO: decide what to do with server errors
-						//need to store for at least a while.
-						//maybe easiet would be to check if is still in some pages outlinks.
-						//should be logged anyhow.
-						count.serverError++;
-					})
-					.on("fetch404", function(){
-						console.debug("A fetch 404");	
-						//TODO: Decide what to do wtih not found
-						//need to store for at least a while.
-						//maybe easiet would be to check if is still in some pages outlinks.
-						//should be logged anyhow.
-						count.missing++;
-					})
-					.on("fetchtimeout", function(queueItem){
-						console.debug("A fetch timed out");
-					})
-					.on("fetchclienterror", function(queueItem, errorData){
-						console.error("There was a fetch client error");
-						//console.debug("Fetch Client Error Item: " + JSON.stringify(queueItem));
-						//console.debug("Error Client Error Data: " + JSON.stringify(errorData));
-						//TODO: If there is an error or 404, then we need to decide when to discard that entry and prevent recrawl. Might need a flag in the database.
-						count.error ++;
-					})
-					.on("fetchcomplete", function(queueItem, responseBuffer, response){ 
-						//console.debug("A fetch completed");	
-						queueItem.lastFetchDateTime = moment().format(dateFormat);
-						nextFetch = moment();
-						nextFetch.add(7, 'days')
-						queueItem.nextFetchDateTime = nextFetch.format(dateFormat);
-						queueItem.stateData['@class'] = "webDocumentStateData";
-						queueItem.document = responseBuffer.toString('base64');
-						
-			//TODO: This needs to be change to a check for existance and upsert						
-						db.delete()
-							.from('webDocumentContainer')
-							.where({url:queueItem.url})
-							.limit(1)
-							.scalar()
-							.then(function (total) {
-								//console.debug('deleted', total, 'entries');
-								//TODO: Should the insert be here instead
-							});
-						//TODO: Use common upserting tool - this is a non-destructive only update changed data. There may also need to be a destructive upsert
-						db.insert()
-							.into('webDocumentContainer')
-							.set(queueItem)
-							.one()	
-							.then(function (doc) {
-								count.completed ++;				
-								console.info("Url Completed: " + queueItem.url + " ("  + queueItem.stateData.contentLength + ")");
-							})
-							.catch(function(e) {
-								console.error("Insert failed for some unknown reason")
-								console.error(e);
-							});
-					})
-					.on("complete", function() {
-						console.info("Stats: " + JSON.stringify(count));
-						setTimeout(function() {
-							db.close();
-							server.close();
-							process.exit();
-							}, 1000);
-					})
-					.on("queueadd", function(queueItem){
-						//console.debug("Queued - " + queueItem.url);
-					})
-					.on("fetchstart", function(){
-						//console.debug("Fetch Started");
-					})
-					.on("crawlstart", function(){
-						//console.debug("Crawler started event did fire");
-					})
-					.on("fetchredirect", function(){
-						//console.debug("A fetch redirected");	
-					});
-					
-				console.debug('Starting Crawler');
+		.on("queueadd", function(queueItem){
+			//console.debug("Queued - " + queueItem.url);
+		})
+		.on("fetchstart", function(queueItem, requestOptions){
+			//console.debug("Starting Fetch Using Item: " + JSON.stringify(queueItem));
+			//console.debug("Starting Fetch Using Request Options: " + JSON.stringify(requestOptions));
+			//console.debug("Fetch Started");
+		})
+		.on("crawlstart", function(){
+			//console.debug("Crawler started event did fire");
+		})
+		.on("fetchredirect", function(){
+			//console.debug("A fetch redirected");	
+		});
 			
-				console.debug('Adding ' + (results.length - 1) + ' extra items from DB');
-				
-				for (var j = 1; j < results.length; j++) {
-						//console.debug("Queueing: " + results[j].url);
-						parsedURL = nodeURL.parse(results[j].url);
-						if (parsedURL.port == null) {
-							parsedURL.port = 80; 
-							}
-						//console.debug("Attempting to add adding: " + JSON.stringify(parsedURL));
-						crawlJob.queue.add(parsedURL.protocol, parsedURL.hostname, parsedURL.port, parsedURL.pathname);	
+			
+console.debug('Query DB');
+crawlDb.newQueueList(initQueueSize, function(results) {
+	if (results.length > 0) {			
+		console.debug('Starting Crawler');
+	
+		console.info('Initialising queue with  ' + (results.length) + ' items from DB');
+		//console.debug(results);
+		for (var j = 0; j < results.length; j++) {
+				var parsedURL = nodeURL.parse(results[j].url);
+				if (parsedURL.port == null) {
+					parsedURL.port = 80; 
 					}
-			} else {
-			console.info("Nothing ready to crawl, exiting");
-			}
+				crawlJob.queue.add(parsedURL.protocol, parsedURL.hostname, parsedURL.port, parsedURL.pathname);	
+				//TODO - should set these to automatically pass the domain and ready to fetch tests.
+			} 
 			
-		crawlJob.start();
-		console.info("Crawler Started");
+	} else {
+	console.info("Nothing ready to crawl, exiting");
+	}
+	crawlJob.start();
+	console.info("Crawler Started");
 })
-.catch(function(e) {
-	console.error("Unable to query database for some reason");
-	console.error(e);
-});	
-
