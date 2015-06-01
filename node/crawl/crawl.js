@@ -15,8 +15,8 @@ crawlDb = crawlDb.connect();
 //TODO: Move to params
 var debug = true;
 var initQueueSize = 10;   //get this many from the database to kick the job off.
-var maxItems = 50;  //Stop the job after this many fetches.
-var timeToRun =  999;		//Stop the job after this many seconds
+var maxItems = 1000;  //Stop the job after this many fetches.
+var timeToRun =  120;		//Stop the job after this many seconds
 var fetchIncrement = 7;	//Days to wait for next fetch
 var count = {
 		deferred: 0,
@@ -55,10 +55,12 @@ setTimeout( function() {
 	console.debug("Time Expired, job stopped");
 	crawlJob.stop();
 	for (var i = 0; i < crawlJob.queue.length; i++) { 
-		addIfMissing(crawlJob.queue[i]);
+		crawlDb.addIfMissing(crawlJob.queue[i]);
 		count.deferred ++;		
 		} //end for
 		
+		console.info("Stats: " + JSON.stringify(count));
+			
 		setTimeout(function() {
 			crawlDb.close();
 			process.exit();

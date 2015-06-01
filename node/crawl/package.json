@@ -1,11 +1,11 @@
 {
   "name": "crawl",
-  "version": "1.0.0",
-  "description": "",
+  "version": "0.0.2",
+  "description": "A crawling application for the Digital Transformation Office, Created largely using simplecrawler",
   "main": "crawl.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "author": "",
-  "license": "ISC"
+  "license": ""
 }
