@@ -27,7 +27,7 @@ var count = {
 		notDue: 0
 	};
 
-var regex = "(vic.gov\.au$|nsw\.gov\.au$|qld\.gov\.au$|tas\.gov\.au$|act\.gov\.au$|sa\.gov\.au$|wa\.gov\.au$|nt\.gov\.au$)"
+var stateRegex = "(vic.gov\.au$|nsw\.gov\.au$|qld\.gov\.au$|tas\.gov\.au$|act\.gov\.au$|sa\.gov\.au$|wa\.gov\.au$|nt\.gov\.au$)"
 	
 var crawlJob = new Crawler("www.humanservices.gov.au");
 
@@ -80,7 +80,7 @@ setTimeout( function() {
 	crawlJob.addFetchCondition(function(parsedURL) {
 		if (   parsedURL.host.substring(parsedURL.host.length - 7) == ".gov.au"   ) {
 				//search will be positive if found, positive
-				if (parsedURL.host.search(regex)  < 0 ) {
+				if (parsedURL.host.search(stateRegex)  < 0 ) {
 					return true; //not a state
 				}else {
 					return false; //state domain
@@ -106,8 +106,8 @@ setTimeout( function() {
 		return true;
 	})
 
-/*
-	crawlJob.addFetchCondition( function(parsedURL) {
+	//Ready for next fetch
+/*	crawlJob.addFetchCondition( function(parsedURL) {
 		//TODO: This requires  additional db object - just require?
 		//console.debug("Checking if url already done: " + JSON.stringify(parsedURL));
 		//fix parsed url format used in simplecrawler
@@ -130,7 +130,6 @@ setTimeout( function() {
 
 		});
 */
-
 	console.debug('Adding event handlers');
 	crawlJob
 		.on("queueerror", function(errData, urlData){
@@ -188,18 +187,15 @@ setTimeout( function() {
 		})
 		.on("complete", function() {
 			console.info("Stats: " + JSON.stringify(count));
-			/*setTimeout(function() {
-				db.close();
-				server.close();
+			setTimeout(function() {
+				crawlDb.close();
 				process.exit();
-				}, 10000); */
+				}, 5000); 
 		})
 		.on("queueadd", function(queueItem){
 			//console.debug("Queued - " + queueItem.url);
 		})
 		.on("fetchstart", function(queueItem, requestOptions){
-			//console.debug("Starting Fetch Using Item: " + JSON.stringify(queueItem));
-			//console.debug("Starting Fetch Using Request Options: " + JSON.stringify(requestOptions));
 			//console.debug("Fetch Started");
 		})
 		.on("crawlstart", function(){
@@ -209,14 +205,10 @@ setTimeout( function() {
 			//console.debug("A fetch redirected");	
 		});
 			
-			
-console.debug('Query DB');
+console.debug('Querying DB for new crawl queue');
 crawlDb.newQueueList(initQueueSize, function(results) {
 	if (results.length > 0) {			
-		console.debug('Starting Crawler');
-	
 		console.info('Initialising queue with  ' + (results.length) + ' items from DB');
-		//console.debug(results);
 		for (var j = 0; j < results.length; j++) {
 				var parsedURL = nodeURL.parse(results[j].url);
 				if (parsedURL.port == null) {
@@ -225,10 +217,12 @@ crawlDb.newQueueList(initQueueSize, function(results) {
 				crawlJob.queue.add(parsedURL.protocol, parsedURL.hostname, parsedURL.port, parsedURL.pathname);	
 				//TODO - should set these to automatically pass the domain and ready to fetch tests.
 			} 
-			
 	} else {
-	console.info("Nothing ready to crawl, exiting");
+		console.info("Nothing ready to crawl, exiting");
+		crawlDb.close();
+		process.exit();
 	}
+
 	crawlJob.start();
 	console.info("Crawler Started");
 })
