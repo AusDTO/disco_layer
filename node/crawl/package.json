@@ -6,6 +6,11 @@
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1"
   },
-  "author": "",
-  "license": ""
+  "author": "Digital Transformation Office - Commenwealth of Australia",
+  "dependencies": {
+    "oriento": "1.1.3",
+    "simplecrawler": "0.5.2",
+    "moment":">=2.10.0"
+  },
+  "license": "ISC"
 }

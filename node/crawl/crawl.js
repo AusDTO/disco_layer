@@ -1,22 +1,19 @@
-
-
 "use strict";
 var Crawler = require("simplecrawler");
 var fs = require('fs');
 var path = require('path');
 var nodeURL = require('url');
 var moment = require('moment');
-var crawlDb = require('./crawldB');
+var crawlDb = require('./crawldB').connect();
 
-crawlDb = crawlDb.connect();
 
 ////// Run Setttings
 
 //TODO: Move to params
 var debug = true;
-var initQueueSize = 10;   //get this many from the database to kick the job off.
+var initQueueSize = 100;   //get this many from the database to kick the job off.
 var maxItems = 1000;  //Stop the job after this many fetches.
-var timeToRun =  120;		//Stop the job after this many seconds
+var timeToRun =  240;		//Stop the job after this many seconds
 var fetchIncrement = 7;	//Days to wait for next fetch
 var count = {
 		deferred: 0,
@@ -60,7 +57,9 @@ setTimeout( function() {
 		} //end for
 		
 		console.info("Stats: " + JSON.stringify(count));
-			
+		
+		
+				
 		setTimeout(function() {
 			crawlDb.close();
 			process.exit();
@@ -78,6 +77,9 @@ setTimeout( function() {
 	
 	console.debug('adding Fetch Conditions');
 
+	
+	
+	////TODO: Testing: I think the crawler is not applying the fetch conditions to the initial url
 	//only non state gov.au domains
 	crawlJob.addFetchCondition(function(parsedURL) {
 		if (   parsedURL.host.substring(parsedURL.host.length - 7) == ".gov.au"   ) {
@@ -90,6 +92,7 @@ setTimeout( function() {
 				}
 			} else {
 				return false; //not gov.au
+				console.debug("Non gov.au Domain: " + parsedURLhostname ); //a state
 			} 
 		});
 
@@ -97,41 +100,34 @@ setTimeout( function() {
 		//TODO: Works with queue length, that is not right. Only fetch queue length counts.
 		//fetchedQueueLength=crawlJob.queue.length
 		if (crawlJob.queue.length >= maxItems) {
+			//TODO: fix making copy of parsedURL
 			delete parsedURL.uriPath;
 			parsedURL.pathname = parsedURL.path;
 			var queueItem = parsedURL;
 			queueItem.url = nodeURL.format(parsedURL);
-			crawlDb.addIfMissing(queueItem)	;	
-			count.deferred += 1;
+			crawlDb.addIfMissing(queueItem);
+			console.debug("Deferred: " + parsedURL.url);
+			count.deferred ++;
 			return false;
 		} 
 		return true;
 	})
 
-	//Ready for next fetch
-/*	crawlJob.addFetchCondition( function(parsedURL) {
-		//TODO: This requires  additional db object - just require?
-		//console.debug("Checking if url already done: " + JSON.stringify(parsedURL));
+	//Is this resource ready for its next fetch
+	crawlJob.addFetchCondition( function(parsedURL) {
+		
 		//fix parsed url format used in simplecrawler
 		parsedURL.pathname = parsedURL.path;
 		parsedURL.url = nodeURL.format(parsedURL);
 		
 		crawlDb.checkNextFetchDate(parsedURL.url)
 		.then(function(result){
+			console.debug("     Already done: " + parsedURL.url);
 			return result;
+			count.notDue ++;
 		}); //has value
-
-		parsedURL.pathname = parsedURL.path;
-		var nextFetchDue = crawlDb.getNextFetchDate(nodeURL.format(parsedURL));
-		console.log("Url: " + nodeURL.format(parsedURL) + " is due at: " + nextFetchDue);
-		if (nextFetchDue) {
-			return moment().isAfter(nextFetchDue);
-		} else {
-			return true;
-		}
-
-		});
-*/
+	});
+		
 	console.debug('Adding event handlers');
 	crawlJob
 		.on("queueerror", function(errData, urlData){
@@ -181,6 +177,7 @@ setTimeout( function() {
 			//console.debug("DocumentContainer (- Document):" + JSON.stringify(queueItem));
 			queueItem.document = responseBuffer.toString('base64');
 			crawlDb.upsert(queueItem);
+			delete queueItem.document;
 			console.info("Url Completed: " + queueItem.url);
 			count.completed++;
 		})
@@ -224,7 +221,8 @@ crawlDb.newQueueList(initQueueSize, function(results) {
 		crawlDb.close();
 		process.exit();
 	}
-
+	crawlJob.queue.freeze("theInitialQueue.json", function() {});
+	
 	crawlJob.start();
 	console.info("Crawler Started");
 })
