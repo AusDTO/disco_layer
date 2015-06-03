@@ -27,15 +27,15 @@ Steps:
 
 4. Configure datetimeformat
 
-   TBA
+   `ALTER DATABASE DATETIMEFORMAT yyyy-MM-dd'T'HH:mm:ssX`
 
 5. Install Dependencies
 
-   * npm install simplecrawler
-   * npm install moment
-   * npm install oriento
-   * npm install bluebird
-
+   * `npm install simplecrawler`
+   * `npm install moment`
+   * `npm install oriento`
+   * `npm install bluebird`
+`
 
 ##Significant Functions
 ### Timeout
