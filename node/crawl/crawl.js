@@ -14,7 +14,9 @@ var debug = true;
 var initQueueSize = 100;   //get this many from the database to kick the job off.
 var maxItems = 1000;  //Stop the job after this many fetches.
 var timeToRun =  240;		//Stop the job after this many seconds
-var fetchIncrement = 7;	//Days to wait for next fetch
+var fetchIncrement = 7;	//Days to wait for next fetchi
+var interval = 3000;
+
 var count = {
 		deferred: 0,
 		completed: 0,
@@ -71,7 +73,7 @@ setTimeout( function() {
 ////////////// SETUP CRAWLER  ///////////////
 	//Check for database errors
 	//TODO: Extract settings to a config file				
-	crawlJob.interval = 3000;
+	crawlJob.interval = interval;
 	crawlJob.userAgent = "DTO Testing Crawler - Contact Nigel 0418556653";
 	crawlJob.filterByDomain = false;
 	

@@ -11,7 +11,7 @@ module.exports = {
 			host: 'localhost',
 			port: 2424,
 			username: 'root',	
-			password: 'nokas123'}),
+			password: 'developmentpassword'}),
 	dbName: "webContent",
 	dbSchemaName: "webDocumentContainer",
 	dbs: null,
