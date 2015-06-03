@@ -37,10 +37,31 @@ Steps:
    * npm install bluebird
 
 
-##Functions
+##Significant Functions
 ### Timeout
 This function allow the application to only run for a specific time. Once completed any resources that have not
 been fetched are persisted to be selected later. 
 
-###
+### Fetch Condition - gov.au domain restriction
+Ensures that we only follow links to Australian Government Domains
 
+### Fetch Condition - Max items Processed
+No items are processed above the max items limit, they are instead persisted to the database to be fetched another time.
+
+### Fetch Condition - Only Fetch If Due
+Items are not processed if the next Fetch data has not been reached.
+
+### newQueueList
+Fetches a list of items that are ready to be fetched from the database.
+
+###addIfMissing
+Stores an item in the database if not already there. Used when deffering tasks.
+
+###upSert
+Update or Insert. If item is missing it will insert otherwise it will create a copy delete and insert.
+
+>Note: This should be supported by the oriento library but it only appears to support the set clause where in this scenario the merge is needed.
+
+
+###checkNextFetchDate
+Gets and checks the next fetch date in the database ccompared to todays date.
