@@ -1,0 +1,35 @@
+{"level":"info","message":"Job set to Run for 240 seconds","timestamp":"2015-06-11T15:26:45.215Z"}
+{"level":"info","message":"Job set to Run for 240 seconds","timestamp":"2015-06-11T15:27:14.474Z"}
+{"level":"info","message":"Job set to Run for 240 seconds","timestamp":"2015-06-11T15:28:00.849Z"}
+{"level":"info","message":"Job set to Run for 240 seconds","timestamp":"2015-06-11T15:28:52.170Z"}
+{"level":"info","message":"Job set to Run for 240 seconds","timestamp":"2015-06-11T15:31:32.292Z"}
+{"level":"info","message":"Job set to Run for 240 seconds","timestamp":"2015-06-11T15:33:14.980Z"}
+{"name":"OrientDB.ConnectionError [ECONNREFUSED]","code":"ECONNREFUSED","message":"connect ECONNREFUSED","data":{},"level":"error","timestamp":"2015-06-11T15:33:15.007Z"}
+{"level":"info","message":"Job set to Run for 240 seconds","timestamp":"2015-06-11T15:33:21.063Z"}
+{"name":"OrientDB.ConnectionError [ECONNREFUSED]","code":"ECONNREFUSED","message":"connect ECONNREFUSED","data":{},"level":"error","timestamp":"2015-06-11T15:33:21.087Z"}
+{"level":"info","message":"Job set to Run for 240 seconds","timestamp":"2015-06-11T15:34:45.620Z"}
+{"name":"OrientDB.ConnectionError [ECONNREFUSED]","code":"ECONNREFUSED","message":"connect ECONNREFUSED","data":{},"level":"error","timestamp":"2015-06-11T15:34:45.645Z"}
+{"level":"info","message":"Job set to Run for 240 seconds","timestamp":"2015-06-11T15:38:49.350Z"}
+{"name":"OrientDB.ConnectionError [ECONNREFUSED]","code":"ECONNREFUSED","message":"connect ECONNREFUSED","data":{},"level":"error","timestamp":"2015-06-11T15:38:49.378Z"}
+{"level":"info","message":"Job set to Run for 240 seconds","timestamp":"2015-06-11T15:40:52.298Z"}
+{"name":"OrientDB.ConnectionError [ECONNREFUSED]","code":"ECONNREFUSED","message":"connect ECONNREFUSED","data":{},"level":"error","timestamp":"2015-06-11T15:40:52.325Z"}
+{"level":"info","message":"Job set to Run for 240 seconds","timestamp":"2015-06-11T15:41:55.671Z"}
+{"name":"OrientDB.ConnectionError [ECONNREFUSED]","code":"ECONNREFUSED","message":"connect ECONNREFUSED","data":{},"level":"error","timestamp":"2015-06-11T15:41:55.690Z"}
+{"level":"info","message":"Job set to Run for 240 seconds","timestamp":"2015-06-11T15:41:59.736Z"}
+{"name":"OrientDB.ConnectionError [ECONNREFUSED]","code":"ECONNREFUSED","message":"connect ECONNREFUSED","data":{},"level":"error","timestamp":"2015-06-11T15:41:59.767Z"}
+{"level":"info","message":"Job set to Run for 240 seconds","timestamp":"2015-06-11T15:42:47.070Z"}
+{"name":"OrientDB.ConnectionError [ECONNREFUSED]","code":"ECONNREFUSED","message":"connect ECONNREFUSED","data":{},"level":"error","timestamp":"2015-06-11T15:42:47.087Z"}
+{"level":"info","message":"Job set to Run for 240 seconds","timestamp":"2015-06-11T15:43:23.368Z"}
+{"name":"OrientDB.ConnectionError [ECONNREFUSED]","code":"ECONNREFUSED","message":"connect ECONNREFUSED","data":{},"level":"error","timestamp":"2015-06-11T15:43:23.394Z"}
+{"level":"info","message":"Job set to Run for 240 seconds","timestamp":"2015-06-11T15:45:04.097Z"}
+{"name":"OrientDB.ConnectionError [ECONNREFUSED]","code":"ECONNREFUSED","message":"connect ECONNREFUSED","data":{},"level":"error","timestamp":"2015-06-11T15:45:04.125Z"}
+{"level":"info","message":"Job set to Run for 240 seconds","timestamp":"2015-06-11T15:46:25.656Z"}
+{"name":"OrientDB.ConnectionError [ECONNREFUSED]","code":"ECONNREFUSED","message":"connect ECONNREFUSED","data":{},"level":"error","timestamp":"2015-06-11T15:46:25.681Z"}
+{"level":"info","message":"Stats: {\"deferred\":0,\"completed\":0,\"error\":0,\"serverError\":0,\"missing\":0,\"notDue\":0}","timestamp":"2015-06-11T15:50:25.728Z"}
+{"level":"info","message":"Closing Database","timestamp":"2015-06-11T15:50:26.730Z"}
+{"level":"info","message":"Job set to Run for 240 seconds","timestamp":"2015-06-11T15:52:57.821Z"}
+{"name":"OrientDB.RequestError","message":"Wrong user/password to [connect] to the remote OrientDB Server instance. Get the user/password from the config/orientdb-server-config.xml file","data":{},"previous":[],"id":1,"type":"com.orientechnologies.orient.core.exception.OSecurityAccessException","hasMore":0,"level":"error","timestamp":"2015-06-11T15:52:57.992Z"}
+{"level":"info","message":"Job set to Run for 240 seconds","timestamp":"2015-06-11T15:54:50.621Z"}
+{"name":"OrientDB.RequestError","message":"Wrong user/password to [connect] to the remote OrientDB Server instance. Get the user/password from the config/orientdb-server-config.xml file","data":{},"previous":[],"id":1,"type":"com.orientechnologies.orient.core.exception.OSecurityAccessException","hasMore":0,"level":"error","timestamp":"2015-06-11T15:54:50.768Z"}
+{"level":"info","message":"Job set to Run for 240 seconds","timestamp":"2015-06-11T15:54:55.407Z"}
+{"name":"OrientDB.RequestError","message":"Wrong user/password to [connect] to the remote OrientDB Server instance. Get the user/password from the config/orientdb-server-config.xml file","data":{},"previous":[],"id":1,"type":"com.orientechnologies.orient.core.exception.OSecurityAccessException","hasMore":0,"level":"error","timestamp":"2015-06-11T15:54:55.551Z"}

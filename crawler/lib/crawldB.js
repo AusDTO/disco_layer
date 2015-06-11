@@ -1,17 +1,20 @@
+"use strict";
+var winston = require('winston');
+var Oriento = require('oriento');
+var moment = require('moment')
+var Promise = require('bluebird');
+var logFile = 'logs/crawl.log';
+
 /////NOTE: ORIENTDB NEEDS ITS DATETIME FORMAT ALTERED TO WORK NICELY WITH THE ORIENTO API
 // ALTER DATABASE DATETIMEFORMAT yyyy-MM-dd'T'HH:mm:ssX
 /////
 
-Oriento = require('oriento');
-moment = require('moment')
-Promise = require('bluebird');
+var dbConfig = require('../config/database.js');
+
+
 
 module.exports = {
-	server: Oriento({
-			host: 'localhost',
-			port: 2424,
-			username: 'root',	
-			password: 'developmentpassword'}),
+	server: Oriento(dbConfig),
 	dbName: "webContent",
 	dbSchemaName: "webDocumentContainer",
 	dbs: null,
@@ -19,11 +22,11 @@ module.exports = {
 
 //////////////////////////////////////////////////////////////////
 	connect: function() {
-		console.log("Setting up database")
-		this.dbs = this.server.list() 
+		winston.info("Setting up database")
+		 this.dbs = this.server.list() 
 
 		if (this.dbs.filter(function(dbItem){return dbItem.name == this.dbName}).length == 0){
-			console.error('crawlDb module was unable to connect to database " + dbName + ", exiting')
+			winston.error('crawlDb module was unable to connect to database " + dbName + ", exiting')
 			return callback(err);
 		} else {
 			this.db = this.server.use(this.dbName);
@@ -33,7 +36,7 @@ module.exports = {
 
 //////////////////////////////////////////////////////////////////	
 	close: function() {
-		console.log("Closing Database")
+		winston.info("Closing Database")
 		this.db.close();
 		this.server.close();
 	},
@@ -49,11 +52,11 @@ newQueueList: function(max, callback) {
 			.limit(max) 
 			.all()
 			.catch(function(e){
-				console.log("Could not select new queue for some reason");
-				console.log(e);
+				winston.debug("Could not select new queue for some reason");
+				winston.error(e);
 			})
 			.then(function(result) {   
-				//console.debug(JSON.stringify(result));
+				//winston.debug(JSON.stringify(result));
 				callback(result);   
 			});
 	},
@@ -65,8 +68,8 @@ newQueueList: function(max, callback) {
 			.where({url:document.url})
 			.one()
 			.catch(function (e){
-				console.error("Select Failed for some reason: " + document.url)
-				console.error(e);
+				winston.error("Select Failed for some reason: " + document.url)
+				winston.error(e);
 				return;
 			})
 			.then(function(currentDocument) {
@@ -76,12 +79,12 @@ newQueueList: function(max, callback) {
 						.set(document)
 						.one()	
 						.then(function (returnDoc) {
-							console.debug("   (Inserted): " + document.url);
+						winston.debug("   (Inserted): " + document.url);
 							
 						})
 						.catch(function(e) {
-							console.error("Insert failed for some unknown reason");
-							console.error(e);
+							winston.error("Insert failed for some unknown reason");
+							winston.error(e);
 							return;
 						});
 				} else {
@@ -98,17 +101,17 @@ newQueueList: function(max, callback) {
 							.then(function (returnDoc) {
 								returnCopy = returnDoc;
 								delete returnCopy.document;
-								//console.debug(">>>>DB RETURNED JSON>>>>>> " + JSON.stringify(returnCopy));
-								console.debug("   (Updated): " + document.url);
+								//winston.debug(">>>>DB RETURNED JSON>>>>>> " + JSON.stringify(returnCopy));
+								winston.debug("   (Updated): " + document.url);
 							}) //insert then
 							.catch(function(e) {
-								console.error("Insert failed for some unknown reason");
-								console.error(e);
+								winston.error("Insert failed for some unknown reason");
+								winston.error(e);
 								return; 
 							});
 					}) //detele then
 					.catch(function (e){
-						console.error(e);
+						winston.error(e);
 						return;
 					});
 				} //end else currentDocDocument found
@@ -131,7 +134,7 @@ newQueueList: function(max, callback) {
 				else { 
 					if (Object.keys(result).length) {
 						//should be a date
-//						console.log("Url checkNextFetchDate: ",  !moment().isAfter(moment(result, moment.ISO_8601)), "\n    Based on: ", moment(result, moment.ISO_8601) );
+//						winston.debug("Url checkNextFetchDate: ",  !moment().isAfter(moment(result, moment.ISO_8601)), "\n    Based on: ", moment(result, moment.ISO_8601) );
 						resolve( !moment().isAfter(moment(result, moment.ISO_8601)) )
 					}
 					else {
@@ -140,8 +143,8 @@ newQueueList: function(max, callback) {
 				}
 			})
 			.catch(function(e){
-				console.error("There was an error getting a url");
-				console.error(e);
+				winston.error("There was an error getting a url");
+				winston.error(e);
 				reject(e);
 			})
 		})//end promise
@@ -163,15 +166,15 @@ newQueueList: function(max, callback) {
 				.then(function(){
 				})
 				.catch(function(e){
-					console.error("Unable to insert document");
-					console.error(e);
+					winston.error("Unable to insert document");
+					winston.error(e);
 					return;
 				});
 			}
 		})
 		.catch(function(e){
-			console.error("Unable to check if document exits (a select count)");
-			console.error(e);
+			winston.error("Unable to check if document exits (a select count)");
+			winston.error(e);
 			return;
 		}); //end select then
 	}
