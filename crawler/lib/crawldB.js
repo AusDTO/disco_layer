@@ -4,45 +4,40 @@ var Oriento = require('oriento');
 var moment = require('moment')
 var Promise = require('bluebird');
 var logFile = 'logs/crawl.log';
+var conf = require('../config/config.js');
 
 /////NOTE: ORIENTDB NEEDS ITS DATETIME FORMAT ALTERED TO WORK NICELY WITH THE ORIENTO API
 // ALTER DATABASE DATETIMEFORMAT yyyy-MM-dd'T'HH:mm:ssX
 /////
 
-var dbConfig = require('../config/database.js');
-
-
-
 module.exports = {
-	server: Oriento(dbConfig),
-	dbName: "webContent",
-	dbSchemaName: "webDocumentContainer",
-	dbs: null,
-	db: null,
+	server: Oriento({ 
+		host: conf.get('dbHost'),
+		port: conf.get('dbPort'),
+		username: conf.get('dbUser'),
+		password: conf.get('dbPass')
+		}),
 
-//////////////////////////////////////////////////////////////////
 	connect: function() {
 		winston.info("Setting up database")
-		 this.dbs = this.server.list() 
-
-		if (this.dbs.filter(function(dbItem){return dbItem.name == this.dbName}).length == 0){
-			winston.error('crawlDb module was unable to connect to database " + dbName + ", exiting')
+		this.dbs = this.server.list() 
+		 
+		if (this.dbs.filter(function(dbItem){return dbItem.name == conf.get('dbName')}).length == 0){
+			winston.error('crawlDb module was unable to connect to database "' + conf.get('dbName') + '", exiting')
 			return callback(err);
 		} else {
-			this.db = this.server.use(this.dbName);
+			this.db = this.server.use(conf.get('dbName'));
 			return this;
 		}
 	},
 
-//////////////////////////////////////////////////////////////////	
 	close: function() {
 		winston.info("Closing Database")
 		this.db.close();
 		this.server.close();
 	},
 
-//////////////////////////////////////////////////////////////////
-newQueueList: function(max, callback) {
+	newQueueList: function(max, callback) {
 		
 		//NOTE: Seems like order introduces some unexpected behaviour
 		this.db.select('*')
@@ -61,7 +56,6 @@ newQueueList: function(max, callback) {
 			});
 	},
  
- //////////////////////////////////////////////////////////////////
 	upsert: function(document) {    
 		this.db.select()
 			.from("webDocumentContainer")
@@ -134,7 +128,6 @@ newQueueList: function(max, callback) {
 				else { 
 					if (Object.keys(result).length) {
 						//should be a date
-//						winston.debug("Url checkNextFetchDate: ",  !moment().isAfter(moment(result, moment.ISO_8601)), "\n    Based on: ", moment(result, moment.ISO_8601) );
 						resolve( !moment().isAfter(moment(result, moment.ISO_8601)) )
 					}
 					else {
@@ -154,7 +147,7 @@ newQueueList: function(max, callback) {
 		schemaName = this.dbSchema;
 		
 		db.select('count(*) as count')
-		.from(this.dbSchemaName)
+		.from(this.conf.get('dbSchema'))
 		.where({url: document.url})
 		.scalar()
 		.then(function (count){

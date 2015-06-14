@@ -15,29 +15,81 @@ The following are acknowledged as major todo items.
 
 Tested with node node 12.2 and orientDb 2.0.9. For node module dependencie refer to package information.
 Steps:
-1. Install node
+###Install node
  
-2. Install orientDb
+###Install orientDb
 
    TBA
 
-3. Configure webDocumentContainer schema
+###Configure webDocumentContainer schema
 
    TBA
 
-4. Configure datetimeformat
+###Configure datetimeformat
 
    `ALTER DATABASE DATETIMEFORMAT yyyy-MM-dd'T'HH:mm:ssX`
 
-5. Install Dependencies
+###Install Dependencies
+Dependencies are configured in the package.
 
-   * `npm install simplecrawler`
-   * `npm install moment`
-   * `npm install oriento`
-   * `npm install bluebird`
-`
+   * `npm install`
 
-##Significant Functions
+###Run
+The following command line parameters can be used.
+* debug
+ - Turn on debugging messages (flag only)
+ - format: Boolean
+ - default: false
+* queue
+ - format: int
+ - How many items to put in initial queue
+ - default: 100
+* max
+ - Stop the job after this many fetches
+ - format: 'int'
+ - default: 1000
+* time
+ - Stop the job after this time
+ - format: 'int'
+ - default: 3000
+* fetchwait
+ - Wait this many days before refetching the items
+ - format: 'int'
+ - default: 7
+* interval
+ - Millisecond intervale between requests
+ - format: 'int'
+ - default: 2000
+* logfile
+ - logfile location
+ - default: 'logs/crawl.log
+* dbHost
+ - Database Host
+ - format: String
+ - default: '52.64.24.77'
+* Database Port
+ - format: 'int'
+ - default: 2424
+ - arg: 'dbPort'
+* dbUser
+ - Database Username
+ - format: String
+ - default: 'root'
+* dbPass
+ - Database Password
+ - format: String
+ - default: 'developmentpassword'
+* dbName
+ - The Database to use
+ - format: String
+ - default: 'webContent',
+* dbSchema
+ - The Database Schema Being Used
+ - format: String
+ - default: 'weDocumentContainer'
+
+
+##Significant Internal Functions
 ### Timeout
 This function allow the application to only run for a specific time. Once completed any resources that have not
 been fetched are persisted to be selected later. 
