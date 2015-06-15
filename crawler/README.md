@@ -48,6 +48,10 @@ The following command line parameters can be used.
  - Stop the job after this many fetches
  - format: 'int'
  - default: 1000
+* concurrency
+ - Level of concurrency - threads to run.
+ - format: 'int'
+ - default: 2
 * time
  - Stop the job after this time
  - format: 'int'
