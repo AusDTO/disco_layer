@@ -32,7 +32,13 @@ var conf = convict({
         default: 7,
         arg: 'fetchwait'
     },
-    interval: {
+    concurrency: {
+        doc: 'How much concurrenct should the crawler implement',
+        format: 'int',
+        default: 2,
+        arg: 'conc'
+    },
+        interval: {
         doc: 'Millisecond intervale between requests',
         format: 'int',
         default: 2000,
@@ -44,9 +50,10 @@ var conf = convict({
         format: function check(val) {
             return true;
         },
-        default: 'logs/crawl.log',
+        default: './logs/crawl.log',
         arg: 'logfile'
     },
+    //TODO - Ensure folder is there, otherwise no file logging.
     dbHost: {
         doc: 'Database Host',
         format: String,
@@ -82,7 +89,7 @@ var conf = convict({
     dbSchema: {
     doc: 'The Database Schema Being Used',
     format: String,
-    default: 'weDocumentContainer',
+    default: 'webDocumentContainer',
     arg: 'dbSchema'
     }
 });
