@@ -5,54 +5,55 @@
 
 fs = require('fs');
 cytoscape = require('cytoscape');
+conf = require('./config/config.js');
 path = require('path');
+var logger=require('./config/logger.js'); 
 
-filename = 'DHS12.json';
-orgname = 'DHS';
-serviceNodeType = 'SVC';
+
+
 
 
 //TODO: Loop through all organisations.
-console.log("Loading Service File");
-fs.readFile(path.join(__dirname, filename), function (err,data) {
+logger.log("Loading Service File");
+fs.readFile(conf.get('input'), function (err,data) {
 	if (err) {
-		console.info("In error condition opending events file");
-		console.info("__dirname: " + __dirname);
-		return console.log(err);
+		logger.info("In error condition opening events file");
+		logger.info("__dirname: " + __dirname);
+		return logger.log(err);
 		}
 	data = JSON.parse(data);
 	 
-//	console.log("The Data::::\n" +  JSON.stringify(data, null, 2));
+//	logger.log("The Data::::\n" +  JSON.stringify(data, null, 2));
 	
 	var elements = data.organisationDefinition.serviceDimensions;
 	elements = elements.concat(data.organisationDefinition.serviceOrganisation)
 	.concat(data.organisationDefinition.components);
-	console.log("File Elements Loaded: " + elements.length);
-	//console.log("Example Element: " + JSON.stringify(elements[3]));
+	logger.log("File Elements Loaded: " + elements.length);
+	//logger.log("Example Element: " + JSON.stringify(elements[3]));
 
-	console.log("Translating Service Data For Cytoscape");
-	console.log("   Nodes...");
+	logger.log("Translating Service Data For Cytoscape");
+	logger.log("   Nodes...");
 	// restructure to meet the needs of cytoscape
-	var cyElements = new Array();
+	var cyElements = [];
 	elements.forEach(function(element) {
-		//console.log(element.type);
-		var tempElement = new Object();
+		//logger.log(element.type);
+		var tempElement ={};
 		tempElement.data = element;
 		cyElements.push(tempElement);
 	//	}
 	});
 
-	console.log("   Links...");
+	logger.log("   Links...");
 	var links = data.organisationDefinition.links;
 	// restructure to meet the needs of cytoscape
-	var cyLinks = new Array();
+	var cyLinks = [];
 	links.forEach(function(element) {
-		var tempElement = new Object();
+		var tempElement = {};
 		tempElement.data = element;
 		cyLinks.push(tempElement);
 		});
 
-	console.log("Service Data Loaded, Creating  CytoScape Graph");
+	logger.log("Service Data Loaded, Creating  CytoScape Graph");
 
 	var cy = cytoscape({
 		elements: { 
@@ -62,58 +63,65 @@ fs.readFile(path.join(__dirname, filename), function (err,data) {
 	});
 
 
-	console.log("Outputing search optimised service document");
+	logger.log("Outputing search optimised service document");
 	//TODO: Use model or field to determine the dimensions we are interested in.
 
 	
 	
-	serviceElements = cy.$("[type = '" + serviceNodeType + "']");
+	serviceElements = cy.$("[type = '" + conf.get('serviceNodeType') + "']");
 	
-	console.log("Looking for: " + "[type = '" + serviceNodeType + "']" );
-	console.log("Service Elements Found: " + serviceElements.size());
+	logger.log("Looking for: " + "[type = '" + conf.get('serviceNodeType') + "']" );
+	logger.log("Service Elements Found: " + serviceElements.size());
 	var serviceDocument;
 	var ancestors;
 	var successors; 
 
-	console.log('Starting Loop over services')
-	
+	logger.log('Starting Loop over services');
+	//TODO: Make sure that the folder is there - fs.writeFile does not ensure.
+	if( !fs.existsSync(conf.get('outputs')) ) {
+		fs.mkdirSync(conf.get('outputs'));
+		}	
 	serviceElements.forEach(function(service, i, eles) {
-	console.time(service.data('name'));
+		logger.profile(service.data('name'));
+		serviceDocument.service.secondary = false;
 		serviceDocument = {documentType : "ServiceInformation"};
 		serviceDocument.service = service.data();
 		ancestors = service.predecessors().nodes();
-		serviceDocument.Dimension = new Array;
-		//TODO: Add organisation information			
-		//console.log("Ancestors Found: " + ancestors.size());
+		serviceDocument.Dimension = [];
 		ancestors.forEach(function(ele, i, eles) { 
 			if (ele.isNode()) {
+				if (   ele.data('type') === 'SVC'   )  {
+					serviceDocument.service.secondary = true;
+					//serviceDocument.service.name + service.data('name');  
+				} 
+				//dijkstra gets the distance from the service node to this node
 				var dijkstra = cy.elements().dijkstra(ele, directed=true);				
 				var dist = dijkstra.distanceTo( service );
-				serviceDocument.Dimension[i] = new Object;
+				serviceDocument.Dimension[i] = {};
 				serviceDocument.Dimension[i].dist = dist;	 
 				serviceDocument.Dimension[i].id = ele.id();	 
 				serviceDocument.Dimension[i].name = ele.data( 'name');	 
 				serviceDocument.Dimension[i].desc = ele.data( 'description');	 
+				serviceDocument.Dimension[i].url = ele.data( 'url');	 
 				//TODO: Consider adding information from incomming link for each service - not required yet though
 			}
-		});
+		}); //forEach ancestor
 
-		serviceDocument.Component = new Array;
-
+		serviceDocument.Subs = [];
 		successors = service.successors().nodes();
 		successors.forEach(function(ele, i, eles) { 
 			if (ele.isNode()) {
-				serviceDocument.Component[i] = new Object;
-				serviceDocument.Component[i].id  = ele.id();
-				serviceDocument.Component[i].name = ele.data( 'name');
-				serviceDocument.Component[i].desc = ele.data('description');
+				serviceDocument.Subs[i] = {};
+				serviceDocument.Subs[i].id  = ele.id();
+				serviceDocument.Subs[i].name = ele.data( 'name');
+				serviceDocument.Subs[i].desc = ele.data('description');
 				//Add link information - requried for DHS atleast
 			}
-		});
-				
-		fs.writeFile(path.join(__dirname, orgname, service.id() + '(' + service.data('name')+ ').json'), JSON.stringify(serviceDocument, null, 2));
-		console.timeEnd(service.data('name'));
-	});
+		}); //forEach successor
+
+		fs.writeFile(path.join(conf.get('outputs'), service.id() + '(' + service.data('name') + ').json'), JSON.stringify(serviceDocument, null, 2));
+		logger.profile(service.data('name'));
+	});//for each service node
 
 
 

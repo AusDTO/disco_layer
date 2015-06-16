@@ -4,6 +4,8 @@
   "description": "",
   "main": "index.js",
   "dependencies": {
+    "winston":"latest",
+    "convict":"latest",
     "cytoscape": "^2.3.16"
   },
   "devDependencies": {},
