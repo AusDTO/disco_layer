@@ -1,4 +1,5 @@
 httplib2
 lxml
 pyorient
-sunburnt
+django-celery
+celery
