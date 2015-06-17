@@ -1,4 +1,8 @@
 django-haystack
 pysolr
 celery
+httplib2
+lxml
+pyorient
 django-celery
+
