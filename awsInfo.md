@@ -7,6 +7,11 @@ Note: df -k
 
 The key is available from nigel if you need root.
 
+##Configure security groups
+- OrietDb
+- SSH
+TBA
+
 ##Time:
 https://docs.aws.amazon.com/AWSEC2/latest/UserGuide/set-time.html
 
@@ -39,10 +44,12 @@ in: `/etc/ssh/ssh_config`, uncomment: `PasswordAuthentication yes`
 - Update the config
 - Make scripts executable `sudo chmod 755 bin/*.sh`
 - ???Make config executable???? `sudo chmod -R 777 config/`
-###TODO: Confirm above is appropriate - it comes from the 
-
-- Set orientdb.sh params: `ORIENTDB_DIR="/opt/orientdb"` and `ORIENTDB_USER="crawler"`
+- I chown'ed the oriendb folder to be owned be crawler too.
+- *TODO: Confirm above is appropriate - it comes from the orientdb guide. Has also caused logon problems with the nokout user* 
+- Set script params by editing the bin/orientdb.sh file: `ORIENTDB_DIR="/opt/orientdb"` and `ORIENTDB_USER="crawler"`
 - change log folder permissions to 555
+
+
 
 ##Git Install
 - `sudo yum install git`
@@ -52,6 +59,10 @@ in: `/etc/ssh/ssh_config`, uncomment: `PasswordAuthentication yes`
 NOTE: The current version in amazon is v0.10.36 some dev has been based on 0.12\* npm version is 1.3.6.
 - `sudo yum install nodejs --enablerepo=epel`
 - `sudo yum install npm --enablerepo=epel`
+
+##Clone Discovery Layer Repo
+TBA
+Should we just clone crawler - might be a lot more in there in the future.
 
 ##Attach Storage
 -- Ensure that the ephemeral storage is setup when defining the instance.
@@ -66,6 +77,8 @@ Add this line `/dev/xvdf   /data/vol1  ext4    defaults,nofail 0   2`
 Check config with mount -a
 Create symbolic link to the OrientDb databases directory `sudo ln -s /data/vol1/database/ databases`
 
+##Create Database
+TBA but should be able to import db setup from `discoveryLayer/crawler/dbBckup`
 
-
+##
 
