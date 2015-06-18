@@ -29,6 +29,10 @@ https://docs.aws.amazon.com/AWSEC2/latest/UserGuide/managing-users.html
 >Getting public key: https://docs.aws.amazon.com/AWSEC2/latest/UserGuide/ec2-key-pairs.html#retrieving-the-public-key
 >>ssh-keygen -y
 
+Setup password based logon for crawler
+in: `/etc/ssh/ssh_config`, uncomment: `PasswordAuthentication yes`
+*Note: This is becuase I could not get the script to run with key based auth, there may be a way to do this though, will talk to mark.*
+
 ##OrientDb Install
 - Download using wget (remember to quote the link)
 - Extract to /opt/orientdb
@@ -36,6 +40,10 @@ https://docs.aws.amazon.com/AWSEC2/latest/UserGuide/managing-users.html
 - Make scripts executable `sudo chmod 755 bin/*.sh`
 - ???Make config executable???? `sudo chmod -R 777 config/`
 ###TODO: Confirm above is appropriate - it comes from the 
+
+- Set orientdb.sh params: `ORIENTDB_DIR="/opt/orientdb"` and `ORIENTDB_USER="crawler"`
+- change log folder permissions to 555
+
 ##Git Install
 - `sudo yum install git`
 - git version 2.1.0
