@@ -6,15 +6,15 @@ The key is available from nigel if you need root.
 
 ##Time:
 https://docs.aws.amazon.com/AWSEC2/latest/UserGuide/set-time.html
-Set to:
-/usr/share/zoneinfo/Australia/Canberra
 
-/etc/sysconfig/clock
->ZONE="Australia/Canberra"
+Set `/etc/sysconfig/clock` to:
 
->UTC=true
+`ZONE="Australia/Canberra"`
+`UTC=true`
 
-sudo ln -sf /usr/share/zoneinfo/America/Los_Angeles /etc/localtime
+Which actually points to `/usr/share/zoneinfo/Australia/Canberra`
+
+sudo ln -sf /usr/share/zoneinfo/Australia/Canberra /etc/localtime
 
 ##Users:
 First need a aws user account with ausdto with Mark Mc, then you can get an account for this box.
