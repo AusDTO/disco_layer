@@ -1,5 +1,7 @@
 #AWS Setup Notes
-This is just a bunch of notes on the AWS setup
+This is just a bunch of notes on the AWS setup.
+Currently we are using the Amazon image, we may change to ubuntu later for consistency with our preferred dev environment.
+
 
 Note: df -k
 
@@ -28,15 +30,20 @@ https://docs.aws.amazon.com/AWSEC2/latest/UserGuide/managing-users.html
 >>ssh-keygen -y
 
 ##OrientDb Install
-Download using wget (remember to quote the link)
-Update the config
-
+- Download using wget (remember to quote the link)
+- Extract to /opt/orientdb
+- Update the config
+- Make scripts executable `sudo chmod 755 bin/*.sh`
+- ???Make config executable???? `sudo chmod -R 777 config/`
+###TODO: Confirm above is appropriate - it comes from the 
 ##Git Install
-
+- `sudo yum install git`
+- git version 2.1.0
 
 ##Node Install
-`sudo yum install nodejs --enablerepo=epel`
-`sudo yum install npm --enablerepo=epel`
+NOTE: The current version in amazon is v0.10.36 some dev has been based on 0.12\* npm version is 1.3.6.
+- `sudo yum install nodejs --enablerepo=epel`
+- `sudo yum install npm --enablerepo=epel`
 
 ##Attach Storage
 -- Ensure that the ephemeral storage is setup when defining the instance.
@@ -48,6 +55,7 @@ IF NEW create a database directory `/data/vol1/database`
 Now make sure it gets mounted on boot...
 Copy the fstab `sudo cp /etc/fstab /etc/fstab.orig`
 Add this line `/dev/xvdf   /data/vol1  ext4    defaults,nofail 0   2`
+Check config with mount -a
 Create symbolic link to the OrientDb databases directory `sudo ln -s /data/vol1/database/ databases`
 
 
