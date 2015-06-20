@@ -1,0 +1,9 @@
+django-haystack
+pysolr
+celery
+httplib2
+lxml
+-e git+https://github.com/mogui/pyorient.git#egg=orient
+django-celery
+mock
+mock_django
