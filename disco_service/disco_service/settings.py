@@ -24,7 +24,6 @@ SECRET_KEY = 'f6wgjp$$7i!*!9v!7g(xaomm$t@^fxf)x&p=xz6@86)5%bfxn2'
 
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
-
 ALLOWED_HOSTS = []
 
 
@@ -102,10 +101,9 @@ CELERY_RESULT_BACKEND='djcelery.backends.database:DatabaseBackend'
 CELERY_TASK_SERIALIZER = 'json'
 CELERY_RESULT_SERIALIZER = 'json'
 CELERY_ACCEPT_CONTENT=['json']
+# using as-a-service celery, not Australian timezones 
 #CELERY_TIMEZONE = 'Au/'
 #CELERY_ENABLE_UTC = True
-
-
 
 
 # Internationalization
