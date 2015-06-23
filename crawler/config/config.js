@@ -17,7 +17,7 @@ var conf = convict({
     maxItems: {
         doc: 'Stop the job after this many fetches',
         format: 'int',
-        default: 1000,
+        default: 0,
         arg: 'max'
     },
     timeToRun: {

@@ -82,29 +82,27 @@ crawlJob.addFetchCondition(function(parsedURL) {
 		} 
 	});
 
+//NOTE: This should only be used for testing purposes. It is not accurate becuase it doesnt account for fetched/unfetched
+var maxItems = conf.get('maxItems');
 
-var maxItems = conf.get('maxItems');  
-crawlJob.addFetchCondition( function(parsedURL) {
-//TODO: Works with queue length, that is not right. Only fetch queue length counts.
-//fetchedQueueLength=crawlJob.queue.length
-if (crawlJob.queue.length >= maxItems) {
-	//TODO: fix making copy of parsedURL
-	delete parsedURL.uriPath;
-	parsedURL.pathname = parsedURL.path;
-	var queueItem = parsedURL;
-	queueItem.url = nodeURL.format(parsedURL);
-	queueItem.status = 'deferred';
-	crawlDb.addIfMissing(queueItem);
-	logger.info("URL Deferred (q="  + crawlJob.queue.length + "): " + queueItem.url );
-	count.deferred ++;
-	return false;
-} else { 
-	return true;
-	}
-});
-	
-				
-//TODO: Fetch errors, log status code for easier followup.
+if(maxItems > 0 ) {  
+	logger.info("Adding maxItems to process rule")
+	crawlJob.addFetchCondition( function(parsedURL) {
+	if (crawlJob.queue.length >= maxItems) {
+		delete parsedURL.uriPath;
+		parsedURL.pathname = parsedURL.path;
+		var queueItem = parsedURL;
+		queueItem.url = nodeURL.format(parsedURL);
+		queueItem.status = 'deferred';
+		crawlDb.addIfMissing(queueItem);
+		logger.info("URL Deferred (q="  + crawlJob.queue.length + "): " + queueItem.url );
+		count.deferred ++;
+		return false;
+	} else { 
+		return true;
+		}
+	});
+}				
 
 logger.debug('Adding event handlers');
 crawlJob
@@ -139,7 +137,7 @@ crawlJob
 	queueItem.nextFetchDateTime = nextFetch.format();
 	queueItem.stateData['@class'] = "webDocumentStateData";
 	crawlDb.upsert(queueItem);
-	logger.info("Url Timedout: " + queueItem.url);
+	logger.info("Url Timedout(" + queueItem.stateData.code + "): " + queueItem.url);
 	})
 .on("fetchclienterror", function(queueItem, errorData){
 	logger.debug("queueItem:" + JSON.stringify(queueItem));
@@ -164,7 +162,7 @@ crawlJob
 	queueItem.document = responseBuffer.toString('base64');
 	crawlDb.upsert(queueItem);
 	
-	logger.info("Url Completed: " + queueItem.url);
+	logger.info("Url Completed(" + queueItem.stateData.code + "): " + queueItem.url);
 	count.completed++;
 })
 .on("discoveryComplete", function() {
@@ -208,10 +206,8 @@ logger.debug('Querying DB for new crawl queue');
 
 crawlJob.queueURL('http://greenpower.gov.au/~/media/Business%20Centre/Quarterly%20Reports/2008Q3Report.pdf');
 
-crawlJob.start();
-	
 
-/*
+
 crawlDb.newQueueList(conf.get('initQueueSize'), function(results) {
 	if (results.length > 0) {			
 		logger.info('Initialising queue with  ' + (results.length) + ' items from DB');
@@ -219,7 +215,6 @@ crawlDb.newQueueList(conf.get('initQueueSize'), function(results) {
 				var parsedURL = nodeURL.parse(results[j].url);
 				crawlJob.queueURL(results[j].url);	
 				logger.debug("Adding: " + results[j].url);
-				//TODO - should set these to automatically pass the domain and ready to fetch tests.
 			} 
 	} else {
 		logger.info("Nothing ready to crawl, exiting");
@@ -230,4 +225,3 @@ crawlDb.newQueueList(conf.get('initQueueSize'), function(results) {
 crawlJob.start();
 logger.info("Crawler Started");
 })
-*/	
