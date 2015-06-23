@@ -204,8 +204,6 @@ crawlJob
 logger.debug('Querying DB for new crawl queue');
 
 
-crawlJob.queueURL('http://greenpower.gov.au/~/media/Business%20Centre/Quarterly%20Reports/2008Q3Report.pdf');
-
 
 crawlDb.newQueueList(conf.get('initQueueSize'), function(results) {
 	if (results.length > 0) {
