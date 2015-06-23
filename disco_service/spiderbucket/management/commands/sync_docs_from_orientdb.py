@@ -3,6 +3,56 @@ import logging
 import pyorient
 from django.core.management.base import BaseCommand, CommandError
 from spiderbucket import tasks
+import datetime
+
+# logLevel set in handler, but logger defined 
+# out here so other things can use it
+logger = logging.getLogger(__file__)
+console = logging.StreamHandler()
+console.setFormatter(
+    logging.Formatter('%(message)s'))
+logger.addHandler(console)
+
+'''
+def callback_sync_page_to_rdbms(wdc):
+    # objects dispatched to workers must be serialisable
+    # pyorient doesn't play nice with celery workers either,
+    # so this command is the only place we interface OrientDB
+    pd = {}
+    expected_keys = (
+        'url', 'protocol', 'host', 'port',
+        'path', 'depth', 'fetched', 'status',
+        #'stateData',
+        'lastFetchDateTime',
+        'nextFetchDateTime', 'document')
+    for k in expected_keys:
+        if k in wdc.oRecordData.keys():
+            pd[k] = "%s" % wdc.oRecordData[k]
+
+    # validate keys
+    if set(expected_keys) != set(pd.keys()):
+        logger.warn('refuse to sync page, pd.keys() != expected_keys')
+        for k in pd.keys():
+            if k not in expected_keys:
+                msg = '%s in pd.keys() but not in expected_keys'
+                logger.debug(msg % k)
+            for k in expected_keys:
+                if k not in pd.keys():
+                    msg = '%s in expected_keys but not in pd.keys()'
+                    logger.debug(msg % k)
+    else:
+        msg = 'about to try and sync_page_dict_to_rdbms for %s'
+        logger.debug(msg % pd['url'])
+        #sync_page_dict_to_rdbms.delay(pd)
+        tasks.sync_page_dict_to_rdbms(pd)
+'''
+
+def process_wdc(wdc):
+    out = {}
+    for k in wdc.oRecordData.keys():
+        out[k] = "%s" % wdc.oRecordData[k]
+    logger.debug('about to dispatch push_page_dict("%s")' % out['url'])
+    return tasks.push_page_dict(out)
 
 
 class Command(BaseCommand):
@@ -10,29 +60,18 @@ class Command(BaseCommand):
 
     def handle(self, *args, **options):
         #raise CommandError('Eek!')
-
-        logger = logging.getLogger(__file__)
-        console = logging.StreamHandler()
-        console.setFormatter(logging.Formatter('%(name)s - %(levelname)s - %(message)s'))
-        logger.addHandler(console)
-
         verbosity = int(options['verbosity'])
-        #console.setLevel(logging.CRITICAL)
         if verbosity == 0:
-            console.setLevel(logging.ERROR)
+            loglevel =logging.ERROR
         elif verbosity == 1:
-            console.setLevel(logging.WARNING)
+            loglevel = logging.WARNING
         elif verbosity == 2:
-            console.setLevel(logging.INFO)
+            loglevel = logging.INFO
         else:
-            console.setLevel(logging.DEBUG)
-
-        logger.debug("DEBUG sync_docs_from_orientdb command called with verbosity %s" % options['verbosity'])     
-        logger.info("INFO sync_docs_from_orientdb command called with verbosity %s" % options['verbosity'])     
-        logger.warning("WARNING sync_docs_from_orientdb command called with verbosity %s" % options['verbosity'])     
-        logger.error("ERROR sync_docs_from_orientdb command called with verbosity %s" % options['verbosity'])     
-        logger.critical("CRITICAL sync_docs_from_orientdb command called with verbosity %s" % options['verbosity'])     
-
+            loglevel = logging.DEBUG
+    
+        console.setLevel(loglevel)
+        logger.setLevel(loglevel)
 
         ### TODO: get from environment variables
         DBHOST = "52.64.24.77"
@@ -46,31 +85,28 @@ class Command(BaseCommand):
         client.connect(DBUSR, DBPSX)
         client.db_open(DBNAME, DBUSR, DBPSX, pyorient.DB_TYPE_DOCUMENT, "")
 
-        def _callback_sync_page_to_rdbms(wdc):
-            # objects dispatched to workers must be serialisable
-            # pyorient doesn't play nice with celery workers either,
-            # so this command is the only place we interface OrientDB
-            pd = {}
-            expected_keys = (
-                'url', 'protocol', 'host', 'port',
-                'path', 'depth', 'fetched', 'status',
-                'stateData', 'lastFetchDateTime',
-                'nextFetchDateTime', 'document')
-            for k in expected_keys:
-                if k in wdc.oRecordData.keys():
-                    pd[k] = "%s" % wdc.oRecordData[k]
-                if set(expected_keys) == set(pd.keys()):
-                    sync_page_dict_to_rdbms.delay(pd)
-                    #tasks.sync_page_dict_to_rdbms(pd)  # DEBUG
+        sql = '''select count(*) from webDocumentContainer where status="downloaded"'''
+        result = client.query(sql,1,'*:0')
+        count = result[0].oRecordData['count']
+        logger.info('%s docs to sync' % count)
+        sql = 'select url, @rid as orient_rid, @version as orient_version, @class as orient_class, protocol, host, port, path, depth, fetched, status, lastFetchDateTime, nextFetchDateTime, document from webDocumentContainer where status="downloaded"'
+        #if hasattr(process_wdc, '__call__'):
+        #    client.query_async(sql, int(count), '*:0', process_wdc)
+        #else:
+        #    raise Exception, dir(process_wdc)
+        client.query_async(sql, int(count), '*:0', process_wdc)
 
-        sql = 'select count(*) from webDocumentContainer where status="downloaded"'
-        count = client.query(sql,1,'*:0')[0].oRecordData['count']
-        self.stdout.write('%s docs to sync' % count)
-        sql = 'select url, orient_rid, orient_version, orient_class protocol, host, port, path, depth, fetched, status, lastFetchDateTime, nextFetchDateTime, document from webDocumentContainer where status="downloaded"'
-        client.query_async(sql, int(count), '*:0', _callback_sync_page_to_rdbms)
-        # Dispatch war rocket AJAX to bring back his body.
-        self.stdout.write('doc sync fully dispatched')
-        
+'''
+        if '__call__' in dir(_callback_sync_page_to_rdbms):
+            logger.debug('about to dispatch query: %s' % sql)
+            client.query_async(
+                sql, int(count), '*:0',
+                callback_sync_page_to_rdbms)
+        else:
+            msg = 'unable to dispatch query, callback is uncallable'
+            logger.critical(msg)
+        logger.info('finished dispatching sync_docs_from_orientdb')
+'''
 
 if __name__ == "__main__":
     urls = (

@@ -1,0 +1,38 @@
+{% extends "intro_base.html" %}{% load staticfiles %}
+
+{% block title %}Disco API{% endblock %}
+
+{% block content %}
+        <div class="jumbotron">
+	  <h1>{% block heading %}API{% endblock %}</h1>
+	  <p class="lead">Reuse us, we like it ;)</p>
+          <ul class="pager">
+	    <li class="pull-left"><a href="{% url "about_search" %}">Search</a></li>
+	    <li class="pull-right"><a href="{% url "about_for_gov" %}">For Government</a></li>
+	  </ul>
+        </div>
+        <div class="row-marketing">
+          <div class="col-lg-6">
+            <h4>Mash us up</h4>
+            <p>
+              Our information-layer APIs are open for everyone.
+              Creative Commons content. What can you do with it?
+            </p>
+          </div>
+          <div class="col-lg-6">
+            <h4>Unrestricted native interfaces</h4>
+            <p>
+              Is Solr your bag? Perhaps you're more of an Elasticsearch person.
+              Either way you can access our live indexes directly - we won't get in your way.
+            </p>
+          </div>
+          <div class="col-lg-6">
+            <h4>Support for Agencies</h4>
+            <p>
+              Our mobile-friendly web search features are also available in convenient API format.
+	      These are designed to meet specific Agency needs,
+	      but they might be just the ticket for your next killer feature...
+            </p>
+          </div>
+	</div>
+{% endblock %}

@@ -1,0 +1,36 @@
+{% extends "intro_base.html" %}{% load staticfiles %}
+
+{% block title %}Disco Search{% endblock %}
+
+{% block content %}
+        <div class="jumbotron">
+	  <h1>{% block heading %}Search{% endblock %}</h1>
+	  <p class="lead">All Commonwealth information. All in one place.</p>
+          <ul class="pager">
+	    <li class="pull-right"><a href="{% url "about_api" %}">API</a></li>
+	  </ul>
+        </div>
+
+        <div class="row-marketing">
+	  <div class="col-lg-6">
+	    <h4>Interesting claim...</h4>
+	    <p>
+	      Reiterate our goal...
+	    </p>
+	  </div>
+	  <div class="col-lg-6">
+	    <h4>Impressive fact...</h4>
+	    <p>
+	      Insert some sparkly <em>twinkling</em> statistics about the public information surface.
+	      Yes, that's a bit of ajax tickeling some of our own convenience APIs.
+	    </p>
+	  </div>
+	  <div class="col-lg-6">
+	    <h4>WIFM statement!</h4>
+	    <p>
+	      Why this matters...
+	    </p>
+	  </div>
+	</div>
+{% endblock %}
+

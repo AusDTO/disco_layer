@@ -7,3 +7,7 @@ lxml
 django-celery
 mock
 mock_django
+gunicorn
+whitenoise
+envparse
+psycopg2

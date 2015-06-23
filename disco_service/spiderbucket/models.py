@@ -19,12 +19,12 @@ class Page(models.Model):
     nextFetchDateTime =  models.DateTimeField(null=True, blank=True)
     document = models.TextField(null=True, blank=True)
 
-    param_string = models.TextField(null=True, blank=True) # data available?
-
+    ### implement as derived data / @property decorator
+    #param_string = models.TextField(null=True, blank=True) # data available?
     # derived data
-    document_decoded = models.TextField(null=True, blank=True)
-    excerpt = models.TextField(null=True, blank=True)
-    title = models.TextField(null=True, blank=True)
+    #document_decoded = models.TextField(null=True, blank=True)
+    #excerpt = models.TextField(null=True, blank=True)
+    #title = models.TextField(null=True, blank=True)
     
     def __unicode__(self):
         return self.url

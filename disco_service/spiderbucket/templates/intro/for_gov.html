@@ -1,0 +1,34 @@
+{% extends "intro_base.html" %}{% load staticfiles %}
+
+{% block title %}Disco API{% endblock %}
+
+{% block content %}
+        <div class="jumbotron">
+	  <h1>{% block heading %}For Government{% endblock %}</h1>
+	  <p class="lead">The features that Agencies need</p>
+          <ul class="pager">
+	    <li class="pull-left"><a href="{% url "about_api" %}">API</a></li>
+	    <li class="pull-right"><a href="{% url "about_hacking" %}">Hacking</a></li>
+	  </ul>
+        </div>
+        <div class="row-marketing">
+          <div class="col-lg-6">
+            <h4>Service Registry</h4>
+            <p>
+              ...advertise the Service Registry product. 
+            </p>
+          </div>
+          <div class="col-lg-6">
+            <h4>Seach-based navigation widgets</h4>
+            <p>
+	      ...advertise the Information Recommendation Engine product.
+            </p>
+          </div>
+          <div class="col-lg-6">
+            <h4>Dashboard analytics</h4>
+            <p>
+	      ...advertise the dashboard widget backing services.
+            </p>
+          </div>
+	</div>
+{% endblock %}

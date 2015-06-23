@@ -28,6 +28,7 @@ class BasePageValidationTestCase(TestCase):
             'orient_rid': '@eg42g24b',
             'orient_version': '12345',
             'orient_class': 'webDocumentContainer',
+            'document': 'blah blah blah',
         }
         # assumption!
         # version and rid always both change together
@@ -191,3 +192,22 @@ class SolrSyncTestCase(TestCase):
     # no longer required due to use of NulTask
     # and plan to adopt celery-haystack
     pass
+
+
+class BugFix001(BasePageValidationTestCase):
+    '''
+    with real world deployment, celery was throwing some 
+
+    "/opt/disco_service/spiderbucket/tasks.py", line 176, in sync_page_sinks
+    raise InvalidPageIDError, page_id
+
+    Everything that calls sync_page_sink should always pass in a valid page_id!
+    '''
+    def test_insert_page_in_db(self):
+        with patch('spiderbucket.tasks.sync_page_sinks.delay') as mock_sync:
+            tasks.insert_page_in_db(self.good_page)
+            self.assertTrue(mock_sync.called)
+            pid = mock_sync.call_args()[0]
+            # expecting call with integer-typed page_id parameter
+            self.assertEqual(type(pid), type(0))  
+

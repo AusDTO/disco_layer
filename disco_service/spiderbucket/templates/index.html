@@ -1,0 +1,14 @@
+{% extends "intro_base.html" %}{% load staticfiles %}
+
+{% block title %}Disco Service{% endblock %}
+
+{% block content %}
+        <div class="jumbotron">
+          <p><img src="{% static 'discobotface.jpg' %}" alt="Hi!" /></p>
+	  <h1>{% block heading %}Disco(very) Service{% endblock %}</h1>
+          <ul class="pager">
+	    <li><a class="pull-right" href="{% url "about_search" %}" role="button">Learn more</a></li>
+	  </ul>
+	</div>
+{% endblock %}
+

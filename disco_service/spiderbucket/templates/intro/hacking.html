@@ -1,0 +1,44 @@
+{% extends "intro_base.html" %}{% load staticfiles %}
+
+{% block title %}Hacking{% endblock %}
+
+{% block content %}
+        <div class="jumbotron">
+          <h1>{% block heading %}Hacking!{% endblock %}</h1>
+          <p class="lead">This is free software.</p>
+          <ul class="pager">
+	    <li class="pull-left"><a href="{% url "about_for_gov" %}">For Government</a></li>
+          </ul>
+        </div>
+        <div class="row-marketing">
+          <div class="col-lg-6">
+            <h4>Help yourself to our code</h4>
+            <p>
+              We use free software to create free software.
+	      Our code is available in a
+	      <a href="https://github.com/AusDTO/discoveryLayer">git repository</a>
+              and we will publish a link to our developer docs just as soon
+	      as, well, you know, um, they exist.
+            </p>
+	    <p>
+	      The disco service is in "pre-alpha" status, meaning it's a crude
+	      proof of concept that might change dramatically without warning(*).
+              You can however access the
+	      <a href="https://github.com/AusDTO/discoveryLayer/issues/">ticket system</a>
+	      we use to organise and prioritise our work.
+	      You can also participate with comments, raise issues, make
+	      feature requests and submit bug reports. 
+	      Hmmm, bug reports.
+	    </p>
+          </div>
+          <div class="col-lg-6">
+            <h4>Pull requests welcome</h4>
+            <p>Open invitation to GovHack. Or, don't wait for GovHack...</p>
+            <p>...advertise the DTO blog.</p>
+          </div>
+        </div>
+{% endblock %}
+
+{% block footnote %}
+* well actually you were just warned, but don't expect _another_ warning.
+{% endblock %}

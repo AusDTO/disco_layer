@@ -11,11 +11,16 @@ from celery import shared_task
 from django.test import TestCase
 from .models import Page
 from celery.utils.log import get_task_logger
+import logging
 
 class MultiplePagesWithSameURLError(Exception): pass
 class InvalidPageDataError(Exception): pass
 class InvalidPageIDError(Exception): pass
 
+logger = logging.getLogger(__file__)
+console = logging.StreamHandler()
+console.setFormatter(logging.Formatter('%(message)s'))
+logger.addHandler(console)
 
 class PageDictValidator(object):
     '''
@@ -27,16 +32,32 @@ class PageDictValidator(object):
         'orient_class', 'url')
     ALLOWED_PROPERTIES = (
         'protocol', 'host', 'port',
-        'depth', 'fetched',
+        'depth', 'fetched', 'path',
         'status', 'lastFetchDateTime',
         'nextFetchDateTime', 'document')
+
     def valid(self, page):
+        logger.debug('PageDictValidator: %s' % page)
         if type(page) != type ({}):
             return False
         for k in self.REQUIRED_PROPERTIES:
             if k not in page.keys():
                 return False
         return True
+
+    def invalid_reasons(self, page):
+        if self.valid(page):
+            return None
+        else:
+            out = []
+            expected_properties = self.REQUIRED_PROPERTIES + self.ALLOWED_PROPERTIES
+            for k in page.keys():
+                if k not in expected_properties:
+                    out.append('key "%s" found but not expected' % k)
+            for k in self.REQUIRED_PROPERTIES:
+                if k not in page.keys():
+                    out.append('key "%s" REQUIRED but not found' % k)
+            return out
 
 
 @shared_task
@@ -87,16 +108,33 @@ def insert_page_in_db(page):
     pvd = PageDictValidator()
     if not pvd.valid(page):
         raise InvalidPageDataError, page
-    p = Page( url=page['url'],
-              orient_rid=page['orient_rid'],
-              orient_version=page['orient_version'],
-              orient_class=page['orient_class'])
-    for prop in pvd.ALLOWED_PROPERTIES:
-        exec("m = p.%s" % prop)
-        if prop in page.keys():
-            m = page[prop]
+    p = Page(
+        url = page['url'],
+        orient_rid = page['orient_rid'],
+        orient_version = page['orient_version'],
+        orient_class = page['orient_class'],
+    )
+    if 'protocol' in page.keys():
+        p.protocol = page['protocol']
+    if 'host' in page.keys():
+        p.host = page['host']
+    if 'port' in page.keys():
+        p.port = int(page['port'])
+    if 'depth' in page.keys():
+        p.depth = int(page['depth'])
+    if 'fetched' in page.keys():
+        p.fetched = page['fetched']
+    if 'status' in page.keys():
+        p.status = page['status']
+    if 'lastFetchDateTime' in page.keys():
+        p.lastFetchDateTime = page['lastFetchDateTime']
+    if 'nextFetchDateTime' in page.keys():
+        p.nectFetchDateTime = page['nextFetchDateTime']
+    if 'document' in page.keys():
+        p.document = page['document']
     p.save()
-    sync_page_sinks.delay(p.id)
+    pid = p.id
+    sync_page_sinks.delay(pid)
 
 
 class NulTask:

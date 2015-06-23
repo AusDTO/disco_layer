@@ -1,0 +1,5 @@
+{% extends "base.html" %}{% load staticfiles %}
+      <div class="jumbotron">
+        <h1>{% block heading %}the heading{% endblock %}</h1>
+	{% block content %}<p>some text</p>{% endblock %}
+      </div>
