@@ -4,7 +4,7 @@ var moment = require('moment')
 var Promise = require('bluebird');
 var logFile = 'logs/crawl.log';
 var conf = require('../config/config.js');
-var logger=require('winston');
+var logger=require('../config/logger');
 
 /////NOTE: ORIENTDB NEEDS ITS DATETIME FORMAT ALTERED TO WORK NICELY WITH THE ORIENTO API
 // ALTER DATABASE DATETIMEFORMAT yyyy-MM-dd'T'HH:mm:ssX
@@ -17,6 +17,9 @@ module.exports = {
 		username: conf.get('dbUser'),
 		password: conf.get('dbPass')
 		}),
+	get: function() {
+		return this;
+	},
 
 	connect: function() {
 		logger.info("Setting up database")
@@ -54,7 +57,7 @@ module.exports = {
 			})
 			.then(function(result) {   
 				callback(result);   
-				logger.debug("QueueList: " + JSON.stringify(result));
+				logger.verbose("QueueList: " + JSON.stringify(result));
 			});
 	},
  
@@ -82,7 +85,7 @@ module.exports = {
 		});
 	},
 	
-	checkNextFetchDate: function(url) {
+	readyForFetch: function(url) {
 		var crawlDb = this;
 		return new Promise(function(resolve, reject) {
 			crawlDb.db.select('nextFetchDateTime') 
@@ -92,19 +95,18 @@ module.exports = {
 			.then(function (result) {
 				//nothing or null so fetch
 				if (result == undefined) {   
-					logger.debug('checkNextFetchDate url: '+ url + '\ncheckNextFetchDate result: ' + result);
+					logger.debug('readyForFetch url: '+ url + '\nreadyForFetch result: ' + result);
 					resolve(true);   
 				}
 				else { 
-					logger.debug('checkNextFetchDate url: '+ url + '\ncheckNextFetchDate no of keys:' + Object.keys(result).length );
-					if (Object.keys(result).length) {
-						//should be a date
-						logger.debug('checkNextFetchDate url: '+ url + '\ncheckNextFetchDate Date Check: ' + !moment().isAfter(moment(result, moment.ISO_8601)));
-						resolve( !moment().isAfter(moment(result, moment.ISO_8601)) )
-					}
-					else {
-						logger.debug('checkNextFetchDate url: '+ url + '\nFound but no keys')
-						resolve(true)
+					logger.debug('readyForFetch url: '+ url + " Database result:  " + result);
+					if (Object.keys(result) == '@rid') {
+						//no date
+						logger.debug('readyForFetch url: '+ url + '\nFound but no date');
+						resolve(true);
+					} else {
+						logger.debug('readyForFetch url: '+ url + '\nreadyForFetch Date Check: ' + moment().isAfter(moment(result, moment.ISO_8601)));
+						resolve( moment().isAfter(moment(result, moment.ISO_8601)) )
 					}
 				}
 			})
