@@ -30,7 +30,7 @@ module.exports = {
 			return callback(err);
 		} else {
 			logger.info('Database Successfully Connected');
-			this.db = this.server.use(conf.get('dbName'));
+			this.db = this.server.use({name: conf.get('dbName'), username: conf.get('dbUser'), password: conf.get('dbPass')});
 			return this;
 		}
 	},

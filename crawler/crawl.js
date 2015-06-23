@@ -43,6 +43,7 @@ setTimeout( function() {
 	logger.debug("Time Expired, job stopped");
 	crawlJob.stop();
 	for (var i = 0; i < crawlJob.queue.length; i++) { 
+		crawlJob.queue[i].status = 'deferred';
 		crawlDb.addIfMissing(crawlJob.queue[i]);
 		count.deferred ++;		
 		} //end for
@@ -92,6 +93,7 @@ if (crawlJob.queue.length >= maxItems) {
 	parsedURL.pathname = parsedURL.path;
 	var queueItem = parsedURL;
 	queueItem.url = nodeURL.format(parsedURL);
+	queueItem.status = 'deferred';
 	crawlDb.addIfMissing(queueItem);
 	logger.info("URL Deferred (q="  + crawlJob.queue.length + "): " + queueItem.url );
 	count.deferred ++;
@@ -161,6 +163,7 @@ crawlJob
 	//logger.debug("DocumentContainer (- Document):" + JSON.stringify(queueItem));
 	queueItem.document = responseBuffer.toString('base64');
 	crawlDb.upsert(queueItem);
+	
 	logger.info("Url Completed: " + queueItem.url);
 	count.completed++;
 })
@@ -185,6 +188,7 @@ crawlJob
 })
 .on("fetchredirect", function( queueItem, parsedURL, response ){
 	crawlJob.queueURL(nodeURL.format(parsedURL));	
+
 	logger.info("Url Redirect (" + queueItem.stateData.code + "): " + queueItem.url +
 		" To: " + nodeURL.format(parsedURL));
 	//Queue the redirect location
@@ -202,6 +206,12 @@ crawlJob
 logger.debug('Querying DB for new crawl queue');
 
 
+crawlJob.queueURL('http://greenpower.gov.au/~/media/Business%20Centre/Quarterly%20Reports/2008Q3Report.pdf');
+
+crawlJob.start();
+	
+
+/*
 crawlDb.newQueueList(conf.get('initQueueSize'), function(results) {
 	if (results.length > 0) {			
 		logger.info('Initialising queue with  ' + (results.length) + ' items from DB');
@@ -217,7 +227,7 @@ crawlDb.newQueueList(conf.get('initQueueSize'), function(results) {
 		process.exit();
 	}
 //crawlJob.queue.freeze("theInitialQueue.json", function() {});
-	
 crawlJob.start();
 logger.info("Crawler Started");
 })
+*/	

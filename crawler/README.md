@@ -35,6 +35,16 @@ Dependencies are configured in the package.
    * `npm install`
 
 ###Run
+It is likely you will want to run in a crontab, here is an example config that will run it 23 times a day on the 55th minute of the hour...
+>crontab -e:  
+>       `05,15,25,35,45,55 * * * * /home/ec2-user/crawl.sh`
+>       `10,20,30,40,50,00 14,15,16,17,18,19 * * * /home/ec2-user/crawl.sh`
+
+>crawl.sh: ``/usr/bin/node /home/<USER>/crawler/crawl.js --queue 1000 --time 1200 --max 20000 --conc 6 --interval 800 --logfile /home/<USER>/crawler/logs/crawl_`date +%F_%T`.log`` 
+
+Monitoring the logs is best done with a tail command; 
+>`cd /home/ec2-user/crawler/logs; tail $(ls -Art | tail -n 1) -f`
+
 The following command line parameters can be used.
 * debug
  - Turn on debugging messages (flag only)

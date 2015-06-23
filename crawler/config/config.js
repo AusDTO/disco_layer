@@ -70,7 +70,7 @@ var conf = convict({
     dbUser: {
         doc: 'Database Username',
         format: String,
-        default: 'root',
+        default: 'trusted',
         arg: 'dbUser'
     },
     //TODO: Create new DB user account.
