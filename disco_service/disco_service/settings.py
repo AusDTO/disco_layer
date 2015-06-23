@@ -9,26 +9,15 @@ https://docs.djangoproject.com/en/1.8/topics/settings/
 For the full list of settings and their values, see
 https://docs.djangoproject.com/en/1.8/ref/settings/
 """
-
-# Build paths inside the project like this: os.path.join(BASE_DIR, ...)
 import os
+from envparse import env
 
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-
-
-# Quick-start development settings - unsuitable for production
-# See https://docs.djangoproject.com/en/1.8/howto/deployment/checklist/
-
-# SECURITY WARNING: keep the secret key used in production secret!
-SECRET_KEY = 'f6wgjp$$7i!*!9v!7g(xaomm$t@^fxf)x&p=xz6@86)5%bfxn2'
-
-# SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = True
-ALLOWED_HOSTS = []
-
-
-# Application definition
-
+SECRET_KEY = env('SECRET_KEY', default='this_is_not_a_real_secret_key_234db#1k2l#GfnGqn')
+DEBUG = env('DEBUG', default=False)
+ALLOWED_HOSTS = [
+    '127.0.0.1', 'localhost',
+    env('DJANGO_ALLOWED_HOST', default='presidentbusiness.com')]
 INSTALLED_APPS = (
     'django.contrib.admin',
     'django.contrib.auth',
@@ -41,7 +30,6 @@ INSTALLED_APPS = (
     'haystack',
     'spiderbucket',
 )
-
 MIDDLEWARE_CLASSES = (
     'django.contrib.sessions.middleware.SessionMiddleware',
     'django.middleware.common.CommonMiddleware',
@@ -51,9 +39,7 @@ MIDDLEWARE_CLASSES = (
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
 )
-
 ROOT_URLCONF = 'disco_service.urls'
-
 TEMPLATES = [
     {
         'BACKEND': 'django.template.backends.django.DjangoTemplates',
@@ -69,51 +55,40 @@ TEMPLATES = [
         },
     },
 ]
-
 WSGI_APPLICATION = 'disco_service.wsgi.application'
-
-
-# Database
-# https://docs.djangoproject.com/en/1.8/ref/settings/#databases
 DATABASES = {
     'default': {
-        'ENGINE': 'django.db.backends.sqlite3',
-        'NAME': os.path.join(BASE_DIR, 'db.sqlite3'),
+        'ENGINE': env('DATABASE_DEFAULT_ENGINE', default='django.db.backends.sqlite3'),
+        'NAME': env('DATABASE_DEFAULT_NAME', default=os.path.join(BASE_DIR, 'db.sqlite3')),
+        'USER': env('DATABASE_DEFAULT_USER', default=''),
+        'PASSWORD': env('DATABASE_DEFAULT_PASSWORD', default=''),
+        'HOST': env('DATABASE_DEFAULT_HOST', default=''),
+        'PORT': env('DATABASE_DEFAULT_PORT', default=''),
     }
 }
-
-
-# Search
-#
 HAYSTACK_CONNECTIONS = {
     'default': {
         'ENGINE': 'haystack.backends.solr_backend.SolrEngine',
-        'URL': 'http://op.swarmforge.net:8983/solr/collection1'
+        'URL': env('SOLR_URL', default='http://op.swarmforge.net:8983/solr/collection1'),
     },
 }
-    
-
-# Message Queue
-#
-BROKER_URL = 'amqp://hparyfhy:0Gx7AvztCitLhAUOITX5GO1rfpCq4TCB@owl.rmq.cloudamqp.com/hparyfhy'
-#CELERY_RESULT_BACKEND = 'db+sqlite:///results.db'
+BROKER_URL = env('BROKER_URL', default='amqp://hparyfhy:0Gx7AvztCitLhAUOITX5GO1rfpCq4TCB@owl.rmq.cloudamqp.com/hparyfhy')
 CELERY_RESULT_BACKEND='djcelery.backends.database:DatabaseBackend'
 CELERY_TASK_SERIALIZER = 'json'
 CELERY_RESULT_SERIALIZER = 'json'
 CELERY_ACCEPT_CONTENT=['json']
-# using as-a-service celery, not Australian timezones 
 #CELERY_TIMEZONE = 'Au/'
 #CELERY_ENABLE_UTC = True
-
-
-# Internationalization
-# https://docs.djangoproject.com/en/1.8/topics/i18n/
 LANGUAGE_CODE = 'en-us'
 TIME_ZONE = 'UTC'
 USE_I18N = True
 USE_L10N = True
 USE_TZ = True
-
-# Static files (CSS, JavaScript, Images)
-# https://docs.djangoproject.com/en/1.8/howto/static-files/
 STATIC_URL = '/static/'
+STATIC_URL = '/static/'
+STATIC_ROOT = os.path.join(BASE_DIR, 'staticfiles')
+STATICFILES_STORAGE = 'whitenoise.django.GzipManifestStaticFilesStorage'
+ORIENT_HOST=env('ORIENT_HOST', default='52.64.1.114')
+ORIENT_PORT=env('ORIENT_PORT', default='2480')
+ORIENT_USER=env('ORIENT_USER', default='reader')
+ORIENT_PASSWORD=env('ORIENT_PASSWORD', default='reader')
