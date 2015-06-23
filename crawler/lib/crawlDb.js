@@ -42,25 +42,56 @@ module.exports = {
 	},
 
 	newQueueList: function(limit, callback) {
-		//TODO: Primisify this
+		var newList = [];
+		var rid;
+		var dbLimit;
+		var odds = conf.get('odds');
+		var evens = conf.get('evens');
 
-		//NOTE: Seems like order introduces some unexpected behaviour
+		if ( odds || evens ) {
+			dbLimit = Math.floor(limit *2.2);
+		} else {
+			dbLimit = limit;
+		}		
 		this.db.select('*')
 			.from("webDocumentContainer")
 			.where("nextFetchDateTime <= '" + moment().format() + "'")
 			.or('nextFetchDateTime IS NULL ')
-			.limit(limit) 
+			.limit(dbLimit) 
 			.all()
 			.catch(function(e){
 				logger.debug("Could not select new queue for some reason");
 				logger.error(e);
 			})
-			.then(function(result) {   
-				callback(result);   
-				logger.verbose("QueueList: " + JSON.stringify(result));
+			.then(function(result) {
+				logger.debug('NewQueue Length: '+ result.length)
+				//if evens or odds is set (if user sets both thats just silly and i will just give a non-split list)   
+				if (evens !== odds) {
+					logger.debug('Splitting Selection for odds/evens');
+					if (evens) {
+						newList = result.filter(function(currentItem){
+							rid = JSON.stringify(currentItem['@rid']);
+							rid = rid.substring( rid.indexOf(':') + 1, ( rid.length - 1	)  );
+							return rid % 2 === 0;
+						});
+					} else{ //must be odds
+						newList = result.filter(function(currentItem){
+							rid = JSON.stringify(currentItem['@rid']);
+							rid = rid.substring( rid.indexOf(':') + 1, ( rid.length - 1	)  );
+							return rid % 2 !== 0;
+						});
+					}
+					logger.info(JSON.stringify(newList));	
+				} else {
+					newList = result;
+				}
+				newList.splice(limit);
+				logger.debug('Revised Length: '+ newList.length)
+				//logger.verbose("QueueList: " + JSON.stringify(newList));
+				callback(newList);   
 			});
 	},
- 
+
 	upsert: function(document) {    
 		//Non destructive update or insert
 		//NOTE: This does not use the query builder becuase I wasnt able to get it working with the combination of CONTENT and UPSERT

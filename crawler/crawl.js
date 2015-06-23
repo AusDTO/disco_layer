@@ -207,21 +207,20 @@ logger.debug('Querying DB for new crawl queue');
 crawlJob.queueURL('http://greenpower.gov.au/~/media/Business%20Centre/Quarterly%20Reports/2008Q3Report.pdf');
 
 
-
 crawlDb.newQueueList(conf.get('initQueueSize'), function(results) {
-	if (results.length > 0) {			
-		logger.info('Initialising queue with  ' + (results.length) + ' items from DB');
+	if (results.length > 0) {
+		logger.info('Initialising queue with  ' + results.length + ' items from DB');
+
 		for (var j = 0; j < results.length; j++) {
-				var parsedURL = nodeURL.parse(results[j].url);
-				crawlJob.queueURL(results[j].url);	
-				logger.debug("Adding: " + results[j].url);
-			} 
-	} else {
+			crawlJob.queueURL(results[j].url);	
+			logger.debug("Adding: " + results[j].url);
+		}
+	} else {	
 		logger.info("Nothing ready to crawl, exiting");
 		crawlDb.close();
 		process.exit();
 	}
-//crawlJob.queue.freeze("theInitialQueue.json", function() {});
-crawlJob.start();
-logger.info("Crawler Started");
+	//crawlJob.queue.freeze("theInitialQueue.json", function() {});
+	crawlJob.start();
+	logger.info("Crawler Started");
 })

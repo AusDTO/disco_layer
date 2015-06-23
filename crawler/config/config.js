@@ -91,7 +91,21 @@ var conf = convict({
     format: String,
     default: 'webDocumentContainer',
     arg: 'dbSchema'
+    },
+    odds: {
+    doc: 'Only select record ids which are odd',
+    format: Boolean,
+    default: false,
+    arg: 'odds'
+    },
+    evens: {
+    doc: 'Only select record ids which are even',
+    format: Boolean,
+    default: false,
+    arg: 'evens'
     }
+
+
 });
 
 
