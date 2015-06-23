@@ -6,17 +6,9 @@ var nodeURL = require('url');
 var Crawler = require("simplecrawler");
 var moment = require('moment');
 var logger=require('./config/logger.js'); 
+
+
 var crawlDb = require('./lib/crawlDb').connect();
-
-//this is a seperate logger for some local debugging
-var log2 = new winston.Logger({
-  transports: [
-    new winston.transports.File({ filename: './logs/log2.log', level: 'debug'})
-  ],
-  exitOnError: false
-});
-
-
 
 
 logger.info("CrawlJob Settings: " + JSON.stringify(conf._instance));
@@ -29,12 +21,20 @@ var count = {  deferred: 0,
 		missing: 0};
 	
 var crawlJob = new Crawler();
+
+//Override the queueURL method becuase the existing one does not easily support in the fetchConditions.
+
+
 crawlJob.interval = conf.get('interval');
 crawlJob.userAgent = "Digital Transformation Office Crawler - Contact Nigel 0418556653 - nigel.o'keefe@pmc.gov.au";
 crawlJob.filterByDomain = false;
 crawlJob.maxConcurrency =conf.get('concurrency');
+crawlJob.timeout = 10000; //ms
 
 
+crawlJob.baseQueueURL = crawlJob.queueURL;
+crawlJob.queueURL = require('./lib/queueURL');
+ 
 // STOP JOB AFTER CONFIGURED TIME
 logger.info("Job set to Run for " + conf.get('timeToRun') + " seconds (" + conf.get('timeToRun')/60 + " min) or a maximum of " + conf.get('maxItems')+ " items" );
 
@@ -60,6 +60,9 @@ setTimeout( function() {
 
 logger.debug('adding Fetch Conditions');
 //Exclude URLS which are not nat gov sites
+
+//TODO: is currently excluding [somthing]sa.gov.au  e.g. csa.gov.au
+
 var stateRegex = "(\.vic\.gov\.au$|\.nsw\.gov\.au$|\.qld\.gov\.au$|\.tas\.gov\.au$|\.act\.gov\.au$|\.sa\.gov\.au$|\.wa\.gov\.au$|\.nt\.gov\.au$)"
 crawlJob.addFetchCondition(function(parsedURL) {
 
@@ -68,7 +71,7 @@ crawlJob.addFetchCondition(function(parsedURL) {
 			if (parsedURL.host.search(stateRegex)  < 0 ) {
 				return true; //not a state
 			}else {
-				logger.debug("State Domain Encountered: " + parsedURL.host ); //a state
+				logger.info("State Domain Encountered: " + parsedURL.host ); //a state
 				return false; //state domain
 			
 			}
@@ -90,56 +93,14 @@ if (crawlJob.queue.length >= maxItems) {
 	var queueItem = parsedURL;
 	queueItem.url = nodeURL.format(parsedURL);
 	crawlDb.addIfMissing(queueItem);
-	logger.info("URL Deferred: " + queueItem.url );
+	logger.info("URL Deferred (q="  + crawlJob.queue.length + "): " + queueItem.url );
 	count.deferred ++;
 	return false;
 } else { 
-	logger.debug("URL NOT Deferred: " + parsedURL.host + parsedURL.path );
 	return true;
 	}
 });
-//VVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVV
-//TODO: IT IS BEING OVERLY ENTHUSIASTIC ABOUT PREVENTING NEW URLS FROM BEING QUEUED
-//ERROR
-// This is becuase of my async code having to come back to sync code. Not sure where to go from here 
-// becuase the most appropriate thing to do would be to make it async, but that would mean modifying the 
-// simple crawler code 
-
-// it is probably not a major issue to wait until a bit later to resolve this issue beucase it *should* only result in a
-// small overselection due to the face that it only impacts the urls which are crawled and they should either be close to ready
-// because an attempt to crawl them would have happened when i did this page last time or it is new anyhow.
-//
-//OR I could add an additional mechnism to simple crawler that works with async
-
-
-//Is this resource ready for its next fetch
-/*
-crawlJob.addFetchCondition( function(parsedURL) {
-	//fix parsed url format used in simplecrawler
-	parsedURL.pathname = parsedURL.path;
-	parsedURL.url = nodeURL.format(parsedURL);
-	var ruleResult 
-	crawlDb.checkNextFetchDate(parsedURL.url)
-	.then(function(result){
-		log2.debug('checkNextFetchDate outcome for: ' + parsedURL.url + " was: " + result )
-		//logger.debug(parsedURL.url + " Result = " + result);
-		if(!result) { 
-			logger.info("Already done: " + parsedURL.url + " Result = " + result);
-			count.notDue ++;
-		}
-		ruleResult = result;
-//return true;  //TODO: THIS IS JUST FOR TESTING
-	}); //has value
-	logger.debug('fetchReady result: ' + ruleResult);
-	return ruleResult;
-
-});
-*/
-//END ERROR
-//AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA
-
-
-//crawlJob.queue.add('http', 'www.activfire.gov.au', '80', '/');	
+	
 				
 //TODO: Fetch errors, log status code for easier followup.
 
@@ -170,11 +131,17 @@ crawlJob
 	logger.info("Url was 404: " + queueItem.url);
 	})
 .on("fetchtimeout", function(queueItem){
-	logger.debug("A fetch timed out");
+	queueItem.lastFetchDateTime = moment().format();
+	var nextFetch = moment();
+	nextFetch.add(conf.get('fetchIncrement'), 'days')
+	queueItem.nextFetchDateTime = nextFetch.format();
+	queueItem.stateData['@class'] = "webDocumentStateData";
 	crawlDb.upsert(queueItem);
 	logger.info("Url Timedout: " + queueItem.url);
 	})
 .on("fetchclienterror", function(queueItem, errorData){
+	logger.debug("queueItem:" + JSON.stringify(queueItem));
+
 	queueItem.lastFetchDateTime = moment().format();
 	var nextFetch = moment();
 	nextFetch.add(conf.get('fetchIncrement'), 'days')
@@ -217,48 +184,31 @@ crawlJob
 	logger.debug("Crawler started event did fire");
 })
 .on("fetchredirect", function( queueItem, parsedURL, response ){
+	crawlJob.queueURL(nodeURL.format(parsedURL));	
 	logger.info("Url Redirect (" + queueItem.stateData.code + "): " + queueItem.url +
-		" To: " + parsedURL.host + parsedURL.path);
-		
-	//TODO: Need to apply url checks, simple crawler does not refer 696 in crawler.js in simplecrawler 
-	//           module for map reduce way of working it.
-	
-/* - the code to check the url meets my fetch conditions, stolen from simple crawler
-// Pass this URL past fetch conditions to ensure the user thinks it's valid
-	var fetchDenied = false;
-	fetchDenied = crawler._fetchConditions.reduce(function(prev,callback) {  
-		return prev || !callback(parsedURL);
-	},false);
-
-	if (fetchDenied) {
-		// Fetch Conditions conspired to block URL
-		return false;
-	}
-*/
-
-
-	crawlJob.queue.add(parsedURL.protocol, parsedURL.host, parsedURL.port, parsedURL.path);	
+		" To: " + nodeURL.format(parsedURL));
+	//Queue the redirect location
 	queueItem.lastFetchDateTime = moment().format();
+
+	//store the outcome for the source
 	var nextFetch = moment();
 	nextFetch.add(conf.get('fetchIncrement'), 'days')
 	queueItem.nextFetchDateTime = nextFetch.format();
 	queueItem.stateData['@class'] = "webDocumentStateData";
 	crawlDb.upsert(queueItem);
-	//TODO: Not queuing redirects
 	count.redirect++;	
 });
 			
 logger.debug('Querying DB for new crawl queue');
+
 
 crawlDb.newQueueList(conf.get('initQueueSize'), function(results) {
 	if (results.length > 0) {			
 		logger.info('Initialising queue with  ' + (results.length) + ' items from DB');
 		for (var j = 0; j < results.length; j++) {
 				var parsedURL = nodeURL.parse(results[j].url);
-				if (parsedURL.port == null) {
-					parsedURL.port = 80; 
-					}
-				crawlJob.queue.add(parsedURL.protocol, parsedURL.hostname, parsedURL.port, parsedURL.pathname);	
+				crawlJob.queueURL(results[j].url);	
+				logger.debug("Adding: " + results[j].url);
 				//TODO - should set these to automatically pass the domain and ready to fetch tests.
 			} 
 	} else {
