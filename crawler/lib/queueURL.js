@@ -35,7 +35,7 @@ queueUrl = function(url,queueItem) {
 			.then(function(result){
 				if(!result) { 
 					//not ready for refetch so just bail
-					logger.info("Rejected URL: " + url + " becuase It was not ready to be refetched");
+					logger.debug("Rejected URL: " + url + " becuase It was not ready to be refetched");
 					return false;
 					//TODO: Could add to local queue???
 				}
