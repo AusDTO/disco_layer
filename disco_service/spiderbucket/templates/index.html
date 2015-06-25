@@ -6,9 +6,13 @@
         <div class="jumbotron">
           <p><img src="{% static 'discobotface.jpg' %}" alt="Hi!" /></p>
 	  <h1>{% block heading %}Disco(very) Service{% endblock %}</h1>
-          <ul class="pager">
-	    <li><a class="pull-right" href="{% url "about_search" %}" role="button">Learn more</a></li>
-	  </ul>
+	  <div>
+	    <a
+	       class="pull-right btn btn-success"
+	       href="{% url "about_search" %}"
+	       role="button">Learn more</a>
+	  </div>
 	</div>
+
 {% endblock %}
 

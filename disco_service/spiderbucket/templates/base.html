@@ -25,13 +25,26 @@
         </nav>
         <h3 class="text-muted"><a href="{% url "home" %}">Disco Service</a></h3>
       </div>
-      
       {% block content %}some content{% endblock %}
-      
       <div>
 	<footer class="footer">
-          <p>Digital Transformation Office</p>
-          <p>{% block footnote %}{% endblock %}</p>
+	  <div class="row-marketing">
+	    <div class="col-lg-6">
+              <p>Digital Transformation Office</p>
+              <p>{% block footnote %}{% endblock %}</p>
+	    </div>
+	    <div class="col-lg-6">
+	      <p class="pull-right">
+		<a href="https://ausdto_disco.readthedocs.org/">docs</a>
+	      </p>
+	      <p class="pull-right">
+		<a href="https://github.com/AusDTO/discoveryLayer">code</a>
+	      </p>
+	      <p class="pull-right">
+		<!--img src=''/-->(build status)
+	      </p>
+	    </div>
+	  </div>
 	</footer>
       </div>
     </div>
