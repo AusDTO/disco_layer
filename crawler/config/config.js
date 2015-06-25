@@ -17,7 +17,7 @@ var conf = convict({
     maxItems: {
         doc: 'Stop the job after this many fetches',
         format: 'int',
-        default: 1000,
+        default: 0,
         arg: 'max'
     },
     timeToRun: {
@@ -70,14 +70,14 @@ var conf = convict({
     dbUser: {
         doc: 'Database Username',
         format: String,
-        default: 'root',
+        default: 'trusted',
         arg: 'dbUser'
     },
     //TODO: Create new DB user account.
     dbPass: {
         doc: 'Database Password',
         format: String,
-        default: 'developmentpassword',
+        default: 'developmentPassword',
         arg: 'dbPass'
     },
     dbName: {
@@ -91,7 +91,21 @@ var conf = convict({
     format: String,
     default: 'webDocumentContainer',
     arg: 'dbSchema'
+    },
+    odds: {
+    doc: 'Only select record ids which are odd',
+    format: Boolean,
+    default: false,
+    arg: 'odds'
+    },
+    evens: {
+    doc: 'Only select record ids which are even',
+    format: Boolean,
+    default: false,
+    arg: 'evens'
     }
+
+
 });
 
 
