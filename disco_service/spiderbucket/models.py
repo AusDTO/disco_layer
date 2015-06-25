@@ -1,5 +1,6 @@
 from django.db import models
-
+from goose import Goose
+import base64
 
 class Page(models.Model):
 
@@ -29,3 +30,24 @@ class Page(models.Model):
     def __unicode__(self):
         return self.url
 
+    def _decode(self):
+        return base64.standard_b64decode(self.document)
+
+    def _article(self):
+        # faster if cached?
+        g = Goose()
+        return g.extract(raw_html=self._decode())
+
+    def title(self):
+        # assumes type=HTML
+        # more to do for other types...
+        try:
+            return self._article().title
+        except:
+            return "(no title)"
+
+    def excerpt(self):
+        try:
+            return self._article().cleaned_text
+        except:
+            return "(no text)"
