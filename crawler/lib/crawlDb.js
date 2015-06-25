@@ -2,6 +2,7 @@
 var Oriento = require('oriento');
 var moment = require('moment')
 var Promise = require('bluebird');
+var fs = require('fs');
 var logFile = 'logs/crawl.log';
 var conf = require('../config/config.js');
 var logger=require('../config/logger');
@@ -92,28 +93,39 @@ module.exports = {
 			});
 	},
 
-	upsert: function(document) {    
-		//Non destructive update or insert
-		//NOTE: This does not use the query builder becuase I wasnt able to get it working with the combination of CONTENT and UPSERT
+	upsert: function(document) {  
+		var crawlDb = this;  
+		return new Promise(function(resolve, reject) {
+			//Non destructive update or insert
+			//NOTE: This does not use the query builder becuase I wasnt able to get it working with the combination of CONTENT and UPSERT
 
-		//Add some hints for orientDb so that it handles the documents properly (type d = document)
-		document.stateData['@class'] =  'webDocumentStateData';
-		document.stateData['@type'] =  'd';
-		document['@type'] =  'd';
+			//Add some hints for orientDb so that it handles the documents properly (type d = document)
+			document.stateData['@class'] =  'webDocumentStateData';
+			document.stateData['@type'] =  'd';
+			document['@type'] =  'd';
 
-		this.db.query("UPDATE webDocumentContainer CONTENT :document WHERE url= :url",
-			{params: {
-				document: document,
-				url: document.url
-				}
-		})
-		.then(function(){
-			logger.debug("Database UPSERT Complete");
-		})
-		.catch(function(e){
-			logger.error("Database UPSERT Failed");
-			logger.error(e);
-		});
+			//fs.writeFile('./update.json', JSON.stringify(document, null, 2));
+
+			crawlDb.db.query("UPDATE webDocumentContainer CONTENT :document UPSERT WHERE url= :url",
+				{params: {
+					document: document,
+					url: document.url
+					}
+			})
+			.then(function(response){
+				if (response == 0) {
+					logger.warn("Url not updated in DB: " + document.url);
+				}			//logger.info("Database UPSERT Complete");
+				//logger.info("response:" + JSON.stringify(response));
+				resolve();
+			})
+			.catch(function(e){
+				logger.info("Database UPSERT Failed");
+				logger.error(e);
+				reject();
+			});
+
+		}) //end promise
 	},
 	
 	readyForFetch: function(url) {

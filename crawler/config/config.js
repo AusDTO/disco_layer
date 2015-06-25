@@ -77,7 +77,7 @@ var conf = convict({
     dbPass: {
         doc: 'Database Password',
         format: String,
-        default: 'developmentpassword',
+        default: 'developmentPassword',
         arg: 'dbPass'
     },
     dbName: {
