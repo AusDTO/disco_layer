@@ -3,6 +3,7 @@ https://docs.djangoproject.com/en/1.8/topics/settings/
 https://docs.djangoproject.com/en/1.8/ref/settings/
 """
 import os
+import os.path
 from envparse import env
 
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
@@ -25,6 +26,7 @@ INSTALLED_APPS = (
     'celery',
     'haystack',
     'spiderbucket',
+    'govservices',
 )
 
 MIDDLEWARE_CLASSES = (
@@ -87,7 +89,7 @@ Use multiple haystack connections for A/B (ANOVA) split testing i.e:
 
 In other words, standardise on how we measure performance of the whole
 discovery ecosystem (scorecard evaluation - like a headless dashboard),
-and create a way to continuously monitoring performance. Use this to
+and create a way to continuously monitor performance. Use this to
 automatically manage the 'survival of the fittest' search index
 treatments (in the extringic+intrinsic contexts, userland+codebase).
 Then hack with inquisitive creativity, continuously trying to improve
@@ -127,3 +129,9 @@ STATIC_URL = '/static/'
 STATIC_URL = '/static/'
 STATIC_ROOT = os.path.join(BASE_DIR, 'staticfiles')
 STATICFILES_STORAGE = 'whitenoise.django.GzipManifestStaticFilesStorage'
+
+SERVICE_CATALOGUE_REPOSITORY_PATH = env(
+    'SERVICE_CATALOGUE_REPOSITORY_PATH',
+    default=os.path.join(BASE_DIR, '../../serviceCatalogue/'))
+SERVICE_CATALOGUE_REPOSITORY_REMOTE = env(
+    'SERVICE_CATALOGUE_REPOSITORY_REMOTE', default='origin')
