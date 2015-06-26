@@ -13,3 +13,4 @@ envparse
 psycopg2
 elasticsearch
 goose-extractor
+gitpython
