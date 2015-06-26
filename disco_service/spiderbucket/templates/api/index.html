@@ -1,9 +1,41 @@
 {% extends "normal_base.html" %}{% load staticfiles %}
 
+{% block api_section %}active{% endblock %}
+
 {% block title %}API{% endblock %}
 
 {% block content %}
+       <div class="jumbotron">
           <h1>{% block heading %}API{% endblock %}</h1>
-          <p>Document the APIs here.</p>
+          <p class="lead">Reuse us, we like it ;)</p>
+        </div>
+        <div class="row-marketing">
+          <div class="col-lg-6">
+            <h4>Native Elasticsearch REST</h4>
+            <p>
+              You can query our index directly - we won't get in your way.
+	      Link to endpoint, link to elasticsearch docs, link to the 
+	      appropriate section of our specific docs.
+            </p>
+          </div>
+          <div class="col-lg-6">
+            <h4>Python abstraction layer</h4>
+            <p>
+	      Link to our repo.
+	      Link to django-haystack docs.
+	      Link to the appropriate section in our docs to see how we use it.
+	    </p>
+	  </div>
+	  <div class="col-lg-6">
+	    <h4>Javascript widgets</h4>
+	    <p>
+              Link to docs.
+	      These are designed to meet specific Agency needs but hey,
+	      if they are usefull to you...
+            </p>
+          </div>
+        </div>
+
+
 {% endblock %}
 

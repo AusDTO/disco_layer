@@ -18,9 +18,9 @@
       <div class="header clearfix">
         <nav>
           <ul class="nav nav-pills pull-right">
-            <li role="presentation"><a href="{% url "search" %}">Search</a></li>
-            <li role="presentation"><a href="{% url "api" %}">API</a></li>
-            <li role="presentation"><a href="{% url "for_gov" %}">For Government</a></li>
+            <li role="presentation" class="{% block search_section %}{% endblock %}"><a href="{% url "search" %}">Search</a></li>
+            <li role="presentation" class="{% block api_section %}{% endblock %}"><a href="{% url "api" %}">API</a></li>
+            <li role="presentation" class="{% block forgov_section %}{% endblock %}"><a href="{% url "for_gov" %}">For Government</a></li>
           </ul>
         </nav>
         <h3 class="text-muted"><a href="{% url "home" %}">Disco Service</a></h3>

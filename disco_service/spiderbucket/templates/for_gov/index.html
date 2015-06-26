@@ -1,9 +1,34 @@
 {% extends "normal_base.html" %}{% load staticfiles %}
 
+{% block forgov_section %}active{% endblock %}
+
 {% block title %}For Governement{% endblock %}
 
 {% block content %}
+        <div class="jumbotron">
           <h1>{% block heading %}For Government{% endblock %}</h1>
-          <p>Explain how Government agencies can participate and benefit.</p>
+          <p class="lead">Features that Agencies need.</p>
+        </div>
+        <div class="row-marketing">
+          <div class="col-lg-6">
+            <h4>Service Registry</h4>
+            <p>
+              ...advertise the Service Registry product.
+            </p>
+          </div>
+          <div class="col-lg-6">
+            <h4>Seach-based navigation widgets</h4>
+            <p>
+              ...advertise the Information Recommendation Engine product.
+            </p>
+          </div>
+          <div class="col-lg-6">
+            <h4>Dashboard analytics</h4>
+            <p>
+              ...advertise the dashboard widget backing services.
+            </p>
+          </div>
+        </div>
+
 {% endblock %}
 
