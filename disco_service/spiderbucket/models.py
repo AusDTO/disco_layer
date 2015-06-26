@@ -47,7 +47,25 @@ class Page(models.Model):
             return "(no title)"
 
     def excerpt(self):
+        # memcache this,
+        # would require working evict-on-save (use signals, test it)
         try:
             return self._article().cleaned_text
         except:
             return "(no text)"
+
+    def get_absolute_url(self):
+        return "%s" % self.url
+
+    def sr_summary(self):
+        '''
+        Doesn't even break on word boundaries... This is a rude hack. 
+
+        There should be a much, much smarter thing that populates a 
+        short display excerpt in the index.
+        '''
+        long_excerpt = self.excerpt()
+        if len(long_excerpt) < 300:
+            return long_excerpt
+        else:
+            return long_excerpt[:300]
