@@ -14,3 +14,8 @@ class ServiceTag(models.Model):
     label = models.CharField(max_length=512)
     def __unicode__(self):
         return self.label
+
+class LifeEvent(models.Model):
+    label = models.TextField()
+    def __unicode__(self):
+        return self.label
