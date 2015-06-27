@@ -57,12 +57,14 @@ class Command(BaseCommand):
         services = []
         service_keys = []
         service_keys_count = {}
+        service_keys_examples = {}
         service_types = [] # todo
         doctypes = []
         subservices=[]
         subservice_keys = []
         subservice_keys_count = {}
         subservice_examples = {}
+        service_tags = []
         for ak in agencies.keys():
             for s in agencies[ak]:
                 #
@@ -87,9 +89,20 @@ class Command(BaseCommand):
                         for sk in srv.keys():
                             if sk not in service_keys:
                                 service_keys.append(sk)
-                                service_keys_count[sk]=1
+                                service_keys_count[sk] = 1
+                                service_keys_examples[sk] = srv[sk]
                             else:
                                 service_keys_count[sk] += 1
+                            if srv[sk] not in (None, [], ''):
+                                try:
+                                    service_keys_example[sk] = srv[sk]
+                                except:
+                                    pass
+                            # service tags
+                            if sk in ("tags", "tags:"):
+                                for st in srv[sk]:
+                                    if st not in service_tags:
+                                        service_tags.append(st)
                     if k == u'documentType':
                         dt = agencies[ak][s][k]
                         if dt not in doctypes:
@@ -133,43 +146,33 @@ class Command(BaseCommand):
             print "  %s: %s" % (dk, dim[dk])
         print ''
         '''
-        # service
-        '''
+        # service (analysis)
         print 'service_keys'
         print "service example:"
         for sk in service_keys:
             val = None
-            try:
-                val = srv[sk]
-                if len(val) > 50:
-                    val = val[:50] + '...' 
-            except:
-                pass
+            #try:
+            val = service_keys_examples[sk]
+            if type(val) == type('') and len(val) > 50:
+                val = val[:50] + '...' 
+            #except:
+            #    pass
 
             print "    %s (%s)" % (sk, service_keys_count[sk]),
             if val:
-                print "example: %s" % val
+                print "type: %s, example: %s" % (type(val), val)
             else:
                 print ''
-        '''
-        # documentTypes
-        # print doctypes  # always "ServiceInformation", booring
         
-        # subservices
-        '''
-        print 'subservices'
-        print "service example:"
-        for ssk in subservice_keys:
-            #print "example of %s: %s" (ssk, subservice_examples[ssk])
-            print ssk
-            print subservice_examples[ssk]
-            print "    %s (%s)" % (ssk, subservice_keys_count[ssk])
-        '''
+        # service tags
         #
         # 2. load all of the DB records into RAM
         #
         # None vs. '' difference causing false mismatches (bug)
         # chomp None values (kludge)
+        #
+        # subservices
+        #
         for ss in subservices:
             for k in ss.keys():
                 if ss[k] is None:
@@ -187,8 +190,28 @@ class Command(BaseCommand):
                 if ss_dict[k] is None:
                     del(ss_dict[k])
             db_subservices.append(ss_dict)
-        print "number of subservices found in the db: %s" % len(db_subservices)
+        #print "number of subservices found in the db: %s" % len(db_subservices)
+        # service tags
+        db_servicetags = []
+        for st in govservices.models.ServiceTag.objects.all():
+            db_servicetags.append(st.label)
+
         #3. for each element in json:
+        for st in service_tags:
+            found_in_db = False
+            for st2 in db_servicetags:
+                if st2 == st:
+                    found_in_db = True
+            if not found_in_db:
+                govservices.models.ServiceTag(label=st).save()
+        for st in db_servicetags:
+            found_in_json = False
+            for st2 in service_tags:
+                if st2 == st:
+                    found_in_json = True
+            if not found_in_json:
+                govservices.models.ServiceTag.objects.get(label=st).delete()
+
         for ss in subservices:
             # raise exception if we have two non-identical subservices
             num_matched = 0
