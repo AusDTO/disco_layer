@@ -402,7 +402,7 @@ class Command(BaseCommand):
         json_life_events = sjr.list_life_events()
         db_life_events = []
         for dble in govservices.models.LifeEvent.objects.all():
-            db.life_events.append(dble.label)
+            db_life_events.append(dble.label)
         # if found in json but not DB, insert to DB
         for json_le in json_life_events:
             found_in_db = False
