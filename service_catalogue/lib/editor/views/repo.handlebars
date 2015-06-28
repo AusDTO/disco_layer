@@ -1,0 +1,14 @@
+<div class="container theme-showcase" role="main">
+    <br><br><br>
+
+    Repository: {{repoAccount}}/{{repoName}}
+
+    Contains organisations:
+    <ul class="list-group">
+
+        {{#each contents}}
+            <li class="list-group-item"><A
+                    href="/editor/edit/organisation/{{../repoAccount}}/{{../repoName}}/{{this}}">{{this}}</a></li>
+        {{/each}}
+    </ul>
+</div>

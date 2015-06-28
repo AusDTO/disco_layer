@@ -1,0 +1,109 @@
+<div class="container theme-showcase" role="main">
+    <h1>{{definition.serviceOrganisation.name}}</h1>
+
+    <a class="btn btn-large btn-primary"  href="/editor/edit/org_definition/{{repoAccount}}/{{repoName}}/{{orgPath}}">Edit Organisation
+        Name/Description</a><br><br>
+
+    <A  class="btn btn-large btn-success" href="/editor/submit/{{repoAccount}}/{{repoName}}">Save and Submit for Approval</a><br><br>
+
+    <div class="panel panel-primary">
+        <div class="panel-heading">
+            <h3 class="panel-title">
+                Organisational Data Types:</h3>
+        </div>
+        <div class="panel-body">
+            <A class="btn btn-large btn-primary"  href="/editor/edit/org_model/{{repoAccount}}/{{repoName}}/{{orgPath}}">Edit Organisation
+                Model</a><br><br>
+            Dimensions:
+            {{#each model.serviceDimensionTypes}}
+                <span class="label label-default">{{this.name}}</span>
+            {{/each}}<br>
+            Components:
+            {{#each model.serviceComponentTypes}}
+                <span class="label label-default">{{this.name}}</span>
+            {{/each}}<br>
+            Channels:
+            {{#each model.channelTypes}}
+                <span class="label label-default">{{this.name}}</span>
+            {{/each}}
+            </ul>
+        </div>
+    </div>
+    <div class="panel panel-primary">
+        <div class="panel-heading">
+            <h3 class="panel-title">Components:<br></h3>
+        </div>
+        <div class="panel-body">
+
+            <a class="btn btn-large btn-primary"  href="/editor/edit/component/{{repoAccount}}/{{repoName}}/{{orgPath}}/new">Add
+                Component</a><br><br>
+            <ul class="list-group">
+
+
+                {{#each definition.components}}
+                    <li class="list-group-item">
+                        <a href="/editor/edit/component/{{../repoAccount}}/{{../repoName}}/{{../orgPath}}/{{this.id}}">{{this.id}}  {{this.name}}</a>
+                    </li>
+                {{/each}}
+            </ul>
+        </div>
+    </div>
+    <div class="panel panel-primary">
+        <div class="panel-heading">
+            <h3 class="panel-title">Channels:<br></h3>
+        </div>
+        <div class="panel-body">
+            <a class="btn btn-large btn-primary"  href="/editor/edit/channel/{{repoAccount}}/{{repoName}}/{{orgPath}}/new">Add
+                Channels</a><br><br>
+            <ul class="list-group">
+
+                {{#each definition.channels}}
+                    <li class="list-group-item">
+                        <a href="/editor/edit/channel/{{../repoAccount}}/{{../repoName}}/{{../orgPath}}/{{this.id}}">{{this.id}}  {{this.name}}</a>
+                    </li>
+                {{/each}}
+            </ul>
+        </div>
+    </div>
+    <div class="panel panel-primary">
+        <div class="panel-heading">
+            <h3 class="panel-title">Dimensions:</h3>
+        </div>
+        <div class="panel-body">
+            <a class="btn btn-large btn-primary"  href="/editor/edit/dimension/{{repoAccount}}/{{repoName}}/{{orgPath}}/new">Add
+                Dimension</a><br><br>
+
+            <div class="well">
+                <p>Dimensions are categorisations of services</p>
+            </div><br>
+            <ul class="list-group">
+
+                {{#each definition.serviceDimensions}}
+                    <li class="list-group-item">
+                        <a href="/editor/edit/dimension/{{../repoAccount}}/{{../repoName}}/{{../orgPath}}/{{this.id}}">{{this.id}}  {{this.name}}</a>
+                        <br>
+                    </li>
+                {{/each}}
+            </ul>
+        </div>
+    </div>
+
+
+    <div class="panel panel-primary">
+        <div class="panel-heading">
+            <h3 class="panel-title">Services:</h3>
+        </div>
+        <div class="panel-body">
+            <a class="btn btn-large btn-primary"  href="/editor/edit/service/{{repoAccount}}/{{repoName}}/{{orgPath}}/new">Add
+                Service</a><br><br>
+            <ul class="list-group">
+
+                {{#each services}}
+                    <li class="list-group-item">
+                        <a href="/editor/edit/service/{{../repoAccount}}/{{../repoName}}/{{../orgPath}}/{{this.id}}">{{this.id}}  {{this.name}}</a>
+                    </li>
+                {{/each}}
+            </ul>
+        </div>
+    </div>
+</div>

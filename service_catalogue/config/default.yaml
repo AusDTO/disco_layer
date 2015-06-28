@@ -1,0 +1,9 @@
+app:
+  port: 3000
+  pub_dir: "/public"
+  csrf: false
+  cookie_secret: "MkN34e3A8qeMkN34e3A8qeMkN34e3cgdzMYv1hq4cgdzMYvLUVW4pWsep3"
+  github_client_id: "e4dbe41d03c93936a766"
+  github_client_secret: "f65bc8bfdd82c8f0eb77b8777e50650fbbadd2ed"
+  server_url: "http://127.0.0.1:3000"
+  tmp_dir: "/tmp/sr"
