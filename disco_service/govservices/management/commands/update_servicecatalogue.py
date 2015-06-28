@@ -171,9 +171,14 @@ class ServiceJsonRepository(object):
         out = []
         for a, f, jsonpayload in self.agency_service_json():
             service = jsonpayload['service']
+            service['jsonfile'] = f
+            service['agency_acronym'] = a
             if service not in out:
                 out.append(service)
             # else - why are there duplicates?
+            # DEBUG
+            #if 'serviceTypes' in service.keys():
+            #    print service['serviceTypes']
         return out
 
 class Command(BaseCommand):
@@ -186,123 +191,6 @@ class Command(BaseCommand):
 
         # 1. load all of the json into RAM
         sjr = ServiceJsonRepository(repo_path, repo_remote)
-        '''
-        #
-        # now we inspect it to design the ORM class
-        #
-        tld = []
-        dim_keys = []
-        services = []
-        service_keys = []
-        service_keys_count = {}
-        service_keys_examples = {}
-        service_types = [] # todo
-        doctypes = []
-        subservices=[]
-        subservice_keys = []
-        subservice_keys_count = {}
-        subservice_examples = {}
-        service_tags = []
-        #for ak in agencies.keys():
-            #for s in agencies[ak]:
-        counter = 0
-        for a, s, jsonpayload in sjr.agency_service_json():
-            counter += 1
-            for k in jsonpayload.keys():
-                if k not in tld:
-                    tld.append(k)
-                if k == 'Subs':
-                    # subs seem always empty?
-                    if jsonpayload[k] != []:
-                        msg = "DISCOVERY! (%s: %s: %s)"
-                        print msg % (ak, s[:-5], jsonpayload[k])
-                elif k == 'todo':
-                    pass  # not interesting
-                elif k == u'Dimension':
-                    dim_list = jsonpayload[k]
-                    for dim in dim_list:
-                        for dk in dim.keys():
-                            if dk not in dim_keys:
-                                dim_keys.append(dk)
-                elif k == u'service':
-                    srv = jsonpayload[k]
-                    for sk in srv.keys():
-                        if sk not in service_keys:
-                            service_keys.append(sk)
-                            service_keys_count[sk] = 1
-                            service_keys_examples[sk] = srv[sk]
-                        else:
-                            service_keys_count[sk] += 1
-                        if srv[sk] not in (None, [], ''):
-                            try:
-                                service_keys_example[sk] = srv[sk]
-                            except:
-                                pass
-                        # service tags
-                        if sk in ("tags", "tags:"):
-                            for st in srv[sk]:
-                                if st not in service_tags:
-                                    service_tags.append(st)
-                elif k == u'documentType':
-                    dt = jsonpayload[k]
-                    if dt not in doctypes:
-                        doctypes.append(dt)
-                if k == u'subService':
-                    sss = jsonpayload[k]
-                    if len(sss) > 0:
-                        for ss in sss:
-                            if ss not in subservices:
-                                subservices.append(ss)
-                                for k in ss.keys():
-                                    if k not in subservice_keys:
-                                        subservice_keys.append(k)
-                                        subservice_keys_count[k]=1
-                                        subservice_examples[k] = ss[k]
-                                    else:
-                                        subservice_keys_count[k] += 1
-                                    if '%s' % ss[k] != '':
-                                        subservice_examples[k] = ss[k]
-        #
-        #
-        print "DEBUG counter: %s" % counter
-        print "top level: %s" % tld
-        print ''
-        # dimmension
-        '''
-        '''
-        print "dim_keys: %s" % dim_keys
-        print "dim example:"
-        for dk in dim.keys():
-            try:
-                if len(dim[dk]) > 50:
-                    dim[dk] = dim[dk][:50] + '...'
-            except:
-                pass
-            print "  %s: %s" % (dk, dim[dk])
-        print ''
-        '''
-        '''
-        # service (analysis)
-        #
-        # the purpose of this next blck of code is to reveal (print to screen)
-        # those parts of the service json structure that is yet to be bound
-        # to the ORM (and synched with it, etc).
-        #
-        print 'service_keys'
-        print "service example:"
-        ignore = ('tags', 'tags:', 'TODO', 'TODO:')
-        for sk in service_keys:
-            if sk not in ignore:
-                val = None
-                val = service_keys_examples[sk]
-                if type(val) == type('') and len(val) > 50:
-                    val = val[:50] + '...' 
-                print "    %s (%s)" % (sk, service_keys_count[sk]),
-                if val:
-                    print "type: %s, example: %s" % (type(val), val)
-                else:
-                    print ''
-        '''
 
         # a. generate text analysis from json
         # b. generate dot, visualise...
@@ -482,14 +370,24 @@ class Command(BaseCommand):
                 'secondary': dbs.secondary,
                 'type': dbs.src_type,
                 'description': dbs.description,
-                'id': dbs.src_id
+                'id': dbs.src_id,
             }
-            #if 'serviceTypes' in s.keys():
-            #    s.'serviceTypes': s.service_types, # M:N
-            #if '' in s.keys():
-            #    s.'tags': s.service_tags, # M:N
-            #if '' in s.keys():
-            #    s.'lifeEvents': s.life_events:
+            
+            for st in dbs.service_types.all():
+                k = 'serviceTypes'
+                if k not in sdict.keys():
+                    sdict[k] = []
+                sdict[k].append("%s" % st)
+            for tg in dbs.service_tags.all():
+                k = 'tags'
+                if k not in sdict.keys():
+                    sdict[k] = []
+                sdict[k].append(tg)
+            for le in dbs.life_events.all():
+                k = 'lifeEvents'
+                if k not in sdict.keys():
+                    sdictp[k] = []
+                sdict[k].append(le)
             db_services.append(sdict)
 
         # if found in json but not DB, insert to DB
@@ -535,15 +433,30 @@ class Command(BaseCommand):
                     gs.description = s['description']
                 if 'id' in s.keys():
                     gs.src_id = s['id']
-                #if 'serviceTypes' in s.keys():
-                #    s.'serviceTypes': s.service_types, # M:N
-                #if '' in s.keys():
-                #    s.'tags': s.service_tags, # M:N
-                #if '' in s.keys():
-                #    s.'lifeEvents': s.life_events:
-                
                 gs.save()
-
+                # service types
+                if 'serviceTypes' in s.keys():
+                    for st in s['serviceTypes']:
+                        dbst = govservices.models.ServiceType.objects.get(label=st)
+                        gs.service_types.add(dbst)
+                    gs.save()
+                # service tags
+                alternate_tag_spellings = ('tags', 'tags:')
+                for k in alternate_tag_spellings:
+                    if k in s.keys():
+                        for st in s[k]:
+                            dbst = govservices.models.ServiceTag.objects.get(label=st)
+                            gs.service_tags.add(dbst)
+                        gs.save()
+                # life events
+                alternate_life_event_spellings = ('lifeEvents', 'LifeEvents')
+                for k in alternate_life_event_spellings:
+                    if k in s.keys():
+                        for le in s[k]:
+                            dble = t = govservices.models.LifeEvent.objects.get(label=le)
+                            gs.life_events.add(dble)
+                        gs.save()
+                
             if found_in_db and not found_in_db_same:  # then update it
                 u = govservices.models.Service.objects.get(src_id=s['id'])
                 if 'oldID' in s.keys():

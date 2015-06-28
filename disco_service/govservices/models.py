@@ -41,7 +41,7 @@ class Service(models.Model):
     comment  = models.TextField(null=True, blank=True)
     current = models.CharField(max_length=512, null=True, blank=True)
     service_types = models.ManyToManyField(ServiceType)
-    aervice_tags =  models.ManyToManyField(ServiceTag)
+    service_tags =  models.ManyToManyField(ServiceTag)
     life_events =  models.ManyToManyField(LifeEvent)
 
     def __unicode__(self):
