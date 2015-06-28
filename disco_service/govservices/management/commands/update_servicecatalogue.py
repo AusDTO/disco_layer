@@ -171,8 +171,8 @@ class ServiceJsonRepository(object):
         out = []
         for a, f, jsonpayload in self.agency_service_json():
             service = jsonpayload['service']
-            service['jsonfile'] = f
-            service['agency_acronym'] = a
+            service['json_filename'] = f
+            service['org_acronym'] = a
             if service not in out:
                 out.append(service)
             # else - why are there duplicates?
@@ -360,6 +360,8 @@ class Command(BaseCommand):
         for dbs in govservices.models.Service.objects.all():
             sdict = {
                 'oldID': dbs.old_src_id,
+                'org_acronym': dbs.org_acronym,
+                'json_filename': dbs.json_filename,
                 'infoUrl': dbs.info_url,
                 'name': dbs.name,
                 'acronym': dbs.acronym,
@@ -408,6 +410,8 @@ class Command(BaseCommand):
 
             if not found_in_db:  # then insert it
                 gs = govservices.models.Service(src_id = s['id'])
+                gs.org_acronym = s['org_acronym']
+                gs.json_filename = s['json_filename']
                 if 'oldID' in s.keys():
                     gs.old_src_id = s['oldID']
                 if 'infoUrl' in s.keys():
@@ -459,6 +463,8 @@ class Command(BaseCommand):
                 
             if found_in_db and not found_in_db_same:  # then update it
                 u = govservices.models.Service.objects.get(src_id=s['id'])
+                u.org_acronym = s['org_acronym']
+                u.json_filename = s['json_filename']
                 if 'oldID' in s.keys():
                     u.old_src_id = s['oldID']
                 if 'infoUrl' in s.keys():

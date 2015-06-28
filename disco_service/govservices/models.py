@@ -28,6 +28,8 @@ class ServiceType(models.Model):
 class Service(models.Model):
     old_src_id = models.IntegerField(null=True, blank=True)
     src_id  = models.CharField(max_length=256, null=True, blank=True)
+    org_acronym  = models.CharField(max_length=64, null=True, blank=True)
+    json_filename  = models.CharField(max_length=512, null=True, blank=True)
     info_url = models.CharField(max_length=512, null=True, blank=True)
     name = models.CharField(max_length=512, null=True, blank=True)
     acronym = models.CharField(max_length=512, null=True, blank=True)
