@@ -167,6 +167,15 @@ class ServiceJsonRepository(object):
             self._service_types = out
             return out
 
+    def list_services(self):
+        out = []
+        for a, f, jsonpayload in self.agency_service_json():
+            service = jsonpayload['service']
+            if service not in out:
+                out.append(service)
+            # else - why are there duplicates?
+        return out
+
 class Command(BaseCommand):
     help = 'source service specification (json) from Github, then update the DB as required'
 
@@ -175,23 +184,9 @@ class Command(BaseCommand):
         repo_path = settings.SERVICE_CATALOGUE_REPOSITORY_PATH
         repo_remote = settings.SERVICE_CATALOGUE_REPOSITORY_REMOTE
 
-
-        # OK, we have change to process
         # 1. load all of the json into RAM
         sjr = ServiceJsonRepository(repo_path, repo_remote)
         '''
-        notagencies = ('lists', 'genService', '.git')
-        agencies = {}
-        for d in os.listdir(repo_path):
-            agency_path = os.path.join(repo_path, d)
-            if d not in notagencies and os.path.isdir(agency_path):
-                agencies[d] = {}
-                for f in os.listdir(agency_path):
-                    name = os.path.join(agency_path, f)
-                    if not os.path.isdir(name):
-                        agencies[d][f] = json.loads(open(name).read())
-        '''
-
         #
         # now we inspect it to design the ORM class
         #
@@ -274,6 +269,7 @@ class Command(BaseCommand):
         print ''
         # dimmension
         '''
+        '''
         print "dim_keys: %s" % dim_keys
         print "dim example:"
         for dk in dim.keys():
@@ -284,6 +280,7 @@ class Command(BaseCommand):
                 pass
             print "  %s: %s" % (dk, dim[dk])
         print ''
+        '''
         '''
         # service (analysis)
         #
@@ -305,7 +302,8 @@ class Command(BaseCommand):
                     print "type: %s, example: %s" % (type(val), val)
                 else:
                     print ''
-        
+        '''
+
         # a. generate text analysis from json
         # b. generate dot, visualise...
         # c. generate Model.model subclasses
@@ -465,6 +463,134 @@ class Command(BaseCommand):
                     found_in_json = True
             if not found_in_json:
                 govservices.models.ServiceType.objects.get(label=db_st).delete()
+
+        #
+        # services themselves
+        #
+        json_services = sjr.list_services()
+        db_services = []
+        for dbs in govservices.models.Service.objects.all():
+            sdict = {
+                'oldID': dbs.old_src_id,
+                'infoUrl': dbs.info_url,
+                'name': dbs.name,
+                'acronym': dbs.acronym,
+                'tagline': dbs.tagline,
+                'primaryAudience': dbs.primary_audience,
+                'analyticsAvailable': dbs.analytics_available,
+                'incidental': dbs.incidental,
+                'secondary': dbs.secondary,
+                'type': dbs.src_type,
+                'description': dbs.description,
+                'id': dbs.src_id
+            }
+            #if 'serviceTypes' in s.keys():
+            #    s.'serviceTypes': s.service_types, # M:N
+            #if '' in s.keys():
+            #    s.'tags': s.service_tags, # M:N
+            #if '' in s.keys():
+            #    s.'lifeEvents': s.life_events:
+            db_services.append(sdict)
+
+        # if found in json but not DB, insert to DB
+        for s in json_services:
+            found_in_db = False
+            for dbs in db_services:
+                if dbs['id'] == s['id']:
+                    found_in_db=True
+                    num_match=0
+                    for k in s.keys():
+                        if k in dbs.keys():
+                            if dbs[k] == s[k]:
+                                num_match += 1
+                    if num_match == len(s):
+                        found_in_db_same = True
+                    else:
+                        found_in_db_same = False
+
+            if not found_in_db:  # then insert it
+                gs = govservices.models.Service(src_id = s['id'])
+                if 'oldID' in s.keys():
+                    gs.old_src_id = s['oldID']
+                if 'infoUrl' in s.keys():
+                    if s['infoUrl'] != '':
+                        gs.info_url = s['infoUrl']
+                if 'name' in s.keys():
+                    gs.name = s['name']
+                if 'acronym' in s.keys():
+                    gs.acronym = s['acronym']
+                if 'tagline' in s.keys():
+                    gs.tagline = s['tagline']
+                if 'primaryAudience' in s.keys():
+                    gs.primaryAudience = s['primaryAudience']
+                if 'analyticsAvailable' in s.keys():
+                    gs.analyticsAvailable = s['analyticsAvailable']
+                if 'incidental' in s.keys():
+                    gs.incidental = s['incidental']
+                if 'secondary' in s.keys():
+                    gs.secondary = s['secondary']
+                if 'type' in s.keys():
+                    gs.src_type = s['type']
+                if 'description' in s.keys():
+                    gs.description = s['description']
+                if 'id' in s.keys():
+                    gs.src_id = s['id']
+                #if 'serviceTypes' in s.keys():
+                #    s.'serviceTypes': s.service_types, # M:N
+                #if '' in s.keys():
+                #    s.'tags': s.service_tags, # M:N
+                #if '' in s.keys():
+                #    s.'lifeEvents': s.life_events:
+                
+                gs.save()
+
+            if found_in_db and not found_in_db_same:  # then update it
+                u = govservices.models.Service.objects.get(src_id=s['id'])
+                if 'oldID' in s.keys():
+                    u.old_src_id = s['oldID']
+                if 'infoUrl' in s.keys():
+                    if s['infoUrl'] != '':
+                        u.info_url = s['infoUrl']
+                if 'name' in s.keys():
+                    u.name = s['name']
+                if 'acronym' in s.keys():
+                    u.acronym = s['acronym']
+                if 'tagline' in s.keys():
+                    u.tagline = s['tagline']
+                if 'primaryAudience' in s.keys():
+                    u.primaryAudience = s['primaryAudience']
+                if 'analyticsAvailable' in s.keys():
+                    u.analyticsAvailable = s['analyticsAvailable']
+                if 'incidental' in s.keys():
+                    u.indicental = s['incidental']
+                if 'secondary' in s.keys():
+                    u.secondary = s['secondary']
+                if 'type' in s.keys():
+                    u.src_type = s['type']
+                if 'description' in s.keys():
+                    u.description = s['description']
+                if 'id' in s.keys():
+                    u.src_id = s['id']
+                #if 'serviceTypes' in s.keys():
+                #    s.'serviceTypes': s.service_types, # M:N
+                #if '' in s.keys():
+                #    s.'tags': s.service_tags, # M:N
+                #if '' in s.keys():
+                #    s.'lifeEvents': s.life_events:
+                
+                u.save()
+            '''
+            # if it's in the DB but NOT in the json, then delete it
+            for dbss in govservices.models.SubService.objects.all():
+            found_in_json = False
+            for ss in sjr.list_subservices():
+                if ss['id'] == dbss.cat_id:
+                    found_in_json = True
+            if not found_in_json:
+                dbss.delete()
+            '''
+
+
 
 
 if __name__ == "__main__":
