@@ -1,0 +1,50 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1"/>
+  <title>{{siteTitle}}</title>
+
+    <link href="/bower_components/bootstrap/dist/css/bootstrap.min.css" media="all" rel="stylesheet" />
+    <link href="/bower_components/bootstrap/dist/css/bootstrap-theme.min.css" media="all" rel="stylesheet" />
+  <link href="/css/app.css" media="all" rel="stylesheet" />
+
+
+    <script src="/js/ios-orientationchange-fix.js"></script>
+    <script src="/bower_components/jquery/jquery.min.js"></script>
+    <link rel="stylesheet" href="/bower_components/jquery-ui/themes/base/jquery-ui.css"/>
+    <script src="/bower_components/jquery-ui/jquery-ui.min.js" ></script>
+    <script src="/bower_components/bootstrap/dist/js/bootstrap.min.js"></script>
+</head>
+
+<body role="document">
+
+<!-- Fixed navbar -->
+<nav class="navbar navbar-inverse">
+    <div class="container">
+        <div class="navbar-header">
+            <button type="button" class="navbar-toggle collapsed" data-toggle="collapse" data-target="#navbar" aria-expanded="false" aria-controls="navbar">
+                <span class="sr-only">Toggle navigation</span>
+                <span class="icon-bar"></span>
+                <span class="icon-bar"></span>
+                <span class="icon-bar"></span>
+            </button>
+            <a class="navbar-brand" href="/">Service Catalogue</a>
+        </div>
+        <div id="navbar" class="navbar-collapse collapse">
+            <ul class="nav navbar-nav">
+                <li><a href="/">Home</a></li>
+                <li><a href="/viewer">Viewer</a></li>
+                <li><a href="/editor">Editor</a></li>
+                <li><a href="/about">About</a></li>
+            </ul>
+        </div><!--/.nav-collapse -->
+    </div>
+</nav>
+
+        {{{body}}}
+
+
+</body>
+
+</html>

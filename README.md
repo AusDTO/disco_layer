@@ -8,3 +8,6 @@ Currently requires a local orientDb instance. Does not talk to a remote.
 A temporary script to take a service definition for an organisation and generate a document for each service.
 
 This is expected to be moved into a more complete tool for users to manage and update service information.
+
+##service_catalogue
+A tool to edit and manage organisation service definitions

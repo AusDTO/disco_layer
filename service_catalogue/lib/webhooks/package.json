@@ -1,0 +1,4 @@
+{
+  "name": "Service Registry Viewer",
+  "main": "viewer.js"
+}

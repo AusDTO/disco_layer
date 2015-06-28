@@ -1,0 +1,39 @@
+<script src="/bower_components/jquery/jquery.min.js"></script>
+<script src="/bower_components/lunr.js/lunr.min.js"></script>
+
+<input type="text"/>
+<div id="output"/></div>
+<script>
+    var data = {{{data}}};
+    var index = lunr.Index.load({{{index}}});
+    console.log(index.search('foo'));
+    var debounce = function (fn) {
+        var timeout
+        return function () {
+            var args = Array.prototype.slice.call(arguments),
+                    ctx = this
+
+            clearTimeout(timeout)
+            timeout = setTimeout(function () {
+                fn.apply(ctx, args)
+            }, 100)
+        }
+    }
+
+    $('input').bind('keyup', debounce(function () {
+        if ($(this).val() < 2) return
+        var query = $(this).val()
+        var results = index.search(query).map(function (result) {
+            return data[result.ref];
+        })
+var output = "";
+        for (var i in results) {
+            if (results[i].infoUrl && results[i].infoUrl != "") {
+                output = output + "<b><a href='" + results[i].infoUrl + "'>"+results[i].name + '</a></b><br/>' + results[i].description + '<hr/>';
+            } else {
+                output = output + "<b>" + results[i].name + '</b><br/>' + results[i].description + '<hr/>';
+            }
+        }
+        $('#output').html(output);
+    }))
+</script>

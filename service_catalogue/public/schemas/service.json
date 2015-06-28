@@ -1,0 +1,249 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "id": "/",
+  "type": "object",
+  "title": "service",
+  "headerTemplate": "{{ self.name }}",
+  "properties": {
+    "id": {
+      "id": "id",
+      "type": "string",
+      "propertyOrder": 10
+    },
+    "name": {
+      "id": "name",
+      "type": "string",
+      "propertyOrder": 20
+    },
+    "description": {
+      "id": "description",
+      "type": "string",
+      "format": "textarea",
+      "propertyOrder": 30
+    },
+    "serviceUrl": {
+      "id": "serviceUrl",
+      "title": "Service URL",
+      "type": "string",
+      "format": "url",
+      "propertyOrder": 40
+    },
+    "docUrl": {
+      "id": "infoUrl",
+      "title": "Documentation URL",
+      "type": "string",
+      "format": "url",
+      "propertyOrder": 50
+    },
+    "apiUrl": {
+      "id": "apiUrl",
+      "title": "Web Service/API URL",
+      "type": "string",
+      "format": "url",
+      "propertyOrder": 60
+    },
+    "serviceType": {
+      "id": "serviceType",
+      "title": "Service Type",
+      "type": "array",
+      "format": "checkbox",
+      "uniqueItems": true,
+      "items": {
+        "type": "string",
+        "enum": [
+          "Registration or renewal",
+          "Claims or benefits",
+          "Reporting or lodgement",
+          "Frontline support",
+          "Search and information",
+          "Events and bookings",
+          "Support tools"
+        ]
+      },
+      "propertyOrder": 70
+    },
+    "geography_coverage": {
+      "id": "geography_coverage",
+      "title": "Geography Coverage",
+      "type": "string",
+      "propertyOrder": 80
+    },
+    "topic": {
+      "id": "topic",
+      "title": "Topic",
+      "type": "array",
+      "format": "checkbox",
+      "uniqueItems": true,
+      "items": {
+        "type": "string",
+        "enum": [
+          "Benefits and payments",
+          "Business and industry",
+          "Education and training",
+          "Emergencies and disasters",
+          "Environment and science",
+          "Family and community",
+          "Health",
+          "Immigration and visas",
+          "IT and communications",
+          "Jobs and workplace",
+          "Money and tax",
+          "Passports and travel",
+          "Public safety and law",
+          "Transport",
+          "About government",
+          "About Australia"
+        ]
+      },
+      "propertyOrder": 90
+    },
+
+    "mygov_enabled": {
+      "id": "mygov_enabled",
+      "title": "MyGov enabled?",
+      "type": "boolean",
+      "format": "checkbox",
+      "propertyOrder": 110
+    },
+    "tags": {
+      "id": "tags",
+      "type": "string",
+      "propertyOrder": 120
+    },
+    "contact": {
+      "id": "contact",
+      "type": "string",
+      "propertyOrder": 130
+    },
+    "primaryAudience": {
+      "id": "primaryAudience",
+      "title": "Primary Audience/User Type",
+      "type": "array",
+      "format": "checkbox",
+      "uniqueItems": true,
+      "items": {
+        "type": "string",
+        "enum": [
+          "Businesses",
+          "Individuals",
+          "Government"
+        ]
+      }
+    },
+    "businesses_details": {
+      "id": "businesses_details",
+      "type": "object",
+      "properties": {
+        "business_event": {
+          "id": "business_event",
+          "title": "Business Event",
+          "type": "string"
+        },
+        "business_type": {
+          "id": "business_type",
+          "title": "Business Type",
+          "type": "string",
+          "enum": [
+            "starting",
+            "running",
+            "growing",
+            "closing"
+          ]
+        }
+      }
+    },
+    "individuals_details": {
+      "id": "individuals_details",
+      "type": "object",
+      "properties": {
+        "targetedAgeRange": {
+          "id": "targetedAgeRange",
+          "title": "Age Range",
+          "type": "string",
+          "format": "number"
+        },
+
+        "lifeEvents": {
+          "id": "lifeEvents",
+          "title": "Life Event(s)",
+          "type": "array",
+          "format": "checkbox",
+          "uniqueItems": true,
+          "items": {
+            "type": "string",
+            "enum": [
+              "I have lost my job",
+              "I want to become an independent contractor",
+              "I have been diagnosed with a chronic illness",
+              "I am travelling overseas",
+              "I am retiring",
+              "I want to study in Australia (from overseas)",
+              "I am getting divorced",
+              "Someone has died",
+              "I am leaving school and wondering what next",
+              "I am having a baby",
+              "My child is starting school",
+              "I am moving house",
+              "I want to start a business",
+              "I want to grow my business",
+              "I am employing someone for the first time",
+              "I want to close down my business"
+            ]
+          }
+        }
+      }
+    },
+    "acronym": {
+      "id": "acronym",
+      "type": "string"
+    },
+    "tagline": {
+      "id": "tagline",
+      "type": "string"
+    },
+    "description": {
+      "id": "description",
+      "type": "string",
+      "propertyOrder": 40
+    },
+    "oldID": {
+      "id": "oldID",
+      "type": "integer"
+    },
+    "colourStyle": {
+      "id": "colourStyle",
+      "format": "color",
+      "type": "string"
+    },
+    "lineStyle": {
+      "id": "lineStyle",
+      "type": "string"
+    },
+    "shapeStyle": {
+      "id": "shapeStyle",
+      "type": "string"
+    },
+    "hoverFieldStyle": {
+      "id": "hoverFieldStyle",
+      "type": "string"
+    },
+    "Dimension": {
+      "id": "Dimension",
+      "type": "array",
+      "items": {
+        "id": "link",
+        "type": "object",
+        "properties": {
+          "target": {
+            "id": "target",
+            "type": "string",
+            "options": {
+              "autocomplete": true,
+              "type": "link-target"
+            }
+          }
+        }
+      }
+    }
+  }
+}

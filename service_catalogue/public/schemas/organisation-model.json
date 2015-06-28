@@ -1,0 +1,359 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "id": "orgModel",
+  "title": "Organisation Model",
+  "type": "object",
+  "properties": {
+    "serviceOrganisation": {
+      "id": "serviceOrganisation",
+      "title": "Organisation Details Model",
+      "type": "object",
+      "properties": {
+        "id": {
+          "id": "id",
+          "type": "string"
+        },
+        "name": {
+          "id": "name",
+          "type": "string"
+        },
+        "colourStyle": {
+          "id": "colourStyle",
+          "type": "string",
+          "format": "color"
+        },
+        "lineStyle": {
+          "id": "lineStyle",
+          "type": "string"
+        },
+        "shapeStyle": {
+          "id": "shapeStyle",
+          "type": "string"
+        },
+        "hoverFieldStyle": {
+          "id": "hoverFieldStyle",
+          "type": "string"
+        }
+      }
+    },
+    "serviceDimensionTypes": {
+      "id": "serviceDimensionTypes",
+      "title":  "Service Dimension Types",
+      "type": "array",
+      "items": {
+        "id": "serviceDimensionType",
+        "type": "object",
+        "headerTemplate": "{{ self.name }} ({{ self.id }})",
+        "properties": {
+          "id": {
+            "id": "id",
+            "type": "string"
+          },
+          "name": {
+            "id": "name",
+            "type": "string"
+          },
+          "acronym": {
+            "id": "acronym",
+            "type": "string"
+          },
+          "tagline": {
+            "id": "tagline",
+            "type": "string"
+          },
+          "description": {
+            "id": "description",
+            "type": "string"
+          },
+          "userField": {
+            "id": "userField",
+            "type": "object",
+            "properties": {
+              "fieldName": {
+                "id": "fieldName",
+                "type": "string"
+              },
+              "fieldType": {
+                "id": "fieldType",
+                "type": "string"
+              },
+              "required": {
+                "id": "required",
+                "type": "boolean"
+              },
+              "repeats": {
+                "id": "repeats",
+                "type": "string"
+              }
+            }
+          },
+          "colourStyle": {
+            "id": "colourStyle",
+            "format": "color",
+            "type": "string"
+          },
+          "lineStyle": {
+            "id": "lineStyle",
+            "type": "string"
+          },
+          "shapeStyle": {
+            "id": "shapeStyle",
+            "type": "string"
+          },
+          "hoverFieldStyle": {
+            "id": "hoverFieldStyle",
+            "type": "string"
+          }
+        }
+      }
+    },
+    "serviceComponentTypes": {
+      "id": "serviceComponentTypes",
+      "type": "array",
+      "title": "Service Component Types",
+      "items": {
+        "id": "serviceComponentType",
+        "headerTemplate": "{{ self.name }} ({{ self.id }})",
+        "type": "object",
+        "properties": {
+          "id": {
+            "id": "id",
+            "type": "string"
+          },
+          "name": {
+            "id": "name",
+            "type": "string"
+          },
+          "acronym": {
+            "id": "acronym",
+            "type": "string"
+          },
+          "tagline": {
+            "id": "tagline",
+            "type": "string"
+          },
+          "description": {
+            "id": "description",
+            "type": "string"
+          },
+          "userField": {
+            "propertyOrder": 1001,
+            "id": "userField",
+            "type": "object",
+            "properties": {
+              "fieldName": {
+                "id": "fieldName",
+                "type": "string"
+              },
+              "fieldType": {
+                "id": "fieldType",
+                "type": "string"
+              },
+              "required": {
+                "id": "required",
+                "type": "boolean"
+              },
+              "repeats": {
+                "id": "repeats",
+                "type": "string"
+              }
+            }
+          },
+          "colourStyle": {
+            "id": "colourStyle",
+            "format": "color",
+            "type": "string"
+          },
+          "lineStyle": {
+            "id": "lineStyle",
+            "type": "string"
+          },
+          "shapeStyle": {
+            "id": "shapeStyle",
+            "type": "string"
+          },
+          "hoverFieldStyle": {
+            "id": "hoverFieldStyle",
+            "type": "string"
+          }
+        }
+      }
+    },
+    "channelTypes": {
+      "id": "channelTypes",
+      "type": "array",
+      "title": "Channel Types",
+      "items": {
+        "id": "serviceChannelType",
+        "headerTemplate": "{{ self.name }} ({{ self.id }})",
+        "type": "object",
+        "properties": {
+          "id": {
+            "id": "id",
+            "type": "string"
+          },
+          "name": {
+            "id": "name",
+            "type": "string"
+          },
+          "acronym": {
+            "id": "acronym",
+            "type": "string"
+          },
+          "tagline": {
+            "id": "tagline",
+            "type": "string"
+          },
+          "description": {
+            "id": "description",
+            "type": "string"
+          },
+          "userField": {
+            "propertyOrder": 1001,
+            "id": "userField",
+            "type": "object",
+            "properties": {
+              "fieldName": {
+                "id": "fieldName",
+                "type": "string"
+              },
+              "fieldType": {
+                "id": "fieldType",
+                "type": "string"
+              },
+              "required": {
+                "id": "required",
+                "type": "boolean"
+              },
+              "repeats": {
+                "id": "repeats",
+                "type": "string"
+              }
+            }
+          },
+          "colourStyle": {
+            "id": "colourStyle",
+            "format": "color",
+            "type": "string"
+          },
+          "lineStyle": {
+            "id": "lineStyle",
+            "type": "string"
+          },
+          "shapeStyle": {
+            "id": "shapeStyle",
+            "type": "string"
+          },
+          "hoverFieldStyle": {
+            "id": "hoverFieldStyle",
+            "type": "string"
+          }
+        }
+      }
+    },
+    "allowedLinks": {
+      "id": "allowedLinks",
+      "type": "array",
+      "items": {
+        "id": "10",
+        "type": "object",
+        "properties": {
+          "id": {
+            "id": "id",
+            "type": "string"
+          },
+          "source": {
+            "id": "source",
+            "type": "string",
+            "watch": {
+              "dimensions": "orgModel.serviceDimensionTypes",
+              "components": "orgModel.serviceComponentTypes",
+              "channels": "orgModel.serviceChannelTypes"
+            },
+            "enumSource": [
+              {
+                "source": "components",
+                "value": "{{item.id}}",
+                "title": "{{item.name}}"
+              },
+              {
+                "source": "dimensions",
+                "value": "{{item.id}}",
+                "title": "{{item.name}}"
+              },
+              {
+                "source": "channels",
+                "value": "{{item.id}}",
+                "title": "{{item.name}}"
+              }
+            ]
+          },
+          "fromMultiples": {
+            "id": "fromMultiples",
+            "type": "string"
+          },
+          "target": {
+            "id": "target",
+            "type": "string",
+            "watch": {
+              "dimensions": "orgModel.serviceDimensionTypes",
+              "components": "orgModel.serviceComponentTypes",
+              "channels": "orgModel.serviceChannelTypes"
+            },
+            "enumSource": [
+              {
+                "source": "components",
+                "value": "{{item.id}}",
+                "title": "{{item.name}}"
+              },
+              {
+                "source": "dimensions",
+                "value": "{{item.id}}",
+                "title": "{{item.name}}"
+              },
+              {
+                "source": "channels",
+                "value": "{{item.id}}",
+                "title": "{{item.name}}"
+              }
+            ]
+          },
+          "toMultiples": {
+            "id": "toMultiples",
+            "type": "string"
+          },
+          "conditions:": {
+            "id": "conditions:",
+            "type": "string"
+          },
+          "userfields": {
+            "id": "userfields",
+            "type": "array",
+            "items": {
+              "id": "2",
+              "type": "object",
+              "properties": {
+                "fieldName": {
+                  "id": "fieldName",
+                  "type": "string"
+                },
+                "fieldType": {
+                  "id": "fieldType",
+                  "type": "string"
+                },
+                "required": {
+                  "id": "required",
+                  "type": "boolean"
+                },
+                "repeats": {
+                  "id": "repeats",
+                  "type": "boolean"
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+}

@@ -1,0 +1,76 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "id": "/",
+  "type": "object",
+  "title": "serviceDimension",
+  "headerTemplate": "{{ self.name }} ({{ self.type }})",
+  "properties": {
+    "type": {
+      "id": "type",
+      "type": "string",
+      "propertyOrder": 30
+    },
+    "id": {
+      "id": "id",
+      "type": "string",
+      "propertyOrder": 10
+    },
+    "name": {
+      "id": "name",
+      "type": "string",
+      "propertyOrder": 20
+    },
+    "acronym": {
+      "id": "acronym",
+      "type": "string"
+    },
+    "tagline": {
+      "id": "tagline",
+      "type": "string"
+    },
+    "description": {
+      "id": "description",
+      "type": "string",
+      "propertyOrder": 40
+    },
+    "oldID": {
+      "id": "oldID",
+      "type": "integer"
+    },
+    "colourStyle": {
+      "id": "colourStyle",
+      "format": "color",
+      "type": "string"
+    },
+    "lineStyle": {
+      "id": "lineStyle",
+      "type": "string"
+    },
+    "shapeStyle": {
+      "id": "shapeStyle",
+      "type": "string"
+    },
+    "hoverFieldStyle": {
+      "id": "hoverFieldStyle",
+      "type": "string"
+    },
+    "links": {
+      "id": "links",
+      "type": "array",
+      "items": {
+        "id": "link",
+        "type": "object",
+        "properties": {
+          "target": {
+            "id": "target",
+            "type": "string",
+            "options": {
+    "autocomplete": true,
+    "type": "link-target"
+  }
+          }
+        }
+      }
+    }
+  }
+}
