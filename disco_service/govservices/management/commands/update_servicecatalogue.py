@@ -143,7 +143,28 @@ class ServiceJsonRepository(object):
                         if le not in out:
                             #print "DEBUG list_life_events: cache add '%s'" % le
                             out.append(le)
+                if 'LifeEvents' in service.keys(): # alternate spelling
+                    for le in service['LifeEvents']:
+                        if le not in out:
+                            out.append(le)
+                
             self._life_events = out
+            return out
+
+    def list_service_types(self):
+        try:
+            out = self._service_types
+            return out
+        except:
+            out = []
+            for a, f, jsonpayload in self.agency_service_json():
+                service = jsonpayload['service']
+                for k in ('serviceTypes', 'ServiceTypes'):
+                    if k in service.keys():
+                        for st in service[k]:
+                            if st not in out:
+                                out.append(st)
+            self._service_types = out
             return out
 
 class Command(BaseCommand):
@@ -418,7 +439,32 @@ class Command(BaseCommand):
                 if json_le == db_le:
                     found_in_json = True
             if not found_in_json:
-                govservices.models.LifeEvent.objects.get(label=st).delete()
+                govservices.models.LifeEvent.objects.get(label=db_le).delete()
+
+        #
+        # servce types
+        #
+        # another tag-like property
+        json_service_types = sjr.list_service_types()
+        db_service_types = []
+        for dbst in govservices.models.ServiceType.objects.all():
+            db_service_types.append(dbst.label)
+        # if found in json but not DB, insert to DB
+        for json_st in json_service_types:
+            found_in_db = False
+            for db_st in db_service_types:
+                if json_st == db_st:
+                    found_in_db = True
+            if not found_in_db:
+                govservices.models.ServiceType(label=json_st).save()
+        # if found in DB but not in JSON, delete from DB
+        for db_st in db_service_types:
+            found_in_json = False
+            for json_st in json_service_types:
+                if json_st == db_st:
+                    found_in_json = True
+            if not found_in_json:
+                govservices.models.ServiceType.objects.get(label=db_st).delete()
 
 
 if __name__ == "__main__":

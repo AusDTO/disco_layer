@@ -19,3 +19,8 @@ class LifeEvent(models.Model):
     label = models.TextField()
     def __unicode__(self):
         return self.label
+
+class ServiceType(models.Model):
+    label = models.TextField()
+    def __unicode__(self):
+        return self.label
