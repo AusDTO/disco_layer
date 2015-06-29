@@ -8,6 +8,7 @@ import os
 import json
 import govservices
 
+
 class ServiceJsonRepository(object):
     def __init__(self, json_path):
         self.json_path = json_path
@@ -214,6 +215,8 @@ class Command(BaseCommand):
 
             if found_in_db and not found_in_db_same:  # then update it
                 u = govservices.models.SubService.objects.get(cat_id=ss['id'])
+                if 'desc' not in ss.keys():
+                    ss['desc'] = None
                 u.desc = ss['desc']
                 u.name=ss['name']
                 if 'infoUrl' in ss.keys():
@@ -307,6 +310,28 @@ class Command(BaseCommand):
             if not found_in_json:
                 govservices.models.ServiceType.objects.get(label=db_st).delete()
 
+        #
+        # agencies
+        #
+        db_agencies = []
+        for dba in govservices.models.Agency.objects.all():
+            db_agencies.append(dba.acronym)
+
+        json_agencies = srj.list_agencies()
+        for json_a in json_agencies:
+            found_in_db = False
+            for db_a in db_agencies:
+                if db_a == json_a:
+                    found_in_db = True
+            if not found_in_db:
+                govservices.models.Agency(acronym=json_a).save()
+        for db_a in db_agencies:
+            found_in_json = False
+            for json_a in json_agencies:
+                if json_a == db_a:
+                    found_in_json = True
+            if not found_in_json:
+                govservices.models.Agency.objects.get(acronym=db_a).delete()
         #
         # services themselves
         #
