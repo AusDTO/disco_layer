@@ -1,3 +1,8 @@
+EXPECTED_SERVICE_TYPES = (
+    'Jobs and workplace',
+    'Claims or benefits',
+    'I am getting divorced',
+)
 EXPECTED_LIFE_EVENTS = (
     'I am employing someone for the first time',
     'I have lost my job',

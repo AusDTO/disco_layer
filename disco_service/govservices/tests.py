@@ -114,10 +114,21 @@ class JSONParser(TestCase):
         num_found = len(found_labels)
         num_distinct = len(set(found_labels))
         self.assertEqual(num_found, num_distinct)
-        
 
     def test_list_service_types(self):
-        pass
+        '''
+        another tag-like weak entity, per life_event and service_tag
+        '''
+        expected_labels = test_fixtures.EXPECTED_SERVICE_TYPES
+        found_labels = self.jsr.list_service_types()
+        for st in found_labels:
+            self.assertIn(st, expected_labels)
+        for st in expected_labels:
+            self.assertIn(st, found_labels)
+        num_found = len(found_labels)
+        num_distinct = len(set(found_labels))
+        self.assertEqual(num_found, num_distinct)
+        
 
     def test_list_services(self):
         pass
