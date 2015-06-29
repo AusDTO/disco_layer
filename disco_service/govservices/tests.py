@@ -9,6 +9,14 @@ class JSONParser(TestCase):
         fixture_path = "./test_fixtures/"
         self.jsr = ServiceJsonRepository(fixture_path)
 
+    def test_list_service_dimensions(self):
+        '''
+        we expect to get a list of service dimensions
+        pk (agency, dim_id) 
+        and the rest...
+        '''
+        self.assertEqual('chalk', 'cheese') # TODO
+
     def test_list_agencies(self):
         # given the fixture, all expected agencies must present
         found_agencies = self.jsr.list_agencies()
