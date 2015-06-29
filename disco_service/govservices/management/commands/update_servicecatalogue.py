@@ -20,8 +20,6 @@ class ServiceJsonRepository(object):
             out = []
             for agency in self.list_agencies():
                 agency_jsonfiles = self.list_agency_jsonfiles(agency)
-                #for j, p in agency_jsonfiles:
-                #    #print "DEBUG agency_service_json: %s, %s" % (agency, j) 
                 for jsonfname, jsonpayload in agency_jsonfiles:
                     out.append((agency, jsonfname, jsonpayload))
             self._agency_service_json_tuples = out
@@ -38,8 +36,10 @@ class ServiceJsonRepository(object):
             if not os.path.isdir(name):
                 jsonfilename = f
                 jsonpayload = json.loads(open(name).read())
+                # inject agency into the service jsonpayload
+                if 'agency' not in jsonpayload.keys():
+                    jsonpayload['agency'] = agency
                 out.append((jsonfilename, jsonpayload))
-        self._agency_service_json_tuples = out
         return out
 
     def list_agencies(self):
@@ -73,8 +73,12 @@ class ServiceJsonRepository(object):
                                 for k in subservice.keys():
                                     if subservice[k] is None:
                                         del(subservice[k])
-                                if subservice not in subservices:
-                                    subservices.append(subservice)
+                                    # inject agency into the subservice jsonpayload
+                                    if 'agency' not in subservice.keys():
+                                        subservice['agency'] = agency
+                                    if subservice not in subservices:
+                                        subservices.append(subservice)
+
             self._subservices = subservices
             return subservices
 
@@ -144,18 +148,12 @@ class Command(BaseCommand):
     help = 'source service specification (json) from Github, then update the DB as required'
 
     def handle(self, *args, **options):
-        #raise CommandError('Eek!')
+        # the filesystem json interface is in the repo
+        # at ./catalogues/serviceDocuments/<agency>/<service spec>
         repo_path = settings.SERVICE_CATALOGUE_REPOSITORY_PATH
-        
-        sjr = ServiceJsonRepository(repo_path)
-
-        # a. generate text analysis from json
-        # b. generate dot, visualise...
-        # c. generate Model.model subclasses
-        # d. break it into separate commands
-        # e. separate service catalogue app!
-        # f. build script (bootstrap self from repo).
-        # g. generate haystack index
+        catalogue_path = os.path.join(repo_path, 'catalogues')
+        service_docs = os.path.join(catalogue_path, 'serviceDocuments')
+        sjr = ServiceJsonRepository(service_docs)
 
         #
         # sync subservices
