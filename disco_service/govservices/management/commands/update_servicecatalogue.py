@@ -138,10 +138,6 @@ class ServiceJsonRepository(object):
             service['org_acronym'] = a
             if service not in out:
                 out.append(service)
-            # else - why are there duplicates?
-            # DEBUG
-            #if 'serviceTypes' in service.keys():
-            #    print service['serviceTypes']
         return out
 
 class Command(BaseCommand):
@@ -150,10 +146,8 @@ class Command(BaseCommand):
     def handle(self, *args, **options):
         #raise CommandError('Eek!')
         repo_path = settings.SERVICE_CATALOGUE_REPOSITORY_PATH
-        repo_remote = settings.SERVICE_CATALOGUE_REPOSITORY_REMOTE
-
-        # 1. load all of the json into RAM
-        sjr = ServiceJsonRepository(repo_path, repo_remote)
+        
+        sjr = ServiceJsonRepository(repo_path)
 
         # a. generate text analysis from json
         # b. generate dot, visualise...

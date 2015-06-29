@@ -31,20 +31,7 @@ class JSONParser(TestCase):
         and the second element is a parsed json payload.
         '''
         # TODO: move to test_fixtures.__init__.py, EXPECTED_AGENCY_JSONFILES
-        expected_agency_jsonfiles = {
-            'DEF': (
-                'bbq_tax.json',
-                'birthday_tax.json',
-                'christmas_tax.json',
-                'register_bbq.json',),
-            'FOO': (
-                'space_robot_loans.json',
-                'spaceship_loans.json',),
-            'QWERTY': (
-                'birthday_bonus.json',),
-            'XYZ': (
-                'aditional_christmas_tax.json',
-                'big_effort_bonus.json',)}
+        expected_agency_jsonfiles = test_fixtures.EXPECTED_AGENCY_JSONFILES
         for agency in expected_agency_jsonfiles.keys():
             found_jsonfiles = self.jsr.list_agency_jsonfiles(agency)
             found_jsonfile_names = []
@@ -131,7 +118,24 @@ class JSONParser(TestCase):
         
 
     def test_list_services(self):
-        pass
+        '''
+        we expect every servce in the fixture will be found and returned
+        '''
+        found_services = self.jsr.list_services()
+        # all the filenames in fixture are found
+        expected_filenames = test_fixtures.EXPECTED_FILENAMES
+        found_filenames = []
+        for s in found_services:
+            filename_attribute = s['json_filename']
+            self.assertIn(filename_attribute, expected_filenames)
+            found_filenames.append(filename_attribute)
+        # including filenames in agency_jsonfiles
+        expected_agency_jsonfiles = test_fixtures.EXPECTED_AGENCY_JSONFILES
+        for k in expected_agency_jsonfiles.keys():
+            for fn in expected_agency_jsonfiles[k]:
+                self.assertIn(fn, found_filenames)
+        # also, all the json payloads check out too...
+        # TODO
 
     def test_agency_service_json(self):
         '''

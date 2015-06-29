@@ -1,8 +1,11 @@
+EXPECTED_SERVICES = ()
+
 EXPECTED_SERVICE_TYPES = (
     'Jobs and workplace',
     'Claims or benefits',
     'I am getting divorced',
 )
+
 EXPECTED_LIFE_EVENTS = (
     'I am employing someone for the first time',
     'I have lost my job',
@@ -166,3 +169,18 @@ EXPECTED_FILENAMES = (
     'aditional_christmas_tax.json',
     'big_effort_bonus.json',
 )
+
+EXPECTED_AGENCY_JSONFILES = {
+    'DEF': (
+        'bbq_tax.json',
+        'birthday_tax.json',
+        'christmas_tax.json',
+        'register_bbq.json',),
+    'FOO': (
+        'space_robot_loans.json',
+        'spaceship_loans.json',),
+    'QWERTY': (
+        'birthday_bonus.json',),
+    'XYZ': (
+        'aditional_christmas_tax.json',
+        'big_effort_bonus.json',),}
