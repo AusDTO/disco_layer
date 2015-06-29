@@ -140,7 +140,7 @@ class ServiceJsonRepository(object):
         for a, f, jsonpayload in self.agency_service_json():
             service = jsonpayload['service']
             service['json_filename'] = f
-            service['org_acronym'] = a
+            service['agency'] = a
             if service not in out:
                 out.append(service)
         return out
@@ -157,11 +157,34 @@ class Command(BaseCommand):
         sjr = ServiceJsonRepository(service_docs)
 
         #
+        # agencies
+        #
+        db_agencies = []
+        for dba in govservices.models.Agency.objects.all():
+            db_agencies.append(dba.acronym)
+
+        json_agencies = sjr.list_agencies()
+        for json_a in json_agencies:
+            found_in_db = False
+            for db_a in db_agencies:
+                if db_a == json_a:
+                    found_in_db = True
+            if not found_in_db:
+                govservices.models.Agency(acronym=json_a).save()
+        for db_a in db_agencies:
+            found_in_json = False
+            for json_a in json_agencies:
+                if json_a == db_a:
+                    found_in_json = True
+            if not found_in_json:
+                govservices.models.Agency.objects.get(acronym=db_a).delete()
+        #
         # sync subservices
         #
         db_subservices = []
         for ss in govservices.models.SubService.objects.all():
-            ss_dict = { 
+            ss_dict = {
+                'agency': ss.agency.acronym,
                 'name': ss.name,
                 'id': ss.cat_id,
                 'desc': ss.desc,
@@ -178,7 +201,7 @@ class Command(BaseCommand):
             # validation: exception if we have two non-identical subservices
             num_matched = 0
             for ss2 in sjr.list_subservices():
-                if ss2['id'] == ss['id']:
+                if ss2['id'] == ss['id'] and ss2['agency'] == ss['agency']:
                     if ss2 != ss:
                         msg = "json corpus contains non-identical specifications"
                         msg += " of the same subservice \n\n %s\n\n %s"
@@ -186,10 +209,10 @@ class Command(BaseCommand):
             # compare this json object with the DB object
             found_in_db = False
             for dbss in db_subservices:
-                if dbss['id'] == ss['id']:
+                if dbss['id'] == ss['id'] and dbss['agency'] == ss['agency']:
                     found_in_db=True
                     num_match=0
-                    for k in ('name', 'id', 'desc', 'infoUrl', 'primaryAudience'):
+                    for k in ('name', 'id', 'desc', 'infoUrl', 'primaryAudience', 'agency'):
                         try:
                             if dbss[k] == ss[k]:
                                 num_match += 1
@@ -202,11 +225,13 @@ class Command(BaseCommand):
 
             if not found_in_db:  # then insert it
                 if 'desc' not in ss.keys():
-                    ss['desc']='no description'
+                    ss['desc']=None
+                agency = govservices.models.Agency.objects.get(acronym=ss['agency'])
                 gss = govservices.models.SubService(
                     cat_id=ss['id'],
                     desc=ss['desc'],
-                    name=ss['name'])
+                    name=ss['name'],
+                    agency=agency)
                 if 'infoUrl' in ss.keys():
                     gss.info_url=ss['infoUrl']
                 if 'primaryAudience' in ss.keys():
@@ -214,7 +239,11 @@ class Command(BaseCommand):
                 gss.save()
 
             if found_in_db and not found_in_db_same:  # then update it
-                u = govservices.models.SubService.objects.get(cat_id=ss['id'])
+                agency = govservices.models.Agency.objects.get(acronym=ss['agency'])
+                print agency  # DEBUG
+                u = govservices.models.SubService.objects.get(
+                    cat_id=ss['id'],
+                    agency=agency)
                 if 'desc' not in ss.keys():
                     ss['desc'] = None
                 u.desc = ss['desc']
@@ -311,28 +340,6 @@ class Command(BaseCommand):
                 govservices.models.ServiceType.objects.get(label=db_st).delete()
 
         #
-        # agencies
-        #
-        db_agencies = []
-        for dba in govservices.models.Agency.objects.all():
-            db_agencies.append(dba.acronym)
-
-        json_agencies = sjr.list_agencies()
-        for json_a in json_agencies:
-            found_in_db = False
-            for db_a in db_agencies:
-                if db_a == json_a:
-                    found_in_db = True
-            if not found_in_db:
-                govservices.models.Agency(acronym=json_a).save()
-        for db_a in db_agencies:
-            found_in_json = False
-            for json_a in json_agencies:
-                if json_a == db_a:
-                    found_in_json = True
-            if not found_in_json:
-                govservices.models.Agency.objects.get(acronym=db_a).delete()
-        #
         # services themselves
         #
         json_services = sjr.list_services()
@@ -353,6 +360,7 @@ class Command(BaseCommand):
                 'type': dbs.src_type,
                 'description': dbs.description,
                 'id': dbs.src_id,
+                'agency': dbs.agency.acronym,
             }
             
             for st in dbs.service_types.all():
@@ -379,6 +387,8 @@ class Command(BaseCommand):
                 if dbs['id'] == s['id']:
                     found_in_db=True
                     num_match=0
+                    # is this capturing foreign key references?
+                    # is this captureing M:N relationships?
                     for k in s.keys():
                         if k in dbs.keys():
                             if dbs[k] == s[k]:
@@ -389,8 +399,10 @@ class Command(BaseCommand):
                         found_in_db_same = False
 
             if not found_in_db:  # then insert it
+                agency = govservices.models.Agency.objects.get(acronym=s['agency'])
                 gs = govservices.models.Service(src_id = s['id'])
-                gs.org_acronym = s['org_acronym']
+                gs.org_acronym = agency.acronym  #s['org_acronym']
+                gs.agency = agency
                 gs.json_filename = s['json_filename']
                 if 'oldID' in s.keys():
                     gs.old_src_id = s['oldID']
@@ -442,8 +454,14 @@ class Command(BaseCommand):
                         gs.save()
                 
             if found_in_db and not found_in_db_same:  # then update it
-                u = govservices.models.Service.objects.get(src_id=s['id'])
-                u.org_acronym = s['org_acronym']
+                agency_acronym = s['agency']
+                ag = govservices.models.Agency.objects.get(acronym=agency_acronym)
+                # DEBUG
+                for x in govservices.models.Service.objects.filter(src_id=s['id'], agency=ag).all():
+                    print x
+                #/DEBUG
+                u = govservices.models.Service.objects.get(src_id=s['id'], agency=ag)
+                u.org_acronym = s['agency'] # this is redundant, delete from model
                 u.json_filename = s['json_filename']
                 if 'oldID' in s.keys():
                     u.old_src_id = s['oldID']
