@@ -317,7 +317,7 @@ class Command(BaseCommand):
         for dba in govservices.models.Agency.objects.all():
             db_agencies.append(dba.acronym)
 
-        json_agencies = srj.list_agencies()
+        json_agencies = sjr.list_agencies()
         for json_a in json_agencies:
             found_in_db = False
             for db_a in db_agencies:
