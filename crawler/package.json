@@ -8,6 +8,9 @@
   },
     "author": "Digital Transformation Office - Commonwealth of Australia",
     "dependencies": {
+      "pg-hstore":"latest",
+      "pg":"latest",
+      "sequelize":"latest",
       "convict":"latest",
       "config":"latest",
       "winston":"latest",

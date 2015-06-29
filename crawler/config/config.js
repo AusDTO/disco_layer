@@ -57,13 +57,13 @@ var conf = convict({
     dbHost: {
         doc: 'Database Host',
         format: String,
-        default: '52.64.24.77',
+        default: 'localhost',
         arg: 'dbHost'
     },
     dbPort: {
         doc: 'Database Port',
         format: 'int',
-        default: 2424,
+        default: 5432,
         arg: 'dbPort'
     },
     //TODO: Create new DB user account.
@@ -77,7 +77,7 @@ var conf = convict({
     dbPass: {
         doc: 'Database Password',
         format: String,
-        default: 'developmentPassword',
+        default: 'devPassword',
         arg: 'dbPass'
     },
     dbName: {
