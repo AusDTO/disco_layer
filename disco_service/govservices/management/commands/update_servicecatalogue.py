@@ -9,43 +9,20 @@ import json
 import govservices
 
 class ServiceJsonRepository(object):
-    def __init__(self, repo_path, remote_name):
-        # Maybe this constructor is redundant.
-        # what if this management command was called by jenkins :)
-        # less is more...
-
-        # error if the repo doesn't exits
-        self.repo_path = repo_path
-        self._repo = git.Repo(repo_path)
-        assert not self._repo.is_dirty()
-        self.remote_name = remote_name
-        self._remote = None
-        found = False
-        for r in self._repo.remotes:
-            if "%s" % r == remote_name:
-                found = True
-                self._remote = r
-        if not found:
-            msg = "failed to find remote (%s) in repositorty (%s)"
-            raise Exception, msg % (repo_remote, repo_path)
-        # DEBUG
-        ### this hangs...
-        #remote.pull(progress=rp)
-        # fetch the repo, discover changes
-        # exit if no changes
-        # ### what to do if working in that repo? don't do that, use a dedicated one
-        # ### which branch (new config var)        
+    def __init__(self, json_path):
+        self.json_path = json_path
 
     def agency_service_json(self):
         try:
             out = self._agency_service_json_tuples
-            #print "DEBUG agency_service_json - cache hit (%s found)" % len(out)
             return out
         except:
-            #print "DEBUG agency_service_json - cache miss"
             out = []
             for agency in self.list_agencies():
-                for jsonfname, jsonpayload in self.list_agency_jsonfiles(agency):
+                agency_jsonfiles = self.list_agency_jsonfiles(agency)
+                #for j, p in agency_jsonfiles:
+                #    #print "DEBUG agency_service_json: %s, %s" % (agency, j) 
+                for jsonfname, jsonpayload in agency_jsonfiles:
                     out.append((agency, jsonfname, jsonpayload))
             self._agency_service_json_tuples = out
             return out
@@ -54,22 +31,16 @@ class ServiceJsonRepository(object):
         if agency not in self.list_agencies():
             msg = "%s not in list of agencies: %s"
             raise Exception, msg % (agency, self.list_agencies())
-        try:
-            out = self._agency_service_json_tuples
-            #print "DEBUG list_agency_jsonfiles - cache hit (%s found)" % len(out)
-            return out
-        except:
-            #print "DEBUG list_agency_jsonfiles - cache miss"
-            out = []
-            agency_path = os.path.join(self.repo_path, agency)
-            for f in os.listdir(agency_path):
-                name = os.path.join(agency_path, f)
-                if not os.path.isdir(name):
-                    jsonfilename = f
-                    jsonpayload = json.loads(open(name).read())
-                    out.append((jsonfilename, jsonpayload))
-            self._agency_service_json_tuples = out
-            return out
+        out = []
+        agency_path = os.path.join(self.json_path, agency)
+        for f in os.listdir(agency_path):
+            name = os.path.join(agency_path, f)
+            if not os.path.isdir(name):
+                jsonfilename = f
+                jsonpayload = json.loads(open(name).read())
+                out.append((jsonfilename, jsonpayload))
+        self._agency_service_json_tuples = out
+        return out
 
     def list_agencies(self):
         try:
@@ -78,8 +49,8 @@ class ServiceJsonRepository(object):
         except:
             out = []
             notagencies = ('lists', 'genService', '.git')
-            for d in os.listdir(self.repo_path):
-                agency_path = os.path.join(self.repo_path, d)
+            for d in os.listdir(self.json_path):
+                agency_path = os.path.join(self.json_path, d)
                 if d not in notagencies and os.path.isdir(agency_path):
                     out.append(d)
             self._agencies = out
@@ -110,19 +81,15 @@ class ServiceJsonRepository(object):
     def list_service_tags(self):
         try:
             out = self._service_tags
-            #print "DEBUG list_service_tags - cache hit (%s found)" % len(out)
             return out
         except:
-            #print "DEBUG list_service_tags - cache miss"
             out = []
             for a, f, jsonpayload in self.agency_service_json():
                 service = jsonpayload['service']
                 for k in ("tags", "tags:"):
                     if k in service.keys():
                         for tag in service[k]:
-                            #print "DEBUG list_service_tags: scan saw '%s'" % tag
                             if tag not in out:
-                                #print "DEBUG list_service_tags: cache add '%s'" % tag
                                 out.append(tag)
             self._service_tags = out
             return out
@@ -130,18 +97,14 @@ class ServiceJsonRepository(object):
     def list_life_events(self):
         try:
             out = self._life_events
-            #print "DEBUG list_life_events - cache hit (%s found)" % len(out)
             return out
         except:
-            #print "DEBUG list_life_events - cache miss"
             out = []
             for a, f, jsonpayload in self.agency_service_json():
                 service = jsonpayload['service']
                 if 'lifeEvents' in service.keys():
                     for le in service['lifeEvents']:
-                        #print "DEBUG list_life_events: scan saw '%s'" % le
                         if le not in out:
-                            #print "DEBUG list_life_events: cache add '%s'" % le
                             out.append(le)
                 if 'LifeEvents' in service.keys(): # alternate spelling
                     for le in service['LifeEvents']:
@@ -477,9 +440,9 @@ class Command(BaseCommand):
                 if 'tagline' in s.keys():
                     u.tagline = s['tagline']
                 if 'primaryAudience' in s.keys():
-                    u.primaryAudience = s['primaryAudience']
+                    u.primary_audience = s['primaryAudience']
                 if 'analyticsAvailable' in s.keys():
-                    u.analyticsAvailable = s['analyticsAvailable']
+                    u.analytics_available = s['analyticsAvailable']
                 if 'incidental' in s.keys():
                     u.indicental = s['incidental']
                 if 'secondary' in s.keys():

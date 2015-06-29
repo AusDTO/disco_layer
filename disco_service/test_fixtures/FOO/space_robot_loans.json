@@ -1,0 +1,56 @@
+{
+  "documentType": "ServiceInformation",
+  "todo": [
+    null,
+    null,
+    null,
+    null
+  ],
+  "service": {
+    "type": "SVC",
+    "id": "SVC_042",
+    "name": "Energy Supplement",
+    "acronym": null,
+    "tagline": null,
+    "tags": [
+      "automatic"
+    ],
+    "analyticsAvailable": false,
+    "description": "Energy Supplement (ES) provides financial assistance to pensioners and low income households.",
+    "infoUrl": "http://www.humanservices.gov.au/customer/services/centrelink/clean-energy-supplement",
+    "oldID": 42,
+    "colourStyle": null,
+    "lineStyle": null,
+    "shapeStyle": "ellipse",
+    "hoverFieldStyle": null,
+    "secondary": false,
+    "primaryAudience": null,
+    "serviceTypes": [
+      "I am getting divorced"
+    ]
+  },
+  "Dimension": [
+    {
+      "dist": 1,
+      "id": "THM_CRS",
+      "name": "Cross Theme",
+      "desc": null,
+      "infoUrl": ""
+    },
+    {
+      "dist": 2,
+      "id": "MP_CSP",
+      "name": "Child Support",
+      "desc": "Helping separated parents to provide the necessary support for their children’s wellbeing.",
+      "infoUrl": "http://www.humanservices.gov.au/customer/dhs/child-support"
+    },
+    {
+      "dist": 3,
+      "id": "ORG_DHS",
+      "name": "Human Services",
+      "desc": "We deliver social and health-related payments and services",
+      "infoUrl": "http://www.humanservices.gov.au/"
+    }
+  ],
+  "subService": []
+}
