@@ -30,6 +30,7 @@ class JSONParser(TestCase):
         where the first element is the name of a json file
         and the second element is a parsed json payload.
         '''
+        # TODO: move to test_fixtures.__init__.py, EXPECTED_AGENCY_JSONFILES
         expected_agency_jsonfiles = {
             'DEF': (
                 'bbq_tax.json',
@@ -40,7 +41,10 @@ class JSONParser(TestCase):
                 'space_robot_loans.json',
                 'spaceship_loans.json',),
             'QWERTY': (
-                'birthday_bonus.json',)}
+                'birthday_bonus.json',),
+            'XYZ': (
+                'aditional_christmas_tax.json',
+                'big_effort_bonus.json',)}
         for agency in expected_agency_jsonfiles.keys():
             found_jsonfiles = self.jsr.list_agency_jsonfiles(agency)
             found_jsonfile_names = []
@@ -98,7 +102,19 @@ class JSONParser(TestCase):
         self.assertEqual(num_found, num_distinct)
 
     def test_list_life_events(self):
-        pass
+        '''
+        much like service_tags, except life events
+        '''
+        expected_labels = test_fixtures.EXPECTED_LIFE_EVENTS
+        found_labels = self.jsr.list_life_events()
+        for st in found_labels:
+            self.assertIn(st, expected_labels)
+        for st in expected_labels:
+            self.assertIn(st, found_labels)
+        num_found = len(found_labels)
+        num_distinct = len(set(found_labels))
+        self.assertEqual(num_found, num_distinct)
+        
 
     def test_list_service_types(self):
         pass
