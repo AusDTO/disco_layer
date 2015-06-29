@@ -3,7 +3,7 @@ from django.db import models
 class Agency(models.Model):
     acronym = models.CharField(max_length=128)
     def __unicode__(self):
-        return acronym
+        return self.acronym
 
 class SubService(models.Model):
     cat_id = models.CharField(max_length=512)
@@ -11,7 +11,7 @@ class SubService(models.Model):
     name = models.CharField(max_length=512, null=True, blank=True)
     info_url = models.CharField(max_length=512, null=True, blank=True)
     primary_audience = models.CharField(max_length=512, null=True, blank=True)
-    # agency
+    agency = models.ForeignKey(Agency, default=1)
 
     def __unicode__(self):
         return self.name
@@ -51,8 +51,8 @@ class Service(models.Model):
     service_types = models.ManyToManyField(ServiceType)
     service_tags =  models.ManyToManyField(ServiceTag)
     life_events =  models.ManyToManyField(LifeEvent)
-    # agency
+    agency = models.ForeignKey(Agency, default=1)
 
     def __unicode__(self):
-        return "%s: %s" % (self.src_id, src.name)
+        return "%s: %s: %s" % (self.agency.acronym, self.src_id, self.name)
 
