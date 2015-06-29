@@ -1,3 +1,11 @@
+EXPECTED_LIFE_EVENTS = (
+    'I am employing someone for the first time',
+    'I have lost my job',
+    'I am leaving school and wondering what next',
+    'Closing a business',
+    'Starting a business',
+)
+
 EXPECTED_SUBSERVICES = (
     {"id": "CMP_035", "name": "Accommodation Details"},
     {"id": "CMP_098", "name": "Accommodation"},
@@ -151,4 +159,5 @@ EXPECTED_FILENAMES = (
     'spaceship_loans.json',
     'birthday_bonus.json',
     'aditional_christmas_tax.json',
+    'big_effort_bonus.json',
 )
