@@ -376,7 +376,7 @@ class Command(BaseCommand):
             for le in dbs.life_events.all():
                 k = 'lifeEvents'
                 if k not in sdict.keys():
-                    sdictp[k] = []
+                    sdict[k] = []
                 sdict[k].append(le)
             db_services.append(sdict)
 
@@ -456,10 +456,6 @@ class Command(BaseCommand):
             if found_in_db and not found_in_db_same:  # then update it
                 agency_acronym = s['agency']
                 ag = govservices.models.Agency.objects.get(acronym=agency_acronym)
-                # DEBUG
-                for x in govservices.models.Service.objects.filter(src_id=s['id'], agency=ag).all():
-                    print x
-                #/DEBUG
                 u = govservices.models.Service.objects.get(src_id=s['id'], agency=ag)
                 u.org_acronym = s['agency'] # this is redundant, delete from model
                 u.json_filename = s['json_filename']
@@ -506,9 +502,67 @@ class Command(BaseCommand):
             if not found_in_json:
                 dbss.delete()
             '''
+        #
+        # ServiceDimensions
+        #
+        json_dimensions = sjr.list_service_dimensions()
+        db_dimensions = []
+        for dbs in govservices.models.ServiceDimension.objects.all():
+            ddict = {
+                'dim_id': dbs.dim_id,
+                'agency': dbs.agency.acronym,
+                'name': dbs.name,
+                'dist': dbs.dist,
+                'desc': dbs.desc,
+                'info_url': dbs.info_url,}
+            db_services.append(sdict)
 
+        # if found in json but not DB, insert to DB
+        for d in json_dimensions:
+            found_in_db = False
+            for dbs in db_dimensions:
+                if dbs['id'] == d['id']:
+                    found_in_db=True
+                    num_match=0
+                    # is this capturing foreign key references?
+                    # is this captureing M:N relationships?
+                    for k in d.keys():
+                        if k in dbs.keys():
+                            if dbs[k] == d[k]:
+                                num_match += 1
+                    if num_match == len(d):
+                        found_in_db_same = True
+                    else:
+                        found_in_db_same = False
 
+            if not found_in_db:  # then insert it
+                agency = govservices.models.Agency.objects.get(acronym=d['agency'])
+                gs = govservices.models.ServiceDimension(
+                    dim_id = d['dim_id'],
+                    agency = agency,
+                    name= d["name"],
+                    dist=d['dist'],
+                    desc=d['desc'],
+                    info_url=d["info_url"])
+                gs.save()
+                
+            if found_in_db and not found_in_db_same:  # then update it
+                agency_acronym = d['agency']
+                ag = govservices.models.Agency.objects.get(acronym=agency_acronym)
+                u = govservices.models.ServiceDimension.objects.get(dim_id=s['id'], agency=ag)
+                u.name = d["name"]
+                u.dist = d["dist"]
+                u.desc = d["desc"]
+                u.info_url = d["info_url"]
+                u.save()
 
+        for dbdim in govservices.models.ServiceDimensions.objects.all():
+            found = False
+            for jdim in json_dimensions:
+                if jdim["dim_id"]==dbdim["dim_id"] and jdim["agency"] == dbdim["agency"]:
+                    found = True
+            if not found:  # delete from DB
+                dbdim.delete()
 
 if __name__ == "__main__":
     # test here now,

@@ -56,3 +56,13 @@ class Service(models.Model):
     def __unicode__(self):
         return "%s: %s: %s" % (self.agency.acronym, self.src_id, self.name)
 
+class ServiceDimension(models.Model):
+    # dim_id + agency are unique
+    dim_id = models.CharField(max_length=512, null=True, blank=True)
+    agency = models.ForeignKey(Agency)
+    name = models.CharField(max_length=512, null=True, blank=True)
+    # how far away is the dimension from the service
+    # attribute of the M:N association
+    dist = models.IntegerField(null=True, blank=True)
+    desc = models.TextField(null=True, blank=True)
+    infoUrl = models.CharField(max_length=512, null=True, blank=True)
