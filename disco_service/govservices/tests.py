@@ -3,7 +3,24 @@ from unittest import TestCase
 from govservices.management.commands.update_servicecatalogue import ServiceJsonRepository
 import test_fixtures
 
-# Create your tests here.
+
+class ServiceDBRepoTestCase(TestCase):
+    def setUp(self):
+        pass
+
+    def test_list_agencies(self):
+        pass
+
+    def test_json_agency_in_db(self):
+        pass
+
+    def test_create_agency(self):
+        pass
+
+    def test_delete_agency(self):
+        pass
+
+
 class JSONParser(TestCase):
     def setUp(self):
         fixture_path = "./test_fixtures/"
@@ -15,7 +32,16 @@ class JSONParser(TestCase):
         pk (agency, dim_id) 
         and the rest...
         '''
-        self.assertEqual('chalk', 'cheese') # TODO
+        found_dims = self.jsr.list_service_dimensions()
+        expected_dims = test_fixtures.EXPECTED_AGENCY_DIMENSIONS
+        for fd in found_dims:
+            for k in fd.keys():
+                if fd[k] in ('', u'', None):
+                    del(fd[k ])
+            self.assertIn(fd, expected_dims)  # no unexpected dims
+        for d in expected_dims:
+            self.assertIn(d, found_dims)  # all expected dims
+
 
     def test_list_agencies(self):
         # given the fixture, all expected agencies must present
