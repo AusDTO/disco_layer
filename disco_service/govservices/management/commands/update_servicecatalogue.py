@@ -163,10 +163,23 @@ class ServiceJsonRepository(object):
             self._service_dimensions = tuple(out)
             return out
 
+    def agency_found_in_json(self, db_a):
+        found = False
+        for json_a in self.list_agencies():
+            if json_a == db_a:
+                found = True
+        return found
+
+    def subservice_found_in_json(self, ss):
+        for js in self.list_subservices():
+            if js['agency']==ss['agency'] and js['id']==ss['id']:
+                return True
+        return False
 
 class ServiceDBRepository(object):
     def __init__(self):
         self.Agency = govservices.models.Agency
+        self.SubService = govservices.models.SubService
 
     def list_agencies(self):
         out = []
@@ -174,7 +187,7 @@ class ServiceDBRepository(object):
             out.append(dba.acronym)
         return out
 
-    def json_agency_in_db(self, json_a):
+    def agency_in_db(self, json_a):
         found = False
         for db_a in self.list_agencies():
             if db_a == json_a:
@@ -186,6 +199,61 @@ class ServiceDBRepository(object):
 
     def delete_agency(self, db_a):
         self.Agency.objects.get(acronym=db_a).delete()
+
+    def list_subservices(self):
+        db_subservices = []
+        for ss in govservices.models.SubService.objects.all():
+            ss_dict = {
+                'agency': ss.agency.acronym,
+                'name': ss.name,
+                'id': ss.cat_id,
+                'desc': ss.desc,
+                'infoUrl': ss.info_url,
+                'primaryAudience': ss.primary_audience}
+            # delete None-valued elements
+            for k in ss_dict.keys():
+                if ss_dict[k] is None:
+                    del(ss_dict[k])
+            db_subservices.append(ss_dict)
+        return db_subservices
+
+    def json_subservice_in_db(self, ss):
+        for json_a in self.list_subservices():
+            if json_a['agency'] == ss['agency'] and json_a['id'] == ss['id']:
+                return True
+        return False
+
+    def create_subservice(self, ss):
+        if 'desc' not in ss.keys():
+            ss['desc']=None
+        if ss['agency'] not in self.list_agencies():
+            self.create_agency(ss['agency'])
+        agency = self.Agency.objects.get(acronym=ss['agency'])
+        gss = self.SubService(
+            cat_id=ss['id'],
+            desc=ss['desc'],
+            name=ss['name'],
+            agency=agency)
+        if 'infoUrl' in ss.keys():
+            gss.info_url=ss['infoUrl']
+        if 'primaryAudience' in ss.keys():
+            gss.primary_audience=ss['primaryAudience']
+        gss.save()
+
+    def delete_subservice(self, ss):
+        agency = self.Agency.objects.get(acronym=ss['agency'])
+        gss = self.SubService.objects.get(cat_id=ss['id'],agency=agency)
+        gss.delete()
+
+    def json_subservice_same_as_db(self, ss):
+        found = False
+        same = False
+        for dbsub in self.list_subservices():
+            if dbsub['agency'] == ss['agency'] and dbsub['id'] == ss['id']:
+                found = True
+                if dbsub == ss:
+                    return True
+
 
 class Command(BaseCommand):
     help = 'source service specification (json) from Github, then update the DB as required'
@@ -205,31 +273,11 @@ class Command(BaseCommand):
             if not dbr.json_agency_found_in_db(json_a):
                 dbr.create_agency(json_a)
         for db_a in dbr.list_agencies():
-            found_in_json = False
-            for json_a in json_agencies:
-                if json_a == db_a:
-                    found_in_json = True
-            if not found_in_json:
+            if not jsr.agency_found_in_json(db_a):
                 dbr.delete_agency(db_a)
 
-        #
         # sync subservices
-        #
-        db_subservices = []
-        for ss in govservices.models.SubService.objects.all():
-            ss_dict = {
-                'agency': ss.agency.acronym,
-                'name': ss.name,
-                'id': ss.cat_id,
-                'desc': ss.desc,
-                'infoUrl': ss.info_url,
-                'primaryAudience': ss.primary_audience}
-            # delete None-valued elements
-            for k in ss_dict.keys():
-                if ss_dict[k] is None:
-                    del(ss_dict[k])
-            db_subservices.append(ss_dict)
-
+        db_subservices = dbr.list_subservices()
         # upsert subservices
         for ss in sjr.list_subservices():
             # validation: exception if we have two non-identical subservices
@@ -240,66 +288,15 @@ class Command(BaseCommand):
                         msg = "json corpus contains non-identical specifications"
                         msg += " of the same subservice \n\n %s\n\n %s"
                         raise Exception, msg % (ss, ss2)
-            # compare this json object with the DB object
-            found_in_db = False
-            for dbss in db_subservices:
-                if dbss['id'] == ss['id'] and dbss['agency'] == ss['agency']:
-                    found_in_db=True
-                    num_match=0
-                    for k in ('name', 'id', 'desc', 'infoUrl', 'primaryAudience', 'agency'):
-                        try:
-                            if dbss[k] == ss[k]:
-                                num_match += 1
-                        except:
-                            pass
-                    if num_match == len(ss):
-                        found_in_db_same = True
-                    else:
-                        found_in_db_same = False
-
-            if not found_in_db:  # then insert it
-                if 'desc' not in ss.keys():
-                    ss['desc']=None
-                agency = govservices.models.Agency.objects.get(acronym=ss['agency'])
-                gss = govservices.models.SubService(
-                    cat_id=ss['id'],
-                    desc=ss['desc'],
-                    name=ss['name'],
-                    agency=agency)
-                if 'infoUrl' in ss.keys():
-                    gss.info_url=ss['infoUrl']
-                if 'primaryAudience' in ss.keys():
-                    gss.primary_audience=ss['primaryAudience']
-                gss.save()
-
-            if found_in_db and not found_in_db_same:  # then update it
-                agency = govservices.models.Agency.objects.get(acronym=ss['agency'])
-                print agency  # DEBUG
-                u = govservices.models.SubService.objects.get(
-                    cat_id=ss['id'],
-                    agency=agency)
-                if 'desc' not in ss.keys():
-                    ss['desc'] = None
-                u.desc = ss['desc']
-                u.name=ss['name']
-                if 'infoUrl' in ss.keys():
-                    u.info_url=ss['infoUrl']
-                if 'primaryAudience' in ss.keys():
-                    u.primary_audience=ss['primaryAudience']
-                u.save()
-        
-        # if it's in the DB but NOT in the json, then delete it
-        for dbss in govservices.models.SubService.objects.all():
-            found_in_json = False
-            for ss in sjr.list_subservices():
-                if ss['id'] == dbss.cat_id:
-                    found_in_json = True
-            if not found_in_json:
+            if not dbr.json_subservice_in_db(ss):
+                dbr.create_subservice(ss)
+            elif not dbr.json_subservice_same_as_db(ss):
+                dbr.update_subservice(ss)
+        for dbss in dbr.list_subservices():
+            if dbss not in jsr.list_subservices():
                 dbss.delete()
 
-        #
         # service tags
-        #
         # tags are only labels with identifiers, they can not change
         # (by definition; that's a new tag)
         service_tags = sjr.list_service_tags()
