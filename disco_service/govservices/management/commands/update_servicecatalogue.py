@@ -70,16 +70,16 @@ class ServiceJsonRepository(object):
                         if len(list_of_subservices) > 0:
                             for subservice in list_of_subservices:
                                 # delete none-valued properties, they
-                                # mess up database comparison (bug)
+                                # mess up database comparison (bugfix)
                                 for k in subservice.keys():
                                     if subservice[k] is None:
                                         del(subservice[k])
-                                    # inject agency into the subservice jsonpayload
+                                    # inject agency into the subservice
+                                    # jsonpayload (feature)
                                     if 'agency' not in subservice.keys():
                                         subservice['agency'] = agency
                                     if subservice not in subservices:
                                         subservices.append(subservice)
-
             self._subservices = subservices
             return subservices
 
@@ -115,7 +115,6 @@ class ServiceJsonRepository(object):
                     for le in service['LifeEvents']:
                         if le not in out:
                             out.append(le)
-                
             self._life_events = out
             return out
 
@@ -145,6 +144,49 @@ class ServiceJsonRepository(object):
                 out.append(service)
         return out
 
+    def list_service_dimensions(self):
+        try:
+            out = self._service_dimensions
+            return out
+        except:
+            out = []
+            for a, f, jsonpayload in self.agency_service_json():
+                for dim in jsonpayload['Dimension']:
+                    dim[u'agency'] = u'%s' % a
+                    for k in dim.keys():
+                        if dim[k] in ('', u'', None):
+                            del(dim[k])
+                    if 'id' in dim.keys():
+                        dim['dim_id'] = dim['id']
+                        del(dim['id'])
+                    out.append(dim)
+            self._service_dimensions = tuple(out)
+            return out
+
+
+class ServiceDBRepository(object):
+    def __init__(self):
+        self.Agency = govservices.models.Agency
+
+    def list_agencies(self):
+        out = []
+        for dba in self.Agency.objects.all():
+            out.append(dba.acronym)
+        return out
+
+    def json_agency_in_db(self, json_a):
+        found = False
+        for db_a in self.list_agencies():
+            if db_a == json_a:
+                found = True
+        return found
+
+    def create_agency(self, json_a):
+        self.Agency(acronym=json_a).save()
+
+    def delete_agency(self, db_a):
+        self.Agency.objects.get(acronym=db_a).delete()
+
 class Command(BaseCommand):
     help = 'source service specification (json) from Github, then update the DB as required'
 
@@ -155,29 +197,21 @@ class Command(BaseCommand):
         catalogue_path = os.path.join(repo_path, 'catalogues')
         service_docs = os.path.join(catalogue_path, 'serviceDocuments')
         sjr = ServiceJsonRepository(service_docs)
+        dbr = ServiceDBRepository()
 
-        #
         # agencies
-        #
-        db_agencies = []
-        for dba in govservices.models.Agency.objects.all():
-            db_agencies.append(dba.acronym)
-
         json_agencies = sjr.list_agencies()
         for json_a in json_agencies:
-            found_in_db = False
-            for db_a in db_agencies:
-                if db_a == json_a:
-                    found_in_db = True
-            if not found_in_db:
-                govservices.models.Agency(acronym=json_a).save()
-        for db_a in db_agencies:
+            if not dbr.json_agency_found_in_db(json_a):
+                dbr.create_agency(json_a)
+        for db_a in dbr.list_agencies():
             found_in_json = False
             for json_a in json_agencies:
                 if json_a == db_a:
                     found_in_json = True
             if not found_in_json:
-                govservices.models.Agency.objects.get(acronym=db_a).delete()
+                dbr.delete_agency(db_a)
+
         #
         # sync subservices
         #
@@ -538,28 +572,36 @@ class Command(BaseCommand):
             if not found_in_db:  # then insert it
                 agency = govservices.models.Agency.objects.get(acronym=d['agency'])
                 gs = govservices.models.ServiceDimension(
-                    dim_id = d['dim_id'],
-                    agency = agency,
-                    name= d["name"],
-                    dist=d['dist'],
-                    desc=d['desc'],
-                    info_url=d["info_url"])
+                    dim_id = d['dim_id'], agency = agency)
+                if 'name' in d.keys():
+                    gs.name= d["name"]
+                if 'dist' in d.keys():
+                    gs.dist=d['dist']
+                if 'desc' in d.keys():
+                    gs.desc=d['desc']
+                if 'info_url' in d.keys():
+                    gs.info_url=d["info_url"]
                 gs.save()
                 
             if found_in_db and not found_in_db_same:  # then update it
                 agency_acronym = d['agency']
                 ag = govservices.models.Agency.objects.get(acronym=agency_acronym)
-                u = govservices.models.ServiceDimension.objects.get(dim_id=s['id'], agency=ag)
-                u.name = d["name"]
-                u.dist = d["dist"]
-                u.desc = d["desc"]
-                u.info_url = d["info_url"]
+                u = govservices.models.ServiceDimension.objects.get(
+                    dim_id=s['id'], agency=ag)
+                if 'name' in d.keys():
+                    u.name = d["name"]
+                if 'dist' in d.keys():
+                    u.dist = d["dist"]
+                if 'desc' in d.keys():
+                    u.desc = d["desc"]
+                if 'info_url' in d.keys():
+                    u.info_url = d["info_url"]
                 u.save()
 
-        for dbdim in govservices.models.ServiceDimensions.objects.all():
+        for dbdim in govservices.models.ServiceDimension.objects.all():
             found = False
             for jdim in json_dimensions:
-                if jdim["dim_id"]==dbdim["dim_id"] and jdim["agency"] == dbdim["agency"]:
+                if jdim["dim_id"]==dbdim.dim_id and jdim["agency"] == dbdim.agency:
                     found = True
             if not found:  # delete from DB
                 dbdim.delete()
