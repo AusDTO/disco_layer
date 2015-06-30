@@ -261,14 +261,32 @@ class ServiceDBRepository(object):
     def __init__(self):
         self.Agency = govservices.models.Agency
         self.SubService = govservices.models.SubService
-
+        # TODO:
+        #  - ServiceTag
+        #  - LifeEvent
+        #  - ServiceType
+        #  - Service
+        #  - ServiceDimension
     def list_agencies(self):
+        '''
+        Return list of agency acronyms (strings).
+
+        Note, there seems to be a more sophistocated agency structure
+        within the serviceCatalogue internal database, but the only thing
+        exposed through the json interface is the acronym. In the future,
+        if those other details came out, this method would probably be
+        renamed to 'list_agency_acronyms' (if it's still needed at all).
+        '''
         out = []
         for dba in self.Agency.objects.all():
             out.append(dba.acronym)
         return out
 
     def agency_in_db(self, json_a):
+        '''
+        Returns True if there is an agency in the DB that is labeled 
+        with the given acronym.
+        '''
         found = False
         for db_a in self.list_agencies():
             if db_a == json_a:
@@ -276,12 +294,28 @@ class ServiceDBRepository(object):
         return found
 
     def create_agency(self, json_a):
+        '''
+        Given an acronym (string), creates a new agency.
+        '''
+        # Doesn't check to see if the acronym is already in use, which
+        # it probably should. However, this aparent deficiency is not
+        # causing any tests to fail so I guess it isn't a big problem.
         self.Agency(acronym=json_a).save()
 
     def delete_agency(self, db_a):
+        '''
+        Deletes the agency identified by the given string.
+        '''
+        # Doesn't check to make sure it exists first...
         self.Agency.objects.get(acronym=db_a).delete()
 
     def list_subservices(self):
+        '''
+        Returns a list of subservices (structures).
+        
+        NB: nul-valued properties are removed, to make
+        comparisons easier.
+        '''
         db_subservices = []
         for ss in govservices.models.SubService.objects.all():
             ss_dict = {
@@ -299,12 +333,23 @@ class ServiceDBRepository(object):
         return db_subservices
 
     def json_subservice_in_db(self, ss):
+        '''
+        Returns True if there is a subservice in the DB matching
+        the one passed in.
+
+        NB: 'matching' means agency and id only, because everything
+        else is mutable. The lack of companion  "exact match" method
+        smells like a bug...
+        '''
         for json_a in self.list_subservices():
             if json_a['agency'] == ss['agency'] and json_a['id'] == ss['id']:
                 return True
         return False
 
     def create_subservice(self, ss):
+        '''
+        Like it says on the box...
+        '''
         if 'desc' not in ss.keys():
             ss['desc']=None
         if ss['agency'] not in self.list_agencies():
@@ -322,11 +367,18 @@ class ServiceDBRepository(object):
         gss.save()
 
     def delete_subservice(self, ss):
+        # potential bugs!
+        #  try deleting a service that doesn't exist
+        #  try deleting a service attributed to an agency that doesn't exist
         agency = self.Agency.objects.get(acronym=ss['agency'])
         gss = self.SubService.objects.get(cat_id=ss['id'],agency=agency)
         gss.delete()
 
     def json_subservice_same_as_db(self, ss):
+        '''
+        Returns True if the subservice not only exists in the DB, but is also
+        identical to the record in the DB.
+        '''
         found = False
         same = False
         for dbsub in self.list_subservices():
@@ -334,4 +386,6 @@ class ServiceDBRepository(object):
                 found = True
                 if dbsub == ss:
                     return True
-
+                return False
+        msg = 'unable to compare with a subservice that does not exist in the DB'
+        raise Exception, msg

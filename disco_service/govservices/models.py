@@ -57,6 +57,8 @@ class Service(models.Model):
         return "%s: %s: %s" % (self.agency.acronym, self.src_id, self.name)
 
 class ServiceDimension(models.Model):
+    # sigh, this should probably be named just Dimension, since it's already
+    # part of the govservices package (TODO: fix tortological name)
     # dim_id + agency are unique
     dim_id = models.CharField(max_length=512, null=True, blank=True)
     agency = models.ForeignKey(Agency)
