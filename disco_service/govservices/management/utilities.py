@@ -1,11 +1,258 @@
 #-*- coding: utf-8; -*-
 from django.core.management.base import BaseCommand, CommandError
+from spiderbucket import tasks
 from django.conf import settings
-from govservices.management.utilities import ServiceJsonRepository
-from govservices.management.utilities import ServiceDBRepository
-
-# TODO, refactor these out
+import git
+import git.remote
+import os
+import json
 import govservices
+
+
+class ServiceJsonRepository(object):
+    def __init__(self, json_path):
+        self.json_path = json_path
+
+    def agency_service_json(self):
+        try:
+            out = self._agency_service_json_tuples
+            return out
+        except:
+            out = []
+            for agency in self.list_agencies():
+                agency_jsonfiles = self.list_agency_jsonfiles(agency)
+                for jsonfname, jsonpayload in agency_jsonfiles:
+                    out.append((agency, jsonfname, jsonpayload))
+            self._agency_service_json_tuples = out
+            return out
+
+    def list_agency_jsonfiles(self, agency):
+        if agency not in self.list_agencies():
+            msg = "%s not in list of agencies: %s"
+            raise Exception, msg % (agency, self.list_agencies())
+        out = []
+        agency_path = os.path.join(self.json_path, agency)
+        for f in os.listdir(agency_path):
+            name = os.path.join(agency_path, f)
+            if not os.path.isdir(name):
+                jsonfilename = f
+                jsonpayload = json.loads(open(name).read())
+                # inject agency into the service jsonpayload
+                if 'agency' not in jsonpayload.keys():
+                    jsonpayload['agency'] = agency
+                out.append((jsonfilename, jsonpayload))
+        return out
+
+    def list_agencies(self):
+        try:
+            out = self._agencies
+            return out
+        except:
+            out = []
+            notagencies = ('lists', 'genService', '.git')
+            for d in os.listdir(self.json_path):
+                agency_path = os.path.join(self.json_path, d)
+                if d not in notagencies and os.path.isdir(agency_path):
+                    out.append(d)
+            self._agencies = out
+            return out
+
+    def list_subservices(self):
+        try:
+            out = self._subservices
+            return out
+        except:
+            subservices = []
+            for agency, filename, jsonpayload in self.agency_service_json():
+                for k in jsonpayload.keys():
+                    if k == u'subService':
+                        list_of_subservices = jsonpayload[k]
+                        if len(list_of_subservices) > 0:
+                            for subservice in list_of_subservices:
+                                # delete none-valued properties, they
+                                # mess up database comparison (bugfix)
+                                for k in subservice.keys():
+                                    if subservice[k] is None:
+                                        del(subservice[k])
+                                    # inject agency into the subservice
+                                    # jsonpayload (feature)
+                                    if 'agency' not in subservice.keys():
+                                        subservice['agency'] = agency
+                                    if subservice not in subservices:
+                                        subservices.append(subservice)
+            self._subservices = subservices
+            return subservices
+
+    def list_service_tags(self):
+        try:
+            out = self._service_tags
+            return out
+        except:
+            out = []
+            for a, f, jsonpayload in self.agency_service_json():
+                service = jsonpayload['service']
+                for k in ("tags", "tags:"):
+                    if k in service.keys():
+                        for tag in service[k]:
+                            if tag not in out:
+                                out.append(tag)
+            self._service_tags = out
+            return out
+
+    def list_life_events(self):
+        try:
+            out = self._life_events
+            return out
+        except:
+            out = []
+            for a, f, jsonpayload in self.agency_service_json():
+                service = jsonpayload['service']
+                if 'lifeEvents' in service.keys():
+                    for le in service['lifeEvents']:
+                        if le not in out:
+                            out.append(le)
+                if 'LifeEvents' in service.keys(): # alternate spelling
+                    for le in service['LifeEvents']:
+                        if le not in out:
+                            out.append(le)
+            self._life_events = out
+            return out
+
+    def list_service_types(self):
+        try:
+            out = self._service_types
+            return out
+        except:
+            out = []
+            for a, f, jsonpayload in self.agency_service_json():
+                service = jsonpayload['service']
+                for k in ('serviceTypes', 'ServiceTypes'):
+                    if k in service.keys():
+                        for st in service[k]:
+                            if st not in out:
+                                out.append(st)
+            self._service_types = out
+            return out
+
+    def list_services(self):
+        out = []
+        for a, f, jsonpayload in self.agency_service_json():
+            service = jsonpayload['service']
+            service['json_filename'] = f
+            service['agency'] = a
+            if service not in out:
+                out.append(service)
+        return out
+
+    def list_service_dimensions(self):
+        try:
+            out = self._service_dimensions
+            return out
+        except:
+            out = []
+            for a, f, jsonpayload in self.agency_service_json():
+                for dim in jsonpayload['Dimension']:
+                    dim[u'agency'] = u'%s' % a
+                    for k in dim.keys():
+                        if dim[k] in ('', u'', None):
+                            del(dim[k])
+                    if 'id' in dim.keys():
+                        dim['dim_id'] = dim['id']
+                        del(dim['id'])
+                    out.append(dim)
+            self._service_dimensions = tuple(out)
+            return out
+
+    def agency_found_in_json(self, db_a):
+        found = False
+        for json_a in self.list_agencies():
+            if json_a == db_a:
+                found = True
+        return found
+
+    def subservice_found_in_json(self, ss):
+        for js in self.list_subservices():
+            if js['agency']==ss['agency'] and js['id']==ss['id']:
+                return True
+        return False
+
+class ServiceDBRepository(object):
+    def __init__(self):
+        self.Agency = govservices.models.Agency
+        self.SubService = govservices.models.SubService
+
+    def list_agencies(self):
+        out = []
+        for dba in self.Agency.objects.all():
+            out.append(dba.acronym)
+        return out
+
+    def agency_in_db(self, json_a):
+        found = False
+        for db_a in self.list_agencies():
+            if db_a == json_a:
+                found = True
+        return found
+
+    def create_agency(self, json_a):
+        self.Agency(acronym=json_a).save()
+
+    def delete_agency(self, db_a):
+        self.Agency.objects.get(acronym=db_a).delete()
+
+    def list_subservices(self):
+        db_subservices = []
+        for ss in govservices.models.SubService.objects.all():
+            ss_dict = {
+                'agency': ss.agency.acronym,
+                'name': ss.name,
+                'id': ss.cat_id,
+                'desc': ss.desc,
+                'infoUrl': ss.info_url,
+                'primaryAudience': ss.primary_audience}
+            # delete None-valued elements
+            for k in ss_dict.keys():
+                if ss_dict[k] is None:
+                    del(ss_dict[k])
+            db_subservices.append(ss_dict)
+        return db_subservices
+
+    def json_subservice_in_db(self, ss):
+        for json_a in self.list_subservices():
+            if json_a['agency'] == ss['agency'] and json_a['id'] == ss['id']:
+                return True
+        return False
+
+    def create_subservice(self, ss):
+        if 'desc' not in ss.keys():
+            ss['desc']=None
+        if ss['agency'] not in self.list_agencies():
+            self.create_agency(ss['agency'])
+        agency = self.Agency.objects.get(acronym=ss['agency'])
+        gss = self.SubService(
+            cat_id=ss['id'],
+            desc=ss['desc'],
+            name=ss['name'],
+            agency=agency)
+        if 'infoUrl' in ss.keys():
+            gss.info_url=ss['infoUrl']
+        if 'primaryAudience' in ss.keys():
+            gss.primary_audience=ss['primaryAudience']
+        gss.save()
+
+    def delete_subservice(self, ss):
+        agency = self.Agency.objects.get(acronym=ss['agency'])
+        gss = self.SubService.objects.get(cat_id=ss['id'],agency=agency)
+        gss.delete()
+
+    def json_subservice_same_as_db(self, ss):
+        found = False
+        same = False
+        for dbsub in self.list_subservices():
+            if dbsub['agency'] == ss['agency'] and dbsub['id'] == ss['id']:
+                found = True
+                if dbsub == ss:
+                    return True
 
 
 class Command(BaseCommand):
