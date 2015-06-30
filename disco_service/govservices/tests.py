@@ -1,30 +1,129 @@
 #from django.test import TestCase
 from unittest import TestCase
 from govservices.management.commands.update_servicecatalogue import ServiceJsonRepository
+from govservices.management.commands.update_servicecatalogue import ServiceDBRepository
 import test_fixtures
+from mock import patch, MagicMock
+from mock_django.models import ModelMock
+from django.test import TestCase
 
 
 class ServiceDBRepoTestCase(TestCase):
     def setUp(self):
-        pass
+        self.dbr = ServiceDBRepository()
+        self.fixture = (
+            {
+                'agency':'FOO',
+                'name':'BAR',
+                'id':'FOOBAR',
+                'desc': 'once upon a time, thingy thing and thing did thing',
+                'infoUrl': 'http://website.gov.au/',
+                'primaryAudience':'one legged turkey wranglers that get arested overseas'
+            },{
+                'agency':'FOO',
+                'name':'BAZ',
+                'id':'FOOBAZ',
+                'desc': '... and the pirate treasure is still there today!',
+                'infoUrl': 'http://clickhere.gov.au/',
+                'primaryAudience':'sentient domestic appliances'})
+        self.randomWords = ('aSTROkitteN', u'bellybutton lint')
 
     def test_list_agencies(self):
-        pass
+        dummy_agencies = ['foo', 'bar', 'baz']
+        found = self.dbr.list_agencies()
+        self.assertEqual(found, []) 
+        for a in dummy_agencies:
+            self.dbr.create_agency(a)
+        found = self.dbr.list_agencies()
+        for a in dummy_agencies:
+            self.assertIn(a, found)
 
     def test_json_agency_in_db(self):
-        pass
+        label = "foo"
+        found = self.dbr.agency_in_db(label)
+        self.assertFalse(found)
+        self.dbr.create_agency(label)
+        found = self.dbr.agency_in_db(label)
+        self.assertTrue(found)
 
     def test_create_agency(self):
-        pass
+        with patch('govservices.models.Agency.save') as mock_save:
+            self.dbr.create_agency('foo')
+            self.assertTrue(mock_save.called)
 
     def test_delete_agency(self):
-        pass
+        self.dbr.create_agency('foo')
+        with patch('govservices.models.Agency.delete') as mock_delete:
+            self.dbr.delete_agency('foo')
+            self.assertTrue(mock_delete.called)
 
+    def test_list_subservices(self):
+        for ss in self.fixture:
+            self.assertFalse(ss in self.dbr.list_subservices())
+            self.dbr.create_subservice(ss)
+            self.assertTrue(ss in self.dbr.list_subservices())
+
+    def test_json_subservice_in_db(self):
+        '''
+        return true if the unique identifiers match
+        even if the optional properties do not
+        '''
+        for ss in self.fixture:
+            self.dbr.create_subservice(ss)
+            self.assertTrue(self.dbr.json_subservice_in_db(ss))
+            for word in self.randomWords:
+                ss['desc'] = word
+                self.assertTrue(self.dbr.json_subservice_in_db(ss))
+                ss['desc'] = word
+                self.assertTrue(self.dbr.json_subservice_in_db(ss))
+                ss['infoUrl'] = word
+                self.assertTrue(self.dbr.json_subservice_in_db(ss))
+                ss['primaryAudience']
+                self.assertTrue(self.dbr.json_subservice_in_db(ss))
+
+    def test_json_subservice_same_as_db(self):
+        '''
+        return true if the unique identifiers and optional ones match
+        '''
+        for ss in self.fixture:
+            self.dbr.create_subservice(ss)
+            self.assertTrue(self.dbr.json_subservice_in_db(ss))
+            for word in self.randomWords:
+                s2 = ss
+                for k in ('desc', 'infoUrl', 'primaryAudience'):
+                    s2[k] = word
+                    self.assertFalse(self.dbr.json_subservice_same_as_db(s2))
+
+    def test_create_subservice(self):
+        for ss in self.fixture:
+            self.assertFalse(self.dbr.json_subservice_in_db(ss))
+            self.dbr.create_subservice(ss)
+            self.assertTrue(self.dbr.json_subservice_in_db(ss))
+        
+    def test_delete_subservice(self):
+        for ss in self.fixture:
+            self.dbr.create_subservice(ss)
+            self.dbr.delete_subservice(ss)
+            self.assertFalse(self.dbr.json_subservice_in_db(ss))
 
 class JSONParser(TestCase):
     def setUp(self):
         fixture_path = "./test_fixtures/"
         self.jsr = ServiceJsonRepository(fixture_path)
+        self.randomWords = ('aSTROkitteN', u'bellybutton lint')
+
+    def test_agency_found_in_json(self):
+        '''
+        if the agency exists in the json, this should return true
+        otherwise this should return false
+        '''
+        for a in self.jsr.list_agencies():
+            self.assertTrue(
+                self.jsr.agency_found_in_json(a))
+        for a in ('foo', 'bar', 'baz', 'bling'):
+            if a not in self.jsr.list_agencies():
+                self.assertFalse(
+                    self.jsr.agency_found_in_json(a))
 
     def test_list_service_dimensions(self):
         '''
@@ -41,7 +140,6 @@ class JSONParser(TestCase):
             self.assertIn(fd, expected_dims)  # no unexpected dims
         for d in expected_dims:
             self.assertIn(d, found_dims)  # all expected dims
-
 
     def test_list_agencies(self):
         # given the fixture, all expected agencies must present
@@ -104,6 +202,18 @@ class JSONParser(TestCase):
             self.assertIn(ss, expected_subservices)
         for ss in expected_subservices:
             self.assertIn(ss, found_subservices)
+
+    def test_subservice_found_in_json(self):
+        '''
+        true if subservice can be found in json
+        '''
+        for ss in self.jsr.list_subservices():
+            self.assertTrue(self.jsr.subservice_found_in_json(ss))
+            for word in self.randomWords:
+                s2 = ss
+                for k in ('desc', 'infoUrl', 'primaryAudience'):
+                    s2[k] = word
+                    self.assertTrue(self.jsr.subservice_found_in_json(s2))
 
     def test_list_service_tags(self):
         '''
