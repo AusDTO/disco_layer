@@ -65,4 +65,4 @@ class ServiceDimension(models.Model):
     # attribute of the M:N association
     dist = models.IntegerField(null=True, blank=True)
     desc = models.TextField(null=True, blank=True)
-    infoUrl = models.CharField(max_length=512, null=True, blank=True)
+    info_url = models.CharField(max_length=512, null=True, blank=True)
