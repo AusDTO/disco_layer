@@ -28,10 +28,25 @@ class ServiceDBRepoTestCase(TestCase):
                 'primaryAudience':'sentient domestic appliances'})
         self.randomWords = ('aSTROkitteN', u'bellybutton lint')
 
+    def test_list_service_tags(self):
+        self.assertEqual([], self.dbr.list_service_tags())
+        for l in self.randomWords:
+            self.dbr.create_service_tag(l)
+        for l in self.dbr.list_service_tags():
+            self.assertIn(l, self.randomWords)
+
+    def test_service_tag_in_db(self):
+        pass
+
+    def test_create_service_tag(self):
+        pass
+
+    def test_delete_service_tag(self):
+        pass
+
     def test_list_agencies(self):
         dummy_agencies = ['foo', 'bar', 'baz']
-        found = self.dbr.list_agencies()
-        self.assertEqual(found, []) 
+        self.assertEqual([], self.dbr.list_agencies()) 
         for a in dummy_agencies:
             self.dbr.create_agency(a)
         found = self.dbr.list_agencies()
@@ -47,6 +62,8 @@ class ServiceDBRepoTestCase(TestCase):
         self.assertTrue(found)
 
     def test_create_agency(self):
+        # if I was doing input validation, test that here too.
+        # <tich tich>
         with patch('govservices.models.Agency.save') as mock_save:
             self.dbr.create_agency('foo')
             self.assertTrue(mock_save.called)
@@ -72,8 +89,6 @@ class ServiceDBRepoTestCase(TestCase):
             self.dbr.create_subservice(ss)
             self.assertTrue(self.dbr.json_subservice_in_db(ss))
             for word in self.randomWords:
-                ss['desc'] = word
-                self.assertTrue(self.dbr.json_subservice_in_db(ss))
                 ss['desc'] = word
                 self.assertTrue(self.dbr.json_subservice_in_db(ss))
                 ss['infoUrl'] = word

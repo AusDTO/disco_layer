@@ -261,12 +261,44 @@ class ServiceDBRepository(object):
     def __init__(self):
         self.Agency = govservices.models.Agency
         self.SubService = govservices.models.SubService
+        self.ServiceTag = govservices.models.ServiceTag
         # TODO:
-        #  - ServiceTag
         #  - LifeEvent
         #  - ServiceType
         #  - Service
         #  - ServiceDimension
+
+    def list_service_tags(self):
+        '''
+        return list of service tags (strings)
+        '''
+        out = []
+        for st in self.ServiceTag.objects.all():
+            out.append(st.label)
+        return out
+
+    def service_tag_in_db(self, label):
+        '''
+        Returns True if there is a service tag in the DB
+        with the given label.
+        '''
+        for dbl in self.list_service_tags():
+            if dbl == label:
+                return True
+        return False
+
+    def create_service_tag(self, label):
+        '''
+        Given an label (string), creates a new service tag.
+        '''
+        self.ServiceTag(label=label).save()
+
+    def delete_service_tag(self, label):
+        '''
+        Deletes the service tag with the given label.
+        '''
+        self.ServiceTag.objects.get(acronym=db_a).delete()
+
     def list_agencies(self):
         '''
         Return list of agency acronyms (strings).
