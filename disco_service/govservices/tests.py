@@ -28,6 +28,18 @@ class ServiceDBRepoTestCase(TestCase):
                 'primaryAudience':'sentient domestic appliances'})
         self.randomWords = ('aSTROkitteN', u'bellybutton lint')
 
+    def test_delete_life_event(self):
+        pass
+
+    def test_create_service_tag(self):
+        pass
+
+    def test_life_event_in_db(self):
+        pass
+
+    def test_list_life_event(sel):
+        pass
+
     def test_list_service_tags(self):
         self.assertEqual([], self.dbr.list_service_tags())
         for l in self.randomWords:
