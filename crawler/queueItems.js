@@ -1,10 +1,11 @@
 var fs = require('fs')
 var readline = require('readline');
-var crawlDb = require('./lib/crawlDb')
+var crawlDb = require('./lib/ormCrawlDb')
 var winston = require('winston');
 winston.add(winston.transports.File, { filename: './logs/queueItems.log' }); 
 
-crawlDb.connect();
+crawlDb.connect()
+.then(function(crawlDb){
 
 var count = 0;
 
@@ -27,7 +28,7 @@ rd.on('line', function(line) {
 	winston.info(count + ' Adds requested, make sure they complete before killing task');	
 });
 
-
+});
 
 
 

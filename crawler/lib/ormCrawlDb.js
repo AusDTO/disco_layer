@@ -4,6 +4,7 @@ var Promise = require('bluebird');
 var conf = require('../config/config.js');
 var logger = require('../config/logger');
 
+//TODO: Add flag for query logging
 
 
 module.exports = {
@@ -14,41 +15,106 @@ module.exports = {
             host: conf.get('dbHost'),
             dialect: 'postgres',
             pool: {
-                max: 5,
+                max: 2,
                 min: 0,
                 idle: 10000
-            },
-            logging: null
+            }, logging: null
         }),
+
     webDocument: null,
 
+    get: function() {
+        return this;
+    },
+//TODO: Look at adding a randomise function as per...
+//           SELECT myid FROM mytable OFFSET floor(random()*N) LIMIT 1;
     connect: function() {
         orm = this;
         return new Promise(function(resolve, reject) {
             orm.db.authenticate()
                 .then(function() {
+                    logger.debug("Authenticated");
                     orm.db.import('../config/webDocumentModel');
-                    //orm.db.sync({force: true});
-                    orm.db.sync();
+                    //WARN: Uncommenting this will delete the database and recreate it.
+                    //orm.db.sync({force: true})
+                    orm.db.sync()
+                    .then(function() {
+                        logger.info("Synced");
+                        resolve(orm);
+                    })
+                    .catch(function(e) {
+                        logger.error("Sync Failed:" + e);
+                    });
+                    
                     orm.webDocument = orm.db.model('webDocument');
                     resolve(orm);
                 })
                 .catch(function(e) {
+                    logger.error("Connection Failed");
                     reject(e);
                 });
         });
     },
 
-    upsert: function(document) {
+    newQueueList: function(limit) {
         orm = this;
         return new Promise(function(resolve, reject) {
-            orm.webDocument.upsert(document)
-                .then(function(result) {
+            var now = moment().format();
+            orm.webDocument.findAll({
+               /* where: {
+                    nextFetchDateTime: null
+                },
+                limit: limit
+            })*/
+                where: Sequelize.or({
+                    nextFetchDateTime: {
+                        lte: now
+                    }
+                    }, {
+                        nextFetchDateTime: null
+                    }),
+                limit:limit
+            })
+            .then(function(result) {
+                resolve(result);
+            })
+                .catch(function(e) {
+                    logger.error("Queue Select Failed: " + e);
+                    reject(e);
+                });
+        });
+    },
+
+
+
+    upsert: function(document) {
+        logger.debug("Upserting: " + document.url);
+        orm = this;
+
+        //logger.debug(webDocument);
+        return new Promise(function(resolve, reject) {
+            webDocument = orm.db.model('webDocument');
+            //TODO NEXT - Appear to be getting a url null error here, but above log shows document.url is not null
+            //Look at diffs between instance and model and how to use them in upsert
+            //webDocInstance = webDocument.build(document);
+            //logger.info("The instance: " + JSON.stringify(webDocInstance.toJSON()));
+            //webDocument.upsert({   where: {   url: document.url  }   })
+            webDocInstance =webDocument.upsert(document)
+                .then(function(result, created) {
+                    logger.debug('Upsert Result: ' + result);
                     resolve(result);
                 })
                 .catch(function(e) {
+                    logger.error("upsert rejecting" + e);
+                    logger.error("Document: " + JSON.stringify(document));
+                    logger.error("webDocument.url: " + JSON.stringify(webDocument.url));
+                    logger.error("webDocument: " + JSON.stringify(webDocument));
+                    process.exit()
                     reject(e);
                 });
+
+            //TODO Validate the document first
+
         });
     },
 
@@ -72,9 +138,13 @@ module.exports = {
                     }
                 } else {
                     logger.debug("Url: " + url + " is ready to fetch (not found)");
-                    resolve(false);
+                    resolve(true);
                 }
-            });
+            })
+                .catch(function(e) {
+                    logger.error("Date Check Failed for: " + JSON.stringify(url) + "error: " + e);
+                    process.exit();
+                });
         });
     },
 
@@ -98,35 +168,12 @@ module.exports = {
                     resolve(result, newRow);
                 })
                 .catch(function(e) {
-                    logger.debug('addIfMissing Failed for url: ' + document.url);
-                    logger.error('addIfMission Result Error: ' + e);
+                    logger.error('addIfMissing Failed for url: ' + document.url);
+                    logger.error('addIfMissing Result Error: ' + e);
                     reject(e);
                 });
         });
-    },
+    }
 
-    newQueueList: function(limit, callback) {
-        orm = this;
-        return new Promise(function(resolve, reject) {
-            var now = moment().format();
-            orm.webDocument.findAll({
-                where: Sequelize.or({
-                    nextFetchDateTime: {
-                        lte: now
-                    }
-                }, {
-                    nextFetchDateTime: null
-                }),
-                limit: conf.get('initQueueSize')
-            })
-                .then(function(result) {
-                    resolve(result);
-                })
-                .catch(function(e) {
-                    logger.error("Queue Select Failed: " + row.url);
-                    reject(e);
-                });
-        });
-    },
 
 };
