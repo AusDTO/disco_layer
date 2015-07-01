@@ -262,11 +262,42 @@ class ServiceDBRepository(object):
         self.Agency = govservices.models.Agency
         self.SubService = govservices.models.SubService
         self.ServiceTag = govservices.models.ServiceTag
+        self.LifeEvent = govservices.models.LifeEvent
         # TODO:
-        #  - LifeEvent
         #  - ServiceType
         #  - Service
         #  - ServiceDimension
+
+    def list_life_events(self):
+        '''
+        return list of life events (strings)
+        '''
+        out = []
+        for x in self.LifeEvent.objects.all():
+            out.append(x.label)
+        return out
+
+    def life_event_in_db(self, label):
+        '''
+        Returns True if there is a life event in the DB
+        with the given label.
+        '''
+        for dbl in self.list_life_events():
+            if dbl == label:
+                return True
+        return False
+
+    def create_life_event(self, label):
+        '''
+        Given an label (string), creates a new life event.
+        '''
+        self.LifeEvent(label=label).save()
+
+    def delete_life_event(self, label):
+        '''
+        Deletes the life event with the given label.
+        '''
+        self.LifeEvent.objects.get(label=label).delete()
 
     def list_service_tags(self):
         '''
