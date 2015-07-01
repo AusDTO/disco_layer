@@ -32,9 +32,15 @@ class ServiceType(models.Model):
         return self.label
 
 class Service(models.Model):
+    # composite key
+    src_id  = models.CharField(max_length=256)
+    agency = models.ForeignKey(Agency, default=1)
+    # M:N
+    service_types = models.ManyToManyField(ServiceType)
+    service_tags =  models.ManyToManyField(ServiceTag)
+    life_events =  models.ManyToManyField(LifeEvent)
+    # optional properties
     old_src_id = models.IntegerField(null=True, blank=True)
-    src_id  = models.CharField(max_length=256, null=True, blank=True)
-    org_acronym  = models.CharField(max_length=64, null=True, blank=True)
     json_filename  = models.CharField(max_length=512, null=True, blank=True)
     info_url = models.CharField(max_length=512, null=True, blank=True)
     name = models.CharField(max_length=512, null=True, blank=True)
@@ -48,10 +54,7 @@ class Service(models.Model):
     description  = models.TextField(null=True, blank=True)
     comment  = models.TextField(null=True, blank=True)
     current = models.CharField(max_length=512, null=True, blank=True)
-    service_types = models.ManyToManyField(ServiceType)
-    service_tags =  models.ManyToManyField(ServiceTag)
-    life_events =  models.ManyToManyField(LifeEvent)
-    agency = models.ForeignKey(Agency, default=1)
+    org_acronym  = models.CharField(max_length=64, null=True, blank=True) # TODO, remove
 
     def __unicode__(self):
         return "%s: %s: %s" % (self.agency.acronym, self.src_id, self.name)
