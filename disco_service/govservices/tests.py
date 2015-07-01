@@ -28,6 +28,31 @@ class ServiceDBRepoTestCase(TestCase):
                 'primaryAudience':'sentient domestic appliances'})
         self.randomWords = ('aSTROkitteN', u'bellybutton lint')
 
+
+    # service types
+    def test_list_service_types(self):
+        self.assertEqual([], self.dbr.list_service_types())
+        for l in self.randomWords:
+            self.dbr.create_service_type(l)
+        for l in self.dbr.list_service_types():
+            self.assertIn(l, self.randomWords)
+
+    def test_service_type_in_db(self):
+        pass
+
+    def test_create_service_type(self):
+        with patch('govservices.models.ServiceType.save') as mock_save:
+            self.dbr.create_service_type('foo')
+            self.assertTrue(mock_save.called)
+        pass
+
+    def test_delete_service_type(self):
+        self.dbr.create_service_type('foo')
+        with patch('govservices.models.ServiceType.delete') as mock_delete:
+            self.dbr.delete_service_type('foo')
+            self.assertTrue(mock_delete.called)
+
+    # life events
     def test_delete_life_event(self):
         pass
 
@@ -37,16 +62,14 @@ class ServiceDBRepoTestCase(TestCase):
     def test_life_event_in_db(self):
         pass
 
-    def test_list_life_event(sel):
-        pass
-
-    def test_list_service_tags(self):
-        self.assertEqual([], self.dbr.list_service_tags())
+    def test_list_life_event(self):
+        self.assertEqual([], self.dbr.list_life_events())
         for l in self.randomWords:
-            self.dbr.create_service_tag(l)
-        for l in self.dbr.list_service_tags():
+            self.dbr.create_life_event(l)
+        for l in self.dbr.list_life_events():
             self.assertIn(l, self.randomWords)
 
+    # service tags
     def test_service_tag_in_db(self):
         pass
 
@@ -56,6 +79,14 @@ class ServiceDBRepoTestCase(TestCase):
     def test_delete_service_tag(self):
         pass
 
+    def test_list_service_tags(self):
+        self.assertEqual([], self.dbr.list_service_tags())
+        for l in self.randomWords:
+            self.dbr.create_service_tag(l)
+        for l in self.dbr.list_service_tags():
+            self.assertIn(l, self.randomWords)
+
+    # agencies
     def test_list_agencies(self):
         dummy_agencies = ['foo', 'bar', 'baz']
         self.assertEqual([], self.dbr.list_agencies()) 
@@ -86,6 +117,7 @@ class ServiceDBRepoTestCase(TestCase):
             self.dbr.delete_agency('foo')
             self.assertTrue(mock_delete.called)
 
+    # subservices
     def test_list_subservices(self):
         for ss in self.fixture:
             self.assertFalse(ss in self.dbr.list_subservices())

@@ -263,11 +263,44 @@ class ServiceDBRepository(object):
         self.SubService = govservices.models.SubService
         self.ServiceTag = govservices.models.ServiceTag
         self.LifeEvent = govservices.models.LifeEvent
+        self.ServiceType = govservices.models.ServiceType
         # TODO:
-        #  - ServiceType
         #  - Service
         #  - ServiceDimension
 
+    # service types
+    def list_service_types(self):
+        '''
+        returns list of service types (strings)
+        '''
+        out = []
+        for x in self.ServiceType.objects.all():
+            out.append(x.label)
+        return out
+
+    def create_service_type(self, label):
+        '''
+        Given an label (string), creates a new life event.
+        '''
+        self.ServiceType(label=label).save()
+
+    def delete_service_type(self, label):
+        '''
+        Deletes the service_type with the given label.
+        '''
+        self.ServiceType.objects.get(label=label).delete()
+
+    def service_type_in_db(self, label):
+        '''
+        Returns True if there is a service type in the DB
+        with the given label.
+        '''
+        for dbl in self.list_service_types():
+            if dbl == label:
+                return True
+        return False
+
+    # life events
     def list_life_events(self):
         '''
         return list of life events (strings)
