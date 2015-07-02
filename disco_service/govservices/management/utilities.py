@@ -264,9 +264,137 @@ class ServiceDBRepository(object):
         self.ServiceTag = govservices.models.ServiceTag
         self.LifeEvent = govservices.models.LifeEvent
         self.ServiceType = govservices.models.ServiceType
+        self.Service = govservices.models.Service
         # TODO:
-        #  - Service
         #  - ServiceDimension
+
+    # service
+    def list_services(self):
+        out = []
+        for s in self.Service.objects.all():
+            x = {
+                'id': s.src_id,
+                'agency': s.agency.acronym,
+            }
+            if s.old_src_id is not None:
+                s['old_id'] = s.old_src_id
+            #if s.json_filname:
+            #    s['json_filename'] = x.json_filenemt
+            if s.info_url:
+                s['info_url'] = x.info_url
+            if s.name:
+                s['name'] = x.name
+            #if s.acronym:
+            #    s['acronym'] = x.acronym
+            if s.tagline:
+                s['tagline'] = x.tagline
+            if s.primary_audience:
+                x['primary_audience'] = s.primary+audience
+            if s.analytics_available:
+                x['analytics_available'] = s.analytics_available
+            if s.incidental:
+                x['incidental'] = s.incidental
+            if s.secondary:
+                x['secondary'] = s.secondary
+            if s.src_type:
+                x['src_type'] = s.src_type
+            if s.description:
+                x['description'] = s.description
+            if s.comment:
+                x['comment'] = s.comment
+            if s.current:
+                x['current'] = s.current
+            if s.org_acronym:
+                x['org_acronym'] = s.org_acronym
+            if s.service_types:
+                x['service_types'] = s.service_types
+            if s.service_tags:
+                x['service_tags'] = s.service_tags
+            if s.life_events:
+                x['life_events'] = s.life_events
+            out.append(x)
+        return out
+
+    def create_service(self, s):
+        try:
+            a = self.Agency.objects.get(acronym=s['agency'])
+        except: # DoesNotExist <- import it, be more specific
+            self.create_agency(s['agency'])
+            a = self.Agency.objects.get(acronym=s['agency'])
+        new = self.Service(agency=a, src_id=s['id'])
+        if 'old_id' in s.keys():
+            new.old_src_id = s['old_id']
+        if 'json_filename' in s.keys():
+            new.json_filename = s['json_filename']
+        if 'info_url' in s.keys():
+            new.info_url = s['info_url']
+        if 'name' in s.keys():
+            new.name = s['name']
+        if 'acronym' in s.keys():
+            new.acronym = s['acronym']
+        if 'tagline' in s.keys():
+            new.tagline = s['tagline']
+        if 'primary_audience' in s.keys():
+            new.primary_audience = s['primary_audience']
+        if 'analytics_available' in s.keys():
+            new.analytics_available = s['analytics_available']
+        if 'incidental' in s.keys():
+            new.incidental = s['incidental']
+        if 'secondary' in s.keys():
+            new.secondary = s['secondary']
+        if 'src_type' in s.keys():
+            new.src_type = s['src_type']
+        if 'description' in s.keys():
+            new.description = s['description']
+        if 'comment' in s.keys():
+            new.comment = s['comment']
+        if 'current' in s.keys():
+            new.current = s['current']
+        if 'org_acronym' in s.keys(): #CRUFT! TODO: fixme
+            new.org_acronym = s['org_acronym']
+        if 'service_type' in s.keys():
+            for st in s['service_types']:
+                if st not in self.list_service_types():
+                    self.create_service_type(st)
+                stdb = self.ServiceType.objects.get(label=st)
+                new.service_types.add(srdb)
+        if 'service_tags' in s.keys():
+            for st in s['service_tags']:
+                if st not in self.list_service_tags():
+                    self.create_service_tag(st)
+                stdb = self.ServiceTag.objects.get(label=st)
+                new.life_events.add(srdb)
+        if 'life_events' in s.keys():
+            for le in s['life_events']:
+                if le not in self.list_events():
+                    self.create_event(le)
+                ledb = self.LifeEvent.objects.get(label=le)
+                new.life_events.add(ledb)
+        new.save()
+
+    def delete_service(self, s):
+        a = self.Agency.objects.get(acronym=s['agency'])
+        s = self.Service.objects.get(agency=a, src_id=s['id'])
+        s.delete()
+
+    def service_in_db(self, s):
+        a = self.Agency.objects.get(acronym=s['agency'])
+        for dbs in self.list_services():
+            if dbs['agency'] == a.acronym and dbs['id'] == s['id']:
+                return True
+        return False
+
+    def service_same_as_db(self, s):
+        '''
+        Returns True if the service not only exists in the DB, but is also
+        identical to the record in the DB.
+        '''
+        found = False
+        same = False
+        for db in self.list_services():
+            if db == s:
+                return True
+        return False
 
     # service types
     def list_service_types(self):
@@ -332,6 +460,7 @@ class ServiceDBRepository(object):
         '''
         self.LifeEvent.objects.get(label=label).delete()
 
+    # service tags
     def list_service_tags(self):
         '''
         return list of service tags (strings)
@@ -361,8 +490,9 @@ class ServiceDBRepository(object):
         '''
         Deletes the service tag with the given label.
         '''
-        self.ServiceTag.objects.get(acronym=db_a).delete()
+        self.ServiceTag.objects.get(label=label).delete()
 
+    # agencies
     def list_agencies(self):
         '''
         Return list of agency acronyms (strings).
@@ -405,6 +535,7 @@ class ServiceDBRepository(object):
         # Doesn't check to make sure it exists first...
         self.Agency.objects.get(acronym=db_a).delete()
 
+    # subservices
     def list_subservices(self):
         '''
         Returns a list of subservices (structures).
