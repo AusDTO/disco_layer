@@ -257,6 +257,7 @@ class ServiceJsonRepository(object):
                 return True
         return False
 
+
 class ServiceDBRepository(object):
     def __init__(self):
         self.Agency = govservices.models.Agency
@@ -276,17 +277,17 @@ class ServiceDBRepository(object):
                 'agency': s.agency.acronym,
             }
             if s.old_src_id is not None:
-                s['old_id'] = s.old_src_id
+                x['old_id'] = s.old_src_id
             #if s.json_filname:
             #    s['json_filename'] = x.json_filenemt
             if s.info_url:
-                s['info_url'] = x.info_url
+                x['info_url'] = s.info_url
             if s.name:
-                s['name'] = x.name
+                x['name'] = s.name
             #if s.acronym:
             #    s['acronym'] = x.acronym
             if s.tagline:
-                s['tagline'] = x.tagline
+                x['tagline'] = s.tagline
             if s.primary_audience:
                 x['primary_audience'] = s.primary+audience
             if s.analytics_available:
@@ -377,9 +378,8 @@ class ServiceDBRepository(object):
         s.delete()
 
     def service_in_db(self, s):
-        a = self.Agency.objects.get(acronym=s['agency'])
         for dbs in self.list_services():
-            if dbs['agency'] == a.acronym and dbs['id'] == s['id']:
+            if dbs['agency'] == s['agency'] and dbs['id'] == s['id']:
                 return True
         return False
 
@@ -392,6 +392,46 @@ class ServiceDBRepository(object):
             if db == s:
                 return True
         return False
+
+    def update_service(self, s):
+        agency_acronym = s['agency']
+        ag = govservices.models.Agency.objects.get(acronym=agency_acronym)
+        u = govservices.models.Service.objects.get(src_id=s['id'], agency=ag)
+        u.org_acronym = s['agency'] # this is redundant, delete from model                
+        u.json_filename = s['json_filename']
+        if 'oldID' in s.keys():
+            u.old_src_id = s['oldID']
+        if 'infoUrl' in s.keys():
+            if s['infoUrl'] != '':
+                u.info_url = s['infoUrl']
+        if 'name' in s.keys():
+            u.name = s['name']
+        if 'acronym' in s.keys():
+            u.acronym = s['acronym']
+        if 'tagline' in s.keys():
+            u.tagline = s['tagline']
+        if 'primaryAudience' in s.keys():
+            u.primary_audience = s['primaryAudience']
+        if 'analyticsAvailable' in s.keys():
+            u.analytics_available = s['analyticsAvailable']
+        if 'incidental' in s.keys():
+            u.indicental = s['incidental']
+        if 'secondary' in s.keys():
+            u.secondary = s['secondary']
+        if 'type' in s.keys():
+            u.src_type = s['type']
+        if 'description' in s.keys():
+            u.description = s['description']
+        if 'id' in s.keys():
+            u.src_id = s['id']
+        # TODO: tests that fail because we are not managing these M:N fields here
+        #if 'serviceTypes' in s.keys():
+        #    s.'serviceTypes': s.service_types, # M:N
+        #if '' in s.keys():
+        #    s.'tags': s.service_tags, # M:N
+        #if '' in s.keys():
+        #    s.'lifeEvents': s.life_events:
+        u.save()
 
     # service types
     def list_service_types(self):
@@ -647,6 +687,22 @@ class ServiceDBRepository(object):
             if dbd['agency']==d['agency'] and dbd['dim_id']==d['dim_id']:
                 return True
         return False
+
+    def update_dimension(self, d):
+        agency_acronym = d['agency']
+        ag = govservices.models.Agency.objects.get(acronym=agency_acronym)
+        u = govservices.models.Dimension.objects.get(
+            dim_id=s['id'], agency=ag)
+        if 'name' in d.keys():
+            u.name = d["name"]
+        if 'dist' in d.keys():
+            u.dist = d["dist"]
+        if 'desc' in d.keys():
+            u.desc = d["desc"]
+        if 'info_url' in d.keys():
+            u.info_url = d["info_url"]
+        u.save()
+        # TOFO: testme
 
     def dimension_same_as_db(self, d):
         for dbd in self.list_dimensions():
