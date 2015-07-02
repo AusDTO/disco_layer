@@ -619,3 +619,18 @@ class ServiceDBRepository(object):
                 return False
         msg = 'unable to compare with a subservice that does not exist in the DB'
         raise Exception, msg
+
+    def create_dimension(self, d):
+        pass
+
+    def delete_dimension(self, d):
+        pass
+
+    def dimension_in_db(self, d):
+        pass
+
+    def dimension_same_as_db(self, d):
+        pass
+
+    def list_dimensions(self):
+        return []

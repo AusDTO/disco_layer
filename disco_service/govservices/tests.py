@@ -104,6 +104,9 @@ class ServiceDBRepoTestCase(TestCase):
         self.service_fixtures = (
             {'agency':'blah', 'id':'123ABC'},
         )
+        self.dimension_fixture = (
+            {'foo': 'bar'},
+        )
 
     # services
     def test_list_services(self):
@@ -148,8 +151,6 @@ class ServiceDBRepoTestCase(TestCase):
                     s2[k] = word
                     self.assertFalse(self.dbr.service_same_as_db(s2))
 
-
-
     # life events
     def test_delete_life_event(self):
         self.dbr.create_life_event('foo')
@@ -167,7 +168,6 @@ class ServiceDBRepoTestCase(TestCase):
         self.assertFalse(self.dbr.life_event_in_db(label))
         self.dbr.create_life_event(label)
         self.assertTrue(self.dbr.life_event_in_db(label))
-
 
     def test_list_life_event(self):
         self.assertEqual([], self.dbr.list_life_events())
@@ -306,6 +306,54 @@ class ServiceDBRepoTestCase(TestCase):
             self.dbr.create_subservice(ss)
             self.dbr.delete_subservice(ss)
             self.assertFalse(self.dbr.json_subservice_in_db(ss))
+
+    # Dimensions
+    def test_list_dimensions(self):
+        for ss in self.dimension_fixture:
+            self.assertFalse(ss in self.dbr.list_dimensions())
+            self.dbr.create_dimension(ss)
+            self.assertTrue(ss in self.dbr.list_dimensionS())
+
+    def test_dimension_in_db(self):
+        '''
+        return true if the unique identifiers match
+        even if the optional properties do not
+        '''
+        volatile_fieldss = ('name', 'dist', 'desc', 'info_url')
+        for d in self.dimension_fixture:
+            self.dbr.create_dimension(d)
+            self.assertTrue(self.dbr.dimension_in_db(d))
+            d2 = d
+            for word in self.randomWords:
+                for k in volatile_fields:
+                    d[k] = word
+                    self.assertTrue(self.dbr.dimension_in_db(d))
+
+    def test_dimension_same_as_db(self):
+        '''
+        return true if the unique identifiers and optional ones match
+        '''
+        volatile_fieldss = ('name', 'dist', 'desc', 'info_url')
+        for d in self.dimension_fixture:
+            self.dbr.create_dimension(d)
+            self.assertTrue(self.dbr.dimension_in_db(d))
+            for word in self.randomWords:
+                d2 = d
+                for k in volatile_fields:
+                    d2[k] = word
+                    self.assertFalse(self.dbr.dimension_same_as_db(d2))
+
+    def test_create_dimension(self):
+        for d in self.dimension_fixture:
+            self.assertFalse(self.dbr.dimension_in_db(d))
+            self.dbr.create_dimension(d)
+            self.assertTrue(self.dbr.dimension_in_db(d))
+        
+    def test_delete_dimension(self):
+        for d in self.dimension_fixture:
+            self.dbr.create_dimension(d)
+            self.dbr.delete_dimension(d)
+            self.assertFalse(self.dbr.dimension_in_db(d))
 
 
 class JSONParser(TestCase):
