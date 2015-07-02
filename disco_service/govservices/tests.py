@@ -1,5 +1,6 @@
 #from django.test import TestCase
 from unittest import TestCase
+import contextlib
 from django.core.management import call_command
 from mock import patch, MagicMock
 from mock_django.models import ModelMock
@@ -10,14 +11,42 @@ from govservices.management.commands.update_servicecatalogue import ServiceDBRep
 
 
 class UpdateCommandInterpretationTestCase(TestCase):
+    '''
+    ensure the update_servicecatalogue is dispatching to the appropriate functions
+    '''
     def setUp(self):
         self.command_name = 'update_servicecatalogue'
+        self.commandmod = 'govservices.management.commands.%s' % self.command_name
+
 
     def test_all(self):
         '''
         if update command called with no arguments, all entities are updated
         '''
-        pass
+        with contextlib.nested(
+            patch('%s.%s' % (self.commandmod,'update_agency')),
+            patch('%s.%s' % (self.commandmod,'update_subservice')),
+            patch('%s.%s' % (self.commandmod,'update_servicetag')),
+            patch('%s.%s' % (self.commandmod,'update_servicetype')),
+            patch('%s.%s' % (self.commandmod,'update_lifeevent')),
+            patch('%s.%s' % (self.commandmod,'update_service')),
+            patch('%s.%s' % (self.commandmod,'update_dimension')),
+        ) as (
+            mock_agency_update,
+            mock_subservice_update,
+            mock_servicetag_update,
+            mock_servicetype_update,
+            mock_lifeevent_update,
+            mock_service_update,
+            mock_dimension_update):
+            call_command(self.command_name)
+            self.assertTrue(mock_agency_update.called)
+            self.assertTrue(mock_subservice_update.called)
+            self.assertTrue(mock_servicetag_update.called)
+            self.assertTrue(mock_servicetype_update.called)
+            self.assertTrue(mock_lifeevent_update.called)
+            self.assertTrue(mock_service_update.called)
+            self.assertTrue(mock_dimension_update.called)
 
     def patch_and_test_entity_dispatch(self, entity_name, function_name):
         '''
@@ -26,27 +55,26 @@ class UpdateCommandInterpretationTestCase(TestCase):
         calles the (patched) management command with --entity=$entity_name
         and makes sure the appropriate function was called
         '''
-        modname = 'govservices.management.commands.%s' % self.command_name
-        with patch('%s.%s' % (modname, function_name)) as mock_command:
+        with patch('%s.%s' % (self.commandmod, function_name)) as mock_command:
             call_command(self.command_name,entity=entity_name)
             self.assertTrue(mock_command.called)
 
-    def test_update_agency(self):
+    def test_update_agency_dispatch(self):
         self.patch_and_test_entity_dispatch('Agency', 'update_agency')
 
-    def test_update_subservice(self):
+    def test_update_subservice_dispatch(self):
         self.patch_and_test_entity_dispatch('SubService', 'update_subservice')
 
-    def test_update_servicetag(self):
+    def test_update_servicetag_dispatch(self):
         self.patch_and_test_entity_dispatch('ServiceTag', 'update_servicetag')
 
-    def test_update_lifeevent(self):
+    def test_update_lifeevent_dispatch(self):
         self.patch_and_test_entity_dispatch('LifeEvent', 'update_lifeevent')
 
-    def test_update_service(self):
+    def test_update_service_dispatch(self):
         self.patch_and_test_entity_dispatch('Service', 'update_service')
 
-    def test_update_dimension(self):
+    def test_update_dimension_dispatch(self):
         self.patch_and_test_entity_dispatch('Dimension', 'update_dimension')
 
 

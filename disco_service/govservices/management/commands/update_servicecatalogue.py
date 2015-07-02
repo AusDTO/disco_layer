@@ -14,7 +14,25 @@ def update_agency():
     foo()
 
 def update_subservice():
-    foo()
+    # sync subservices
+    db_subservices = dbr.list_subservices()
+    # upsert subservices
+    for ss in sjr.list_subservices():
+        # validation: exception if we have two non-identical subservices
+        num_matched = 0
+        for ss2 in sjr.list_subservices():
+            if ss2['id'] == ss['id'] and ss2['agency'] == ss['agency']:
+                if ss2 != ss:
+                    msg = "json corpus contains non-identical specifications"
+                    msg += " of the same subservice \n\n %s\n\n %s"
+                    raise Exception, msg % (ss, ss2)
+        if not dbr.json_subservice_in_db(ss):
+            dbr.create_subservice(ss)
+        elif not dbr.json_subservice_same_as_db(ss):
+            dbr.update_subservice(ss)
+    for dbss in dbr.list_subservices():
+        if dbss not in sjr.list_subservices():
+            dbr.delete_subservice(dbss)
 
 def update_servicetag():
     foo()
@@ -40,25 +58,6 @@ def oldcode():
         if not sjr.agency_found_in_json(db_a):
             dbr.delete_agency(db_a)
 
-    # sync subservices
-    db_subservices = dbr.list_subservices()
-    # upsert subservices
-    for ss in sjr.list_subservices():
-        # validation: exception if we have two non-identical subservices
-        num_matched = 0
-        for ss2 in sjr.list_subservices():
-            if ss2['id'] == ss['id'] and ss2['agency'] == ss['agency']:
-                if ss2 != ss:
-                    msg = "json corpus contains non-identical specifications"
-                    msg += " of the same subservice \n\n %s\n\n %s"
-                    raise Exception, msg % (ss, ss2)
-        if not dbr.json_subservice_in_db(ss):
-            dbr.create_subservice(ss)
-        elif not dbr.json_subservice_same_as_db(ss):
-            dbr.update_subservice(ss)
-    for dbss in dbr.list_subservices():
-        if dbss not in sjr.list_subservices():
-            dbr.delete_subservice(dbss)
 
     # service tags
     # tags are only labels with identifiers, they can not change
