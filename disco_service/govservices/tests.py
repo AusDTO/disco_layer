@@ -105,7 +105,13 @@ class ServiceDBRepoTestCase(TestCase):
             {'agency':'blah', 'id':'123ABC'},
         )
         self.dimension_fixture = (
-            {'foo': 'bar'},
+            {'agency': 'XYZ', 'dim_id':'FOO'},
+            {'agency': 'XYZ', 'dim_id':'BAR', 'name':'Fred'},
+            {'agency': 'XYZ', 'dim_id':'BAZ', 'dist':4124},
+            {'agency': 'XYZ', 'dim_id':'BLING',
+             'desc':'If you reach the graveyard, you have gone to far'},
+            {'agency': 'XYZ', 'dim_id':'BOBO',
+             'info_url':'http://donteattomuchpudding.gov.au/'},
         )
 
     # services
@@ -312,14 +318,14 @@ class ServiceDBRepoTestCase(TestCase):
         for ss in self.dimension_fixture:
             self.assertFalse(ss in self.dbr.list_dimensions())
             self.dbr.create_dimension(ss)
-            self.assertTrue(ss in self.dbr.list_dimensionS())
+            self.assertTrue(ss in self.dbr.list_dimensions())
 
     def test_dimension_in_db(self):
         '''
         return true if the unique identifiers match
         even if the optional properties do not
         '''
-        volatile_fieldss = ('name', 'dist', 'desc', 'info_url')
+        volatile_fields = ('name', 'dist', 'desc', 'info_url')
         for d in self.dimension_fixture:
             self.dbr.create_dimension(d)
             self.assertTrue(self.dbr.dimension_in_db(d))
@@ -333,12 +339,18 @@ class ServiceDBRepoTestCase(TestCase):
         '''
         return true if the unique identifiers and optional ones match
         '''
-        volatile_fieldss = ('name', 'dist', 'desc', 'info_url')
+        volatile_fields = ('name', 'dist', 'desc', 'info_url')
         for d in self.dimension_fixture:
             self.dbr.create_dimension(d)
             self.assertTrue(self.dbr.dimension_in_db(d))
+            self.assertTrue(self.dbr.dimension_same_as_db(d))
             for word in self.randomWords:
-                d2 = d
+                d2 = {}
+                for k in d.keys():
+                    d2[k] = d[k]
+                # sanity checks
+                self.assertTrue(self.dbr.dimension_same_as_db(d))
+                self.assertTrue(self.dbr.dimension_same_as_db(d2))
                 for k in volatile_fields:
                     d2[k] = word
                     self.assertFalse(self.dbr.dimension_same_as_db(d2))

@@ -265,8 +265,7 @@ class ServiceDBRepository(object):
         self.LifeEvent = govservices.models.LifeEvent
         self.ServiceType = govservices.models.ServiceType
         self.Service = govservices.models.Service
-        # TODO:
-        #  - ServiceDimension
+        self.Dimension = govservices.models.Dimension
 
     # service
     def list_services(self):
@@ -389,8 +388,6 @@ class ServiceDBRepository(object):
         Returns True if the service not only exists in the DB, but is also
         identical to the record in the DB.
         '''
-        found = False
-        same = False
         for db in self.list_services():
             if db == s:
                 return True
@@ -620,17 +617,69 @@ class ServiceDBRepository(object):
         msg = 'unable to compare with a subservice that does not exist in the DB'
         raise Exception, msg
 
+    #dimension
     def create_dimension(self, d):
-        pass
+        try:
+            a = self.Agency.objects.get(acronym=d['agency'])
+        except:
+            self.create_agency(d['agency'])
+            a = self.Agency.objects.get(acronym=d['agency'])
+        dd = self.Dimension(
+            dim_id = d['dim_id'],
+            agency = a)
+        if 'name' in d.keys():
+            dd.name = d['name']
+        if 'dist' in d.keys():
+            dd.dist = d['dist']
+        if 'desc' in d.keys():
+            dd.desc = d['desc']
+        if 'info_url' in d.keys():
+            dd.info_url = d['info_url']
+        dd.save()
 
     def delete_dimension(self, d):
-        pass
+        a = self.Agency.objects.get(acronym=d['agency'])
+        self.Dimension.objects.get(
+            dim_id=d['dim_id'],agency=a).delete()
 
     def dimension_in_db(self, d):
-        pass
+        for dbd in self.list_dimensions():
+            if dbd['agency']==d['agency'] and dbd['dim_id']==d['dim_id']:
+                return True
+        return False
 
     def dimension_same_as_db(self, d):
-        pass
+        for dbd in self.list_dimensions():
+            ok = True
+            for k in d.keys():
+                if k in dbd.keys():
+                    if dbd[k] != d[k]:
+                        ok=False
+                else:
+                    ok=False
+            for k in dbd.keys():
+                if k in d.keys():
+                    if dbd[k] != d[k]:
+                        ok=False
+                else:
+                    ok=False
+            if ok:
+                return True
+        return False
 
     def list_dimensions(self):
-        return []
+        out = []
+        for d in self.Dimension.objects.all():
+            dim = {
+                'dim_id':d.dim_id,
+                'agency':d.agency.acronym}
+            if d.name:
+                dim['name'] = d.name
+            if d.dist:
+                dim['dist'] = d.dist
+            if d.desc:
+                dim['desc'] = d.desc
+            if d.info_url:
+                dim['info_url'] = d.info_url
+            out.append(dim)
+        return out
