@@ -1,12 +1,58 @@
 #from django.test import TestCase
 from unittest import TestCase
-from govservices.management.commands.update_servicecatalogue import ServiceJsonRepository
-from govservices.management.commands.update_servicecatalogue import ServiceDBRepository
-import test_fixtures
+from django.core.management import call_command
 from mock import patch, MagicMock
 from mock_django.models import ModelMock
 from django.test import TestCase
+import test_fixtures
+from govservices.management.commands.update_servicecatalogue import ServiceJsonRepository
+from govservices.management.commands.update_servicecatalogue import ServiceDBRepository
 
+
+class UpdateCommandInterpretationTestCase(TestCase):
+    def setUp(self):
+        self.command_name = 'update_servicecatalogue'
+
+    def test_all(self):
+        '''
+        if update command called with no arguments, all entities are updated
+        '''
+        pass
+
+    def patch_and_test_entity_dispatch(self, entity_name, function_name):
+        '''
+        assumes the module contains a function named after the entity
+        patches it with a MagicMock
+        calles the (patched) management command with --entity=$entity_name
+        and makes sure the appropriate function was called
+        '''
+        modname = 'govservices.management.commands.%s' % self.command_name
+        with patch('%s.%s' % (modname, function_name)) as mock_command:
+            call_command(self.command_name,entity=entity_name)
+            self.assertTrue(mock_command.called)
+
+    def test_update_agency(self):
+        self.patch_and_test_entity_dispatch('Agency', 'update_agency')
+
+    def test_update_subservice(self):
+        self.patch_and_test_entity_dispatch('SubService', 'update_subservice')
+
+    def test_update_servicetag(self):
+        self.patch_and_test_entity_dispatch('ServiceTag', 'update_servicetag')
+
+    def test_update_lifeevent(self):
+        self.patch_and_test_entity_dispatch('LifeEvent', 'update_lifeevent')
+
+    def test_update_service(self):
+        self.patch_and_test_entity_dispatch('Service', 'update_service')
+
+    def test_update_dimension(self):
+        self.patch_and_test_entity_dispatch('Dimension', 'update_dimension')
+
+
+class UpdateCommandExecutionTestCase(TestCase):
+    def test_stuff(self):
+        pass
 
 class ServiceDBRepoTestCase(TestCase):
     def setUp(self):
