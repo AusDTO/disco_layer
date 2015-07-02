@@ -1,4 +1,5 @@
 #-*- coding: utf-8; -*-
+import os
 from django.core.management.base import BaseCommand, CommandError
 from django.conf import settings
 from govservices.management.utilities import ServiceJsonRepository
@@ -20,13 +21,14 @@ class Command(BaseCommand):
         sjr = ServiceJsonRepository(service_docs)
         dbr = ServiceDBRepository()
 
+        verbose = True
         # agencies
         json_agencies = sjr.list_agencies()
         for json_a in json_agencies:
-            if not dbr.json_agency_found_in_db(json_a):
+            if not dbr.agency_in_db(json_a):
                 dbr.create_agency(json_a)
         for db_a in dbr.list_agencies():
-            if not jsr.agency_found_in_json(db_a):
+            if not sjr.agency_found_in_json(db_a):
                 dbr.delete_agency(db_a)
 
         # sync subservices
@@ -46,7 +48,7 @@ class Command(BaseCommand):
             elif not dbr.json_subservice_same_as_db(ss):
                 dbr.update_subservice(ss)
         for dbss in dbr.list_subservices():
-            if dbss not in jsr.list_subservices():
+            if dbss not in sjr.list_subservices():
                 dbss.delete()
 
         # service tags
