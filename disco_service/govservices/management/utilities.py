@@ -597,8 +597,11 @@ class ServiceDBRepository(object):
         # potential bugs!
         #  try deleting a service that doesn't exist
         #  try deleting a service attributed to an agency that doesn't exist
-        agency = self.Agency.objects.get(acronym=ss['agency'])
-        gss = self.SubService.objects.get(cat_id=ss['id'],agency=agency)
+        agency = self.Agency.objects.get(
+            acronym=ss['agency'])
+        gss = self.SubService.objects.get(
+            cat_id=ss['id'],
+            agency=agency)
         gss.delete()
 
     def json_subservice_same_as_db(self, ss):
