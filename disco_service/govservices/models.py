@@ -74,11 +74,9 @@ class Service(models.Model):
     def __unicode__(self):
         return "%s: %s: %s" % (self.agency.acronym, self.src_id, self.name)
 
-class ServiceDimension(models.Model):
-    # sigh, this should probably be named just Dimension, since it's already
-    # part of the govservices package (TODO: fix tortological name)
+class Dimension(models.Model):
     # dim_id + agency are unique
-    dim_id = models.CharField(max_length=512, null=True, blank=True)
+    dim_id = models.CharField(max_length=512)
     agency = models.ForeignKey(Agency)
     name = models.CharField(max_length=512, null=True, blank=True)
     # how far away is the dimension from the service
@@ -86,3 +84,7 @@ class ServiceDimension(models.Model):
     dist = models.IntegerField(null=True, blank=True)
     desc = models.TextField(null=True, blank=True)
     info_url = models.CharField(max_length=512, null=True, blank=True)
+
+    class Meta:
+        unique_together = ['agency','dim_id']
+
