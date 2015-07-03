@@ -3,21 +3,18 @@
   "version": "0.0.2",
   "description": "A crawling application for the Digital Transformation Office, Created largely using simplecrawler",
   "main": "crawl.js",
-  "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
-  },
-    "author": "Digital Transformation Office - Commonwealth of Australia",
-    "dependencies": {
-      "pg-hstore":"latest",
-      "pg":"latest",
-      "sequelize":"latest",
-      "convict":"latest",
-      "config":"latest",
-      "winston":"latest",
-      "oriento": "1.1.3",
-      "simplecrawler": "0.5.2",
-      "moment":">=2.10.0",
-      "bluebird":">=2.9.0"
-  },
-  "license": "GPL"
+  "author": "Digital Transformation Office - Commonwealth of Australia",
+  "dependencies": {
+    "pg-hstore":"latest",
+    "pg":"latest",
+    "sequelize":"latest",
+    "convict":"latest",
+    "config":"latest",
+    "winston":"latest",
+    "oriento": "1.1.3",
+    "simplecrawler": "0.5.2",
+    "moment":">=2.10.0",
+    "bluebird":">=2.9.0"
+},
+"license": "GPL"
 }

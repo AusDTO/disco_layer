@@ -69,7 +69,6 @@ setTimeout(function() {
 logger.debug('adding Fetch Conditions');
 //Exclude URLS which are not nat gov sites
 
-//TODO: is currently excluding [somthing]sa.gov.au  e.g. csa.gov.au
 
 var stateRegex = /(^|\.)vic\.gov\.au$|(^|\.)nsw\.gov\.au$|(^|\.)qld\.gov\.au$|(^|\.)tas\.gov\.au$|(^|\.)act\.gov\.au$|(^|\.)sa\.gov\.au$|(^|\.)wa\.gov\.au$|(^|\.)nt\.gov\.au$/;
 crawlJob.addFetchCondition(function(parsedURL) {
@@ -199,13 +198,6 @@ crawlDb.connect()
 
         logger.debug('Querying DB for new crawl queue');
 
-      /*  crawlJob.queueURL('http://greenpower.gov.au/~/media/Business%20Centre/Quarterly%20Reports/2008Q3Report.pdf');
-        crawlJob.queueURL('http://ahl.gov.au/%3Fq=our-organisation');
-        crawlJob.queueURL('http://lmip.gov.au/default.aspx%3FLMIP%2FContactUs');   (404)
-        crawlJob.queueURL('http://greenpower.gov.au/~/media/Business%20Centre/Audit%20Reports/GreenPower%202013%20Final%20Public%20Report.pdf');
-*/
-        //tilde appears to be cuasing issues queuing the request
-
 
         crawlDb.newQueueList(conf.get('initQueueSize'))
             .then(function(results) {
@@ -225,7 +217,5 @@ crawlDb.connect()
                     logger.info('crawler started');
                 }, 2000);
             });
-
-
 
     }); //connect then

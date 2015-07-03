@@ -45,7 +45,6 @@ module.exports = {
                     .catch(function(e) {
                         logger.error("Sync Failed:" + e);
                     });
-                    
                     orm.webDocument = orm.db.model('webDocument');
                     resolve(orm);
                 })
@@ -61,11 +60,6 @@ module.exports = {
         return new Promise(function(resolve, reject) {
             var now = moment().format();
             orm.webDocument.findAll({
-               /* where: {
-                    nextFetchDateTime: null
-                },
-                limit: limit
-            })*/
                 where: Sequelize.or({
                     nextFetchDateTime: {
                         lte: now
@@ -94,11 +88,6 @@ module.exports = {
         //logger.debug(webDocument);
         return new Promise(function(resolve, reject) {
             webDocument = orm.db.model('webDocument');
-            //TODO NEXT - Appear to be getting a url null error here, but above log shows document.url is not null
-            //Look at diffs between instance and model and how to use them in upsert
-            //webDocInstance = webDocument.build(document);
-            //logger.info("The instance: " + JSON.stringify(webDocInstance.toJSON()));
-            //webDocument.upsert({   where: {   url: document.url  }   })
             webDocInstance =webDocument.upsert(document)
                 .then(function(result, created) {
                     logger.debug('Upsert Result: ' + result);

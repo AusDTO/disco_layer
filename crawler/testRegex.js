@@ -1,3 +1,5 @@
+//TODO Migrate to a testing library
+
 var hosts = [
     "humanservices.gov.au",
     "environment.gov.au",
@@ -16,6 +18,6 @@ var stateSubDomain = /(^|\.)vic\.gov\.au$|(^|\.)nsw\.gov\.au$|(^|\.)qld\.gov\.au
 
 hosts.forEach(function(host) {
 
-    console.log("Host: " + host + "\t SubDomain Outcome: " + (host.search(stateSubDomain) < 0));
+    console.log("Host: " + host + "\t Outcome: " + (host.search(stateSubDomain) < 0));
     //      	console.log("Host: " + host + "\t Domain Outcome: " + (host.search(stateDomain) <0 ) + "\n");
 });
