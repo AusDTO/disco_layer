@@ -1,8 +1,14 @@
 var logger=require('../config/logger');
-var crawlDb = require('./crawlDb').get();
+var crawlDb = require('./ormCrawlDb').get();
+var nodeURL = require('url');
 
 
 queueUrl = function(url,queueItem) {
+	logger.debug("Queue URL input URL: " + JSON.stringify(url));
+	//build a url string
+	url.pathname = url.path;
+            urlString = nodeURL.format(url);
+            logger.debug("Converted URL: " + urlString);
 	var crawler = this;
 	var parsedURL =
 		typeof(url) === "object" ? url : crawler.processURL(url,queueItem);
@@ -27,15 +33,16 @@ queueUrl = function(url,queueItem) {
 		if ( crawler.queue.scanIndex[url] ) {
 		//allready queued, nothing to do
 //		crawler.queue.exists(parsedURL.protocol, parsedURL.domain, parsedURL.port, parsedURL.path, function(err,exists){
-			logger.debug('!!!Fetch Denied In Local Queue!!!' + url);
+			logger.debug('!!!Fetch Denied In Local Queue!!!' + urlString);
 			return false;
 		} else {
 			//not queued locally check database
-			crawlDb.readyForFetch(url)
+			logger.debug("Using URL: " + JSON.stringify(url) + " to check if ready");
+			crawlDb.readyForFetch(urlString)
 			.then(function(result){
 				if(!result) { 
 					//not ready for refetch so just bail
-					logger.debug("Rejected URL: " + url + " becuase It was not ready to be refetched");
+					logger.debug("Rejected URL: " + urlString + " becuase It was not ready to be refetched");
 					return false;
 					//TODO: Could add to local queue???
 				}
