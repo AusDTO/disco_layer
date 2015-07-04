@@ -16,14 +16,15 @@ class UpdateCommandInterpretationTestCase(TestCase):
     '''
     def setUp(self):
         self.command_name = 'update_servicecatalogue'
-        self.commandmod = 'govservices.management.commands.%s' % self.command_name
-
+        self.commandmod = 'govservices.management.utilities.Json2DBMigrator' #.%s' % self.command_name
+        #self.commandmod = 'django.core.management.commands' # % self.command_name
 
     def test_all(self):
         '''
         if update command called with no arguments, all entities are updated
         '''
         with contextlib.nested(
+            #patch('%s.%s' % (self.commandmod,'update_agency')),
             patch('%s.%s' % (self.commandmod,'update_agency')),
             patch('%s.%s' % (self.commandmod,'update_subservice')),
             patch('%s.%s' % (self.commandmod,'update_servicetag')),
@@ -39,6 +40,7 @@ class UpdateCommandInterpretationTestCase(TestCase):
             mock_lifeevent_update,
             mock_service_update,
             mock_dimension_update):
+
             call_command(self.command_name)
             self.assertTrue(mock_agency_update.called)
             self.assertTrue(mock_subservice_update.called)
@@ -55,8 +57,9 @@ class UpdateCommandInterpretationTestCase(TestCase):
         calles the (patched) management command with --entity=$entity_name
         and makes sure the appropriate function was called
         '''
-        with patch('%s.%s' % (self.commandmod, function_name)) as mock_command:
-            call_command(self.command_name,entity=entity_name)
+        patched_function = '%s.%s' % (self.commandmod, function_name)
+        with patch(patched_function) as mock_command:
+            call_command(self.command_name, entity=entity_name)
             self.assertTrue(mock_command.called)
 
     def test_update_agency_dispatch(self):
@@ -258,12 +261,35 @@ class ServiceDBRepoTestCase(TestCase):
         with patch('govservices.models.Agency.save') as mock_save:
             self.dbr.create_agency('foo')
             self.assertTrue(mock_save.called)
+        # TODO get_ORM_agency also works right
+        
+    def test_get_ORM_agency_hit_db_on_first_call(self):
+        # DB should be hit when first we call get_ORM_agency
+        # (assuming the cache wasn't primed by this session)
+        self.dbr.create_agency('foo')
+        self.dbr._agency_ormcache = {}
+        with patch('govservices.models.Agency.objects.get') as mock_get:
+            self.dbr.get_ORM_agency('foo')
+            self.assertTrue(mock_get.called)
+
+    def test_get_ORM_agency_miss_db_on_second_call(self):
+        # but the second time we call it, it should not
+        self.dbr._agency_ormcache = {}
+        agency = self.dbr.create_agency('bar')
+        self.assertTrue(agency != None)
+        agency = self.dbr.get_ORM_agency('bar') # 1st call
+        with patch('govservices.models.Agency.objects.get') as mock_get:
+            self.dbr.get_ORM_agency('bar') # 2nd call
+            self.assertFalse(mock_get.called)
+        # and by the way, get_ORM_agency should never return None
+        self.assertTrue(agency != None)
 
     def test_delete_agency(self):
         self.dbr.create_agency('foo')
         with patch('govservices.models.Agency.delete') as mock_delete:
             self.dbr.delete_agency('foo')
             self.assertTrue(mock_delete.called)
+        # get_ORM_agency also works right
 
     # subservices
     def test_list_subservices(self):

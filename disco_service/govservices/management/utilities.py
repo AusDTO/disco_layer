@@ -2,6 +2,13 @@
 import os
 import json
 import govservices
+from django.conf import settings
+
+# the filesystem json interface is in the repo
+# at ./catalogues/serviceDocuments/<agency>/<service spec>
+repo_path = settings.SERVICE_CATALOGUE_REPOSITORY_PATH
+catalogue_path = os.path.join(repo_path, 'catalogues')
+service_docs = os.path.join(catalogue_path, 'serviceDocuments')
 
 
 class ServiceJsonRepository(object):
@@ -317,10 +324,10 @@ class ServiceDBRepository(object):
 
     def create_service(self, s):
         try:
-            a = self.Agency.objects.get(acronym=s['agency'])
+            a = self.get_ORM_agency(s['agency'])
         except: # DoesNotExist <- import it, be more specific
             self.create_agency(s['agency'])
-            a = self.Agency.objects.get(acronym=s['agency'])
+            a = self.get_ORM_agency(s['agency'])
         new = self.Service(agency=a, src_id=s['id'])
         if 'old_id' in s.keys():
             new.old_src_id = s['old_id']
@@ -373,7 +380,7 @@ class ServiceDBRepository(object):
         new.save()
 
     def delete_service(self, s):
-        a = self.Agency.objects.get(acronym=s['agency'])
+        a = self.get_ORM_agency(s['agency'])
         s = self.Service.objects.get(agency=a, src_id=s['id'])
         s.delete()
 
@@ -395,7 +402,7 @@ class ServiceDBRepository(object):
 
     def update_service(self, s):
         agency_acronym = s['agency']
-        ag = govservices.models.Agency.objects.get(acronym=agency_acronym)
+        ag = get_ORM_agency(acronym=agency_acronym)
         u = govservices.models.Service.objects.get(src_id=s['id'], agency=ag)
         u.org_acronym = s['agency'] # this is redundant, delete from model                
         u.json_filename = s['json_filename']
@@ -545,6 +552,23 @@ class ServiceDBRepository(object):
             out.append(dba.acronym)
         return out
 
+    def get_ORM_agency(self, label):
+        if label == None:
+            raise Exception, 'label must not be None'
+        try:
+            cache = self._agency_ormcache
+        except:
+            self._agency_ormcache = {}
+        if label in self._agency_ormcache.keys():
+            agency = self._agency_ormcache[label]
+            if agency == None:
+                msg = 'something wicked: agency %s found in cache with type %s'
+                raise Exception, msg % (label, type(agency))
+        else:
+            agency = self.Agency.objects.get(acronym=label)
+            self._agency_ormcache[label] = agency
+        return agency
+
     def agency_in_db(self, json_a):
         '''
         Returns True if there is an agency in the DB that is labeled 
@@ -563,14 +587,18 @@ class ServiceDBRepository(object):
         # Doesn't check to see if the acronym is already in use, which
         # it probably should. However, this aparent deficiency is not
         # causing any tests to fail so I guess it isn't a big problem.
-        self.Agency(acronym=json_a).save()
+        agency = self.Agency(acronym=json_a)
+        agency.save()
+        return agency
 
-    def delete_agency(self, db_a):
+    def delete_agency(self, label):
         '''
         Deletes the agency identified by the given string.
         '''
         # Doesn't check to make sure it exists first...
-        self.Agency.objects.get(acronym=db_a).delete()
+        agency = self.get_ORM_agency(label)
+        agency.delete()
+        del(self._agency_ormcache[label])
 
     # subservices
     def list_subservices(self):
@@ -618,7 +646,7 @@ class ServiceDBRepository(object):
             ss['desc']=None
         if ss['agency'] not in self.list_agencies():
             self.create_agency(ss['agency'])
-        agency = self.Agency.objects.get(acronym=ss['agency'])
+        agency = self.get_ORM_agency(ss['agency'])
         gss = self.SubService(
             cat_id=ss['id'],
             desc=ss['desc'],
@@ -634,8 +662,7 @@ class ServiceDBRepository(object):
         # potential bugs!
         #  try deleting a service that doesn't exist
         #  try deleting a service attributed to an agency that doesn't exist
-        agency = self.Agency.objects.get(
-            acronym=ss['agency'])
+        agency = self.get_ORM_agency(ss['agency'])
         gss = self.SubService.objects.get(
             cat_id=ss['id'],
             agency=agency)
@@ -660,10 +687,10 @@ class ServiceDBRepository(object):
     #dimension
     def create_dimension(self, d):
         try:
-            a = self.Agency.objects.get(acronym=d['agency'])
+            a = self.get_ORM_agency(d['agency'])
         except:
             self.create_agency(d['agency'])
-            a = self.Agency.objects.get(acronym=d['agency'])
+            a = self.get_ORM_agency(d['agency'])
         dd = self.Dimension(
             dim_id = d['dim_id'],
             agency = a)
@@ -676,11 +703,19 @@ class ServiceDBRepository(object):
         if 'info_url' in d.keys():
             dd.info_url = d['info_url']
         dd.save()
+        self.purge_dimension_cache()
+
+    def purge_dimension_cache(self):
+        try:
+            del(self._dimensions)
+        except:
+            pass
 
     def delete_dimension(self, d):
-        a = self.Agency.objects.get(acronym=d['agency'])
+        a = self.get_ORM_agency(d['agency'])
         self.Dimension.objects.get(
             dim_id=d['dim_id'],agency=a).delete()
+        self.purge_dimension_cache()
 
     def dimension_in_db(self, d):
         for dbd in self.list_dimensions():
@@ -690,9 +725,9 @@ class ServiceDBRepository(object):
 
     def update_dimension(self, d):
         agency_acronym = d['agency']
-        ag = govservices.models.Agency.objects.get(acronym=agency_acronym)
+        ag = self.get_ORM_agency(agency_acronym)
         u = govservices.models.Dimension.objects.get(
-            dim_id=s['id'], agency=ag)
+            dim_id=d['dim_id'], agency=ag)
         if 'name' in d.keys():
             u.name = d["name"]
         if 'dist' in d.keys():
@@ -702,7 +737,7 @@ class ServiceDBRepository(object):
         if 'info_url' in d.keys():
             u.info_url = d["info_url"]
         u.save()
-        # TOFO: testme
+        self.purge_dimension_cache()
 
     def dimension_same_as_db(self, d):
         for dbd in self.list_dimensions():
@@ -724,18 +759,108 @@ class ServiceDBRepository(object):
         return False
 
     def list_dimensions(self):
-        out = []
-        for d in self.Dimension.objects.all():
-            dim = {
-                'dim_id':d.dim_id,
-                'agency':d.agency.acronym}
-            if d.name:
-                dim['name'] = d.name
-            if d.dist:
-                dim['dist'] = d.dist
-            if d.desc:
-                dim['desc'] = d.desc
-            if d.info_url:
-                dim['info_url'] = d.info_url
-            out.append(dim)
-        return out
+        try:
+            return self._dimensions
+        except:
+            self._dimensions = []
+            for d in self.Dimension.objects.all():
+                dim = {
+                    'dim_id':d.dim_id,
+                    'agency':d.agency.acronym}
+                if d.name:
+                    dim['name'] = d.name
+                if d.dist:
+                    dim['dist'] = d.dist
+                if d.desc:
+                    dim['desc'] = d.desc
+                if d.info_url:
+                    dim['info_url'] = d.info_url
+                self._dimensions.append(dim)
+            return self._dimensions
+
+
+# this stuff should be here, but
+# the above should be refactored into smaller classes
+# packaged into modules (one for json, the other for DB).
+#
+# those modules should serve as models for other sources/sinks
+# e.g. elasticsearch
+#
+# migrator could be generic (by config) if the constructor
+# took (src, sink) and all had same methods
+
+class Json2DBMigrator():
+    sjr = ServiceJsonRepository(service_docs)
+    dbr = ServiceDBRepository()
+
+    def update_agency():
+        for json_a in sjr.list_agencies():
+            if not dbr.agency_in_db(json_a):
+                dbr.create_agency(json_a)
+        for db_a in dbr.list_agencies():
+            if not sjr.agency_found_in_json(db_a):
+                dbr.delete_agency(db_a)
+
+    def update_subservice():
+        for ss in sjr.list_subservices():
+            # validation: exception if we have two non-identical subservices
+            num_matched = 0
+            for ss2 in sjr.list_subservices():
+                if ss2['id'] == ss['id'] and ss2['agency'] == ss['agency']:
+                    if ss2 != ss:
+                        msg = "json corpus contains non-identical specifications"
+                        msg += " of the same subservice \n\n %s\n\n %s"
+                        raise Exception, msg % (ss, ss2)
+            if not dbr.json_subservice_in_db(ss):
+                dbr.create_subservice(ss)
+            elif not dbr.json_subservice_same_as_db(ss):
+                dbr.update_subservice(ss)
+        for dbss in dbr.list_subservices():
+            if dbss not in sjr.list_subservices():
+                dbr.delete_subservice(dbss)
+
+    def update_servicetag():
+        for st in sjr.list_service_tags():
+            if st not in dbr.list_service_tags():
+                dbr.create_service_tag(st)
+        for st in dbr.list_service_tags():
+            if st not in sjr.list_service_tags():
+                dbr.selete_service_tag(st)
+
+    def update_servicetype():
+        for st in sjr.list_service_types():
+            if st not in dbr.list_service_types():
+                dbr.create_service_type(st)
+        for st in dbr.list_service_types():
+            if st not in sjr.list_service_types():
+                dbr.delete_service_type(st)
+
+    def update_lifeevent():
+        for le in sjr.list_life_events():
+            if le not in dbr.list_life_events():
+                dbr.create_life_event(le)
+        for le in dbr.list_life_events():
+            if le not in sjr.list_life_events():
+                dbr.delete_life_events(le)
+
+    def update_service():
+        for s in sjr.list_services():
+            if not dbr.service_in_db(s):
+                dbr.create_service(s)
+            elif not dbr.service_same_as_db(s):
+                dbr.update_service(s)
+        for s in dbr.list_services():
+            if s not in sjr.list_services():
+                dbr.delete_service(s)
+
+    def update_dimension():
+        for d in sjr.list_service_dimensions():
+            if not dbr.dimension_in_db(d):
+                dbr.create_dimension(d)
+            elif not dbr.dimension_same_as_db(d):
+                dbr.update_dimension(d)
+        for d in dbr.list_dimensions():
+            if d not in sjr.list_service_dimensions():
+                dbr.delete_dimension(d)
+            #BUG? - if not identical, will delete
+            # but we just synced everything...
