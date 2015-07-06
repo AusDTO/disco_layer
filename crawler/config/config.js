@@ -27,7 +27,7 @@ var conf = convict({
     timeToRun: {
         doc: 'Stop the job after this time',
         format: 'int',
-        default: 3000,
+        default: 240,
         arg: 'time',
         env: 'CRAWL_TIME'
     },
@@ -41,12 +41,12 @@ var conf = convict({
     concurrency: {
         doc: 'How much concurrenct should the crawler implement',
         format: 'int',
-        default: 2,
+        default: 4,
         arg: 'conc',
         env: 'CRAWL_CONC'
     },
         interval: {
-        doc: 'Millisecond intervale between requests',
+        doc: 'Millisecond interval between requests',
         format: 'int',
         default: 2000,
         arg: 'interval',
@@ -66,7 +66,7 @@ var conf = convict({
     dbHost: {
         doc: 'Database Host',
         format: String,
-        default: 'localhost',
+        default: 'postgres',
         arg: 'dbHost',
         env: 'CRAWL_DBHOST'
     },
@@ -81,7 +81,7 @@ var conf = convict({
     dbUser: {
         doc: 'Database Username',
         format: String,
-        default: 'trusted',
+        default: 'webContent',
         arg: 'dbUser',
         env: 'CRAWL_DBUSER'
     },
@@ -89,7 +89,7 @@ var conf = convict({
     dbPass: {
         doc: 'Database Password',
         format: String,
-        default: 'devPassword',
+        default: 'developmentPassword',
         arg: 'dbPass',
         env: 'CRAWL_DBPASS'
     },
