@@ -1,18 +1,23 @@
+#TODO Move this file and postgres.env  to a ci repo
+#TODO Move crawler.env file to config
+
 postgres:
   image: postgres:latest
   env_file: postgres.env
+  restart: always
   volumes:
     - /data:/var/lib/postgresql/data
-
-#TODO: Get host postres to connect to this directory and create/validate database.
+  ports:
+    - 6543:5432
 
 crawler:
   build: .
-  dockerfile: crawler.dockerfile
   links:
    - postgres
   env_file: crawler.env
   restart: always
   working_dir: /src
-  command: node crawl --queue 2 --time 120 --interval 2000
-  #this will change to setting up cron
+  volumes:
+    - /var/log/docker:/src/logs
+    - /var/log/docker/mail/:var/mail
+# Logging is not being found
