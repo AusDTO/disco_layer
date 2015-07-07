@@ -1,0 +1,16 @@
+# This is the crawler compose file, will need to be integrated later
+FROM node:latest
+COPY . /src
+VOLUME /src/logs
+VOLUME /var/mail
+USER root
+WORKDIR /src
+RUN apt-get update; apt-get -y install cron vim
+RUN touch /var/mail/mail; chmod 555 /var/mail/mail
+RUN npm install
+RUN node testRegex.js
+#Note: The following line sets up the cron job which will run wrapper.sh (and within that the crawler).
+#ENTRYPOINT ["/src/entryPoint.sh"]
+ENTRYPOINT crontab /src/crontab.txt; crontab -l; cron -f;
+
+#TODO: Move crontab to config file
