@@ -4,12 +4,6 @@ import json
 import govservices
 from django.conf import settings
 
-# the filesystem json interface is in the repo
-# at ./catalogues/serviceDocuments/<agency>/<service spec>
-repo_path = settings.SERVICE_CATALOGUE_REPOSITORY_PATH
-catalogue_path = os.path.join(repo_path, 'catalogues')
-service_docs = os.path.join(catalogue_path, 'serviceDocuments')
-
 
 class ServiceJsonRepository(object):
     '''
@@ -18,6 +12,11 @@ class ServiceJsonRepository(object):
 
     These are read but never written to (from this code).
     '''
+    # global caches to reduce DB hits
+    # (singleton class attributes)
+    _agency_jsonfiles = {}
+    _subservices = []
+    _dimensions = []
 
     def __init__(self, json_path):
         '''
@@ -61,21 +60,26 @@ class ServiceJsonRepository(object):
         is (currently) not part of the (json) sources however can
         be inferred from the directory structure.
         '''
+        try:
+            out = self._agency_jsonfiles
+        except:
+            self._agency_jsonfiles = {}
+        if agency in self._agency_jsonfiles.keys():
+            return self._agency_jsonfiles[agency]
         if agency not in self.list_agencies():
             msg = "%s not in list of agencies: %s"
             raise Exception, msg % (agency, self.list_agencies())
-        out = []
+        self._agency_jsonfiles[agency] = []
         agency_path = os.path.join(self.json_path, agency)
         for f in os.listdir(agency_path):
             name = os.path.join(agency_path, f)
             if not os.path.isdir(name):
-                jsonfilename = f
                 jsonpayload = json.loads(open(name).read())
                 # inject agency into the service jsonpayload
                 if 'agency' not in jsonpayload.keys():
                     jsonpayload['agency'] = agency
-                out.append((jsonfilename, jsonpayload))
-        return out
+                self._agency_jsonfiles[agency].append((f, jsonpayload))
+        return self._agency_jsonfiles[agency]
 
     def list_agencies(self):
         '''
@@ -104,30 +108,26 @@ class ServiceJsonRepository(object):
         uniquely defined (ids can be reused between agencies,
         names "should be" unique but are mutable).
         '''
-        try:
-            out = self._subservices
-            return out
-        except:
-            subservices = []
-            for agency, filename, jsonpayload in self.agency_service_json():
-                for k in jsonpayload.keys():
-                    if k == u'subService':
-                        list_of_subservices = jsonpayload[k]
-                        if len(list_of_subservices) > 0:
-                            for subservice in list_of_subservices:
-                                # delete none-valued properties, they
-                                # mess up database comparison (bugfix)
-                                for k in subservice.keys():
-                                    if subservice[k] is None:
-                                        del(subservice[k])
-                                    # inject agency into the subservice
-                                    # jsonpayload (feature)
-                                    if 'agency' not in subservice.keys():
-                                        subservice['agency'] = agency
-                                    if subservice not in subservices:
-                                        subservices.append(subservice)
-            self._subservices = subservices
-            return subservices
+        if len(self._subservices) > 0:
+            return self._subservices
+        for agency, filename, jsonpayload in self.agency_service_json():
+            for k in jsonpayload.keys():
+                if k == u'subService':
+                    list_of_subservices = jsonpayload[k]
+                    if len(list_of_subservices) > 0:
+                        for subservice in list_of_subservices:
+                            # delete none-valued properties, they
+                            # mess up database comparison (bugfix)
+                            for k in subservice.keys():
+                                if subservice[k] is None:
+                                    del(subservice[k])
+                                # inject agency into the subservice
+                                # jsonpayload (feature)
+                                if 'agency' not in subservice.keys():
+                                    subservice['agency'] = agency
+                            if subservice not in self._subservices:
+                                self._subservices.append(subservice)
+        return self._subservices
 
     def list_service_tags(self):
         '''
@@ -183,20 +183,16 @@ class ServiceJsonRepository(object):
         been seen in the wild ('serviceType', 'ServiceType'),
         both are included.
         '''
-        try:
-            out = self._service_types
-            return out
-        except:
-            out = []
-            for a, f, jsonpayload in self.agency_service_json():
-                service = jsonpayload['service']
-                for k in ('serviceTypes', 'ServiceTypes'):
-                    if k in service.keys():
-                        for st in service[k]:
-                            if st not in out:
-                                out.append(st)
-            self._service_types = out
-            return out
+        out = []
+        for a, f, jsonpayload in self.agency_service_json():
+            service = jsonpayload['service']
+            for k in (u'serviceTypes', u'ServiceTypes'):
+                if k in service.keys():
+                    #print "DEBUG: %s" % service
+                    for st in service[k]:
+                        if st not in out:
+                            out.append(st)
+        return out
 
     def list_services(self):
         '''
@@ -214,31 +210,28 @@ class ServiceJsonRepository(object):
                 out.append(service)
         return out
 
-    def list_service_dimensions(self):
+    def list_dimensions(self):
         '''
         Returns a list of service dimensions (structures), that
         occur anywhere in the service catalogue.
         '''
-        try:
-            out = self._service_dimensions
-            return out
-        except:
-            out = []
-            for a, f, jsonpayload in self.agency_service_json():
-                for dim in jsonpayload['Dimension']:
-                    # downcast unicode to assci
-                    # I forget why I did that
-                    dim[u'agency'] = u'%s' % a
-                    for k in dim.keys():
-                        if dim[k] in ('', u'', None):
-                            del(dim[k])
-                    # rename 'id' attribute to 'dim_id'
-                    if 'id' in dim.keys():
-                        dim['dim_id'] = dim['id']
-                        del(dim['id'])
-                    out.append(dim)
-            self._service_dimensions = tuple(out)
-            return out
+        if len(self._dimensions) > 0:
+            return self._dimensions
+        for a, f, jsonpayload in self.agency_service_json():
+            for dim in jsonpayload['Dimension']:
+                # downcast unicode to assci
+                # I forget why I did that
+                dim[u'agency'] = u'%s' % a
+                for k in dim.keys():
+                    if dim[k] in ('', u'', None):
+                        del(dim[k])
+                # rename 'id' attribute to 'dim_id'
+                if 'id' in dim.keys():
+                    dim['dim_id'] = dim['id']
+                    del(dim['id'])
+                self._dimensions.append(dim)
+        return self._dimensions
+
 
     def agency_found_in_json(self, db_a):
         '''
@@ -264,8 +257,21 @@ class ServiceJsonRepository(object):
                 return True
         return False
 
+    def service_in_json(self, s):
+        '''
+        Returns True if a service (structure) exists in
+        the json repository.
+        '''
+        for js in self.list_services():
+            if js['id']==s['id'] and js['agency']==s['agency']:
+                return True
+        return False
 
 class ServiceDBRepository(object):
+    _subservices = []
+    _services = []
+    _dimensions = []
+
     def __init__(self):
         self.Agency = govservices.models.Agency
         self.SubService = govservices.models.SubService
@@ -274,25 +280,38 @@ class ServiceDBRepository(object):
         self.ServiceType = govservices.models.ServiceType
         self.Service = govservices.models.Service
         self.Dimension = govservices.models.Dimension
-
+ 
     # service
     def list_services(self):
-        out = []
+        if len(self._services) > 0:
+            return self._services
         for s in self.Service.objects.all():
+            # DEBUG
+            #print s
+            #for x in dir(s):
+            #    try:
+            #        if x[0] != '_':
+            #            if u"<bound " != str(eval("s.%s" % x))[0:6]:
+            #                print "    %s: %s" % (x, eval("s.%s" % x))
+            #            else:
+            #                print "XXX: %s" % str(eval("s.%s" % x))
+            #    except:
+            #        print "won't eval %s" % x
+            # /DEBUG
             x = {
                 'id': s.src_id,
                 'agency': s.agency.acronym,
             }
             if s.old_src_id is not None:
                 x['old_id'] = s.old_src_id
-            #if s.json_filname:
-            #    s['json_filename'] = x.json_filenemt
+            if s.json_filename:
+                x['json_filename'] = s.json_filename
             if s.info_url:
                 x['info_url'] = s.info_url
             if s.name:
                 x['name'] = s.name
-            #if s.acronym:
-            #    s['acronym'] = x.acronym
+            if s.acronym:
+                x['acronym'] = s.acronym
             if s.tagline:
                 x['tagline'] = s.tagline
             if s.primary_audience:
@@ -313,30 +332,42 @@ class ServiceDBRepository(object):
                 x['current'] = s.current
             if s.org_acronym:
                 x['org_acronym'] = s.org_acronym
-            if s.service_types:
-                x['service_types'] = s.service_types
-            if s.service_tags:
-                x['service_tags'] = s.service_tags
-            if s.life_events:
-                x['life_events'] = s.life_events
-            out.append(x)
-        return out
+            #
+            if s.service_types.count() > 0:
+                x['service_types'] = []
+                for st in s.service_types.all():
+                    x['service_types'].append(str(st))
+            if s.service_tags.count() > 0:
+                x['service_tags'] = []
+                for st in s.service_tags.all():
+                    x['service_tags'].append(str(st))
+            if s.life_events.count() > 0:
+                x['life_events'] = []
+                for le in s.life_events.all():
+                    x['life_events'].append(str(le))
+            self._services.append(x)
+        return self._services
 
     def create_service(self, s):
+        self._services = []
         try:
             a = self.get_ORM_agency(s['agency'])
-        except: # DoesNotExist <- import it, be more specific
+        except:
             self.create_agency(s['agency'])
             a = self.get_ORM_agency(s['agency'])
-        new = self.Service(agency=a, src_id=s['id'])
+        new = self.Service(
+            agency=a,
+            src_id=s['id']
+        )
+        if 'name' in s.keys():
+            new.name  = s['name']
+        new.save() # debug
         if 'old_id' in s.keys():
             new.old_src_id = s['old_id']
         if 'json_filename' in s.keys():
             new.json_filename = s['json_filename']
         if 'info_url' in s.keys():
             new.info_url = s['info_url']
-        if 'name' in s.keys():
-            new.name = s['name']
         if 'acronym' in s.keys():
             new.acronym = s['acronym']
         if 'tagline' in s.keys():
@@ -359,32 +390,48 @@ class ServiceDBRepository(object):
             new.current = s['current']
         if 'org_acronym' in s.keys(): #CRUFT! TODO: fixme
             new.org_acronym = s['org_acronym']
+        new.save()
         if 'service_type' in s.keys():
             for st in s['service_types']:
                 if st not in self.list_service_types():
                     self.create_service_type(st)
                 stdb = self.ServiceType.objects.get(label=st)
-                new.service_types.add(srdb)
+                new.service_types.add(stdb)
+                #print "relating %s to %s" % (s, stdb)  # DEBUG
+                new.save()
         if 'service_tags' in s.keys():
             for st in s['service_tags']:
                 if st not in self.list_service_tags():
                     self.create_service_tag(st)
                 stdb = self.ServiceTag.objects.get(label=st)
                 new.life_events.add(srdb)
+                #print "relating %s to %s" % (s, stdb)  # DEBUG
+                new.save()
         if 'life_events' in s.keys():
             for le in s['life_events']:
                 if le not in self.list_events():
                     self.create_event(le)
                 ledb = self.LifeEvent.objects.get(label=le)
-                new.life_events.add(ledb)
-        new.save()
+                new.life_events.add(ledb) 
+                #print "relating %s to %s" % (s, stdb)  # DEBUG
+                new.save()
 
     def delete_service(self, s):
+        self._services = []
         a = self.get_ORM_agency(s['agency'])
         s = self.Service.objects.get(agency=a, src_id=s['id'])
         s.delete()
 
     def service_in_db(self, s):
+        '''
+        by definition, when two services have the same agency and
+        the same id, they are the same service.
+
+        This means when services change agency (e.g. MOG), they
+        are replaced with new services. We obviously will want to
+        link the old and new. Those requirements are not understood
+        at the moment, more work will be required...
+        '''
         for dbs in self.list_services():
             if dbs['agency'] == s['agency'] and dbs['id'] == s['id']:
                 return True
@@ -398,16 +445,22 @@ class ServiceDBRepository(object):
         for db in self.list_services():
             if db == s:
                 return True
+            #if db['id']==s['id'] and db['agency']==s['agency']:
+            #    print "service mistmatch:"
+            #    print "DB: %s" % db
+            #    print "param: %s" % s
+            #    raise Exception, 'DEBUG'
         return False
 
     def update_service(self, s):
+        self._services=[]
         agency_acronym = s['agency']
-        ag = get_ORM_agency(acronym=agency_acronym)
+        ag = self.get_ORM_agency(agency_acronym)
         u = govservices.models.Service.objects.get(src_id=s['id'], agency=ag)
         u.org_acronym = s['agency'] # this is redundant, delete from model                
         u.json_filename = s['json_filename']
-        if 'oldID' in s.keys():
-            u.old_src_id = s['oldID']
+        if 'oldId' in s.keys():
+            u.old_src_id = s['oldId'] # old_id?
         if 'infoUrl' in s.keys():
             if s['infoUrl'] != '':
                 u.info_url = s['infoUrl']
@@ -608,7 +661,8 @@ class ServiceDBRepository(object):
         NB: nul-valued properties are removed, to make
         comparisons easier.
         '''
-        db_subservices = []
+        if len(self._subservices) > 0:
+            return self._subservices
         for ss in govservices.models.SubService.objects.all():
             ss_dict = {
                 'agency': ss.agency.acronym,
@@ -621,10 +675,10 @@ class ServiceDBRepository(object):
             for k in ss_dict.keys():
                 if ss_dict[k] is None:
                     del(ss_dict[k])
-            db_subservices.append(ss_dict)
-        return db_subservices
+            self._subservices.append(ss_dict)
+        return self._subservices
 
-    def json_subservice_in_db(self, ss):
+    def subservice_in_db(self, ss):
         '''
         Returns True if there is a subservice in the DB matching
         the one passed in.
@@ -642,6 +696,7 @@ class ServiceDBRepository(object):
         '''
         Like it says on the box...
         '''
+        self._subservices = []
         if 'desc' not in ss.keys():
             ss['desc']=None
         if ss['agency'] not in self.list_agencies():
@@ -662,6 +717,7 @@ class ServiceDBRepository(object):
         # potential bugs!
         #  try deleting a service that doesn't exist
         #  try deleting a service attributed to an agency that doesn't exist
+        self._subservices = []
         agency = self.get_ORM_agency(ss['agency'])
         gss = self.SubService.objects.get(
             cat_id=ss['id'],
@@ -703,19 +759,13 @@ class ServiceDBRepository(object):
         if 'info_url' in d.keys():
             dd.info_url = d['info_url']
         dd.save()
-        self.purge_dimension_cache()
-
-    def purge_dimension_cache(self):
-        try:
-            del(self._dimensions)
-        except:
-            pass
+        self._dimensions = []
 
     def delete_dimension(self, d):
         a = self.get_ORM_agency(d['agency'])
         self.Dimension.objects.get(
             dim_id=d['dim_id'],agency=a).delete()
-        self.purge_dimension_cache()
+        self._dimensions = []
 
     def dimension_in_db(self, d):
         for dbd in self.list_dimensions():
@@ -737,7 +787,7 @@ class ServiceDBRepository(object):
         if 'info_url' in d.keys():
             u.info_url = d["info_url"]
         u.save()
-        self.purge_dimension_cache()
+        self._dimensions = []
 
     def dimension_same_as_db(self, d):
         for dbd in self.list_dimensions():
@@ -759,24 +809,22 @@ class ServiceDBRepository(object):
         return False
 
     def list_dimensions(self):
-        try:
+        if len(self._dimensions) > 0:
             return self._dimensions
-        except:
-            self._dimensions = []
-            for d in self.Dimension.objects.all():
-                dim = {
-                    'dim_id':d.dim_id,
-                    'agency':d.agency.acronym}
-                if d.name:
-                    dim['name'] = d.name
-                if d.dist:
-                    dim['dist'] = d.dist
-                if d.desc:
-                    dim['desc'] = d.desc
-                if d.info_url:
-                    dim['info_url'] = d.info_url
-                self._dimensions.append(dim)
-            return self._dimensions
+        for d in self.Dimension.objects.all():
+            dim = {
+                'dim_id':d.dim_id,
+                'agency':d.agency.acronym}
+            if d.name:
+                dim['name'] = d.name
+            if d.dist:
+                dim['dist'] = d.dist
+            if d.desc:
+                dim['desc'] = d.desc
+            if d.info_url:
+                dim['info_url'] = d.info_url
+            self._dimensions.append(dim)
+        return self._dimensions
 
 
 # this stuff should be here, but
@@ -790,77 +838,82 @@ class ServiceDBRepository(object):
 # took (src, sink) and all had same methods
 
 class Json2DBMigrator():
-    sjr = ServiceJsonRepository(service_docs)
-    dbr = ServiceDBRepository()
+    def __init__(self, json_path):
+        self.sjr = ServiceJsonRepository(json_path)
+        self.dbr = ServiceDBRepository()
 
-    def update_agency():
-        for json_a in sjr.list_agencies():
-            if not dbr.agency_in_db(json_a):
-                dbr.create_agency(json_a)
-        for db_a in dbr.list_agencies():
-            if not sjr.agency_found_in_json(db_a):
-                dbr.delete_agency(db_a)
+    def update_agency(self):
+        for json_a in self.sjr.list_agencies():
+            if not self.dbr.agency_in_db(json_a):
+                self.dbr.create_agency(json_a)
+        for db_a in self.dbr.list_agencies():
+            if not self.sjr.agency_found_in_json(db_a):
+                self.dbr.delete_agency(db_a)
 
-    def update_subservice():
-        for ss in sjr.list_subservices():
+    def update_subservice(self):
+        for ss in self.sjr.list_subservices():
             # validation: exception if we have two non-identical subservices
             num_matched = 0
-            for ss2 in sjr.list_subservices():
+            for ss2 in self.sjr.list_subservices():
                 if ss2['id'] == ss['id'] and ss2['agency'] == ss['agency']:
                     if ss2 != ss:
                         msg = "json corpus contains non-identical specifications"
                         msg += " of the same subservice \n\n %s\n\n %s"
                         raise Exception, msg % (ss, ss2)
-            if not dbr.json_subservice_in_db(ss):
-                dbr.create_subservice(ss)
-            elif not dbr.json_subservice_same_as_db(ss):
-                dbr.update_subservice(ss)
-        for dbss in dbr.list_subservices():
-            if dbss not in sjr.list_subservices():
-                dbr.delete_subservice(dbss)
+            if not self.dbr.subservice_in_db(ss):
+                self.dbr.create_subservice(ss)
+            elif not self.dbr.json_subservice_same_as_db(ss):
+                self.dbr.update_subservice(ss)
+        for dbss in self.dbr.list_subservices():
+            if dbss not in self.sjr.list_subservices():
+                self.dbr.delete_subservice(dbss)
 
-    def update_servicetag():
-        for st in sjr.list_service_tags():
-            if st not in dbr.list_service_tags():
-                dbr.create_service_tag(st)
-        for st in dbr.list_service_tags():
-            if st not in sjr.list_service_tags():
-                dbr.selete_service_tag(st)
+    def update_servicetag(self):
+        for st in self.sjr.list_service_tags():
+            if st not in self.dbr.list_service_tags():
+                self.dbr.create_service_tag(st)
+        for st in self.dbr.list_service_tags():
+            if st not in self.sjr.list_service_tags():
+                self.dbr.selete_service_tag(st)
 
-    def update_servicetype():
-        for st in sjr.list_service_types():
-            if st not in dbr.list_service_types():
-                dbr.create_service_type(st)
-        for st in dbr.list_service_types():
-            if st not in sjr.list_service_types():
-                dbr.delete_service_type(st)
+    def update_servicetype(self):
+        for st in self.sjr.list_service_types():
+            if st not in self.dbr.list_service_types():
+                self.dbr.create_service_type(st)
+        for st in self.dbr.list_service_types():
+            if st not in self.sjr.list_service_types():
+                self.dbr.delete_service_type(st)
 
-    def update_lifeevent():
-        for le in sjr.list_life_events():
-            if le not in dbr.list_life_events():
-                dbr.create_life_event(le)
-        for le in dbr.list_life_events():
-            if le not in sjr.list_life_events():
-                dbr.delete_life_events(le)
+    def update_lifeevent(self):
+        for le in self.sjr.list_life_events():
+            if le not in self.dbr.list_life_events():
+                self.dbr.create_life_event(le)
+        for le in self.dbr.list_life_events():
+            if le not in self.sjr.list_life_events():
+                self.dbr.delete_life_events(le)
 
-    def update_service():
-        for s in sjr.list_services():
-            if not dbr.service_in_db(s):
-                dbr.create_service(s)
-            elif not dbr.service_same_as_db(s):
-                dbr.update_service(s)
-        for s in dbr.list_services():
-            if s not in sjr.list_services():
-                dbr.delete_service(s)
+    def update_service(self):
+        for s in self.sjr.list_services():
+            if not self.dbr.service_in_db(s):
+                #print "DEBUG service not in DB, inserting %s" % str((s['id'], s['agency'], s['name']))
+                self.dbr.create_service(s)
+            elif not self.dbr.service_same_as_db(s):
+                #print "DEBUG service in DB but not same, updating %s" % str((s['id'], s['agency'], s['name']))
+                self.dbr.update_service(s)
+        for s in self.dbr.list_services():
+            #if s not in self.sjr.list_services(): ### NOOOOO!
+            if not self.sjr.service_in_json(s):
+                #print "DEBUG service (%s) in DB not found Json; delete it" % str((s['id'], s['agency'], s['name']))
+                self.dbr.delete_service(s)
 
-    def update_dimension():
-        for d in sjr.list_service_dimensions():
-            if not dbr.dimension_in_db(d):
-                dbr.create_dimension(d)
-            elif not dbr.dimension_same_as_db(d):
-                dbr.update_dimension(d)
-        for d in dbr.list_dimensions():
-            if d not in sjr.list_service_dimensions():
-                dbr.delete_dimension(d)
+    def update_dimension(self):
+        for d in self.sjr.list_dimensions():
+            if not self.dbr.dimension_in_db(d):
+                self.dbr.create_dimension(d)
+            elif not self.dbr.dimension_same_as_db(d):
+                self.dbr.update_dimension(d)
+        for d in self.dbr.list_dimensions():
+            if d not in self.sjr.list_dimensions():
+                self.dbr.delete_dimension(d)
             #BUG? - if not identical, will delete
             # but we just synced everything...

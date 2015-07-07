@@ -16,15 +16,13 @@ class UpdateCommandInterpretationTestCase(TestCase):
     '''
     def setUp(self):
         self.command_name = 'update_servicecatalogue'
-        self.commandmod = 'govservices.management.utilities.Json2DBMigrator' #.%s' % self.command_name
-        #self.commandmod = 'django.core.management.commands' # % self.command_name
+        self.commandmod = 'govservices.management.utilities.Json2DBMigrator'
 
     def test_all(self):
         '''
         if update command called with no arguments, all entities are updated
         '''
         with contextlib.nested(
-            #patch('%s.%s' % (self.commandmod,'update_agency')),
             patch('%s.%s' % (self.commandmod,'update_agency')),
             patch('%s.%s' % (self.commandmod,'update_subservice')),
             patch('%s.%s' % (self.commandmod,'update_servicetag')),
@@ -41,7 +39,7 @@ class UpdateCommandInterpretationTestCase(TestCase):
             mock_service_update,
             mock_dimension_update):
 
-            call_command(self.command_name)
+            call_command(self.command_name, json='./test_fixture/')
             self.assertTrue(mock_agency_update.called)
             self.assertTrue(mock_subservice_update.called)
             self.assertTrue(mock_servicetag_update.called)
@@ -59,7 +57,7 @@ class UpdateCommandInterpretationTestCase(TestCase):
         '''
         patched_function = '%s.%s' % (self.commandmod, function_name)
         with patch(patched_function) as mock_command:
-            call_command(self.command_name, entity=entity_name)
+            call_command(self.command_name, entity=entity_name, json='./test_fixture/')
             self.assertTrue(mock_command.called)
 
     def test_update_agency_dispatch(self):
@@ -82,8 +80,50 @@ class UpdateCommandInterpretationTestCase(TestCase):
 
 
 class UpdateCommandExecutionTestCase(TestCase):
-    def test_stuff(self):
-        pass
+    def setUp(self):
+        self.command_name = 'update_servicecatalogue'
+        self.dbr = ServiceDBRepository()
+        self.fixture_path = "./test_fixtures/"
+        self.jsr = ServiceJsonRepository(json_path=self.fixture_path)
+
+    def test_update_agency(self):
+        # then implement subservice and dimension, which currently seem broken
+        call_command(self.command_name, entity='Agency', json=self.fixture_path)
+        for a in self.jsr.list_agencies():
+            self.assertTrue(self.dbr.agency_in_db(a))
+
+    def test_update_lifeevent(self):
+        call_command(self.command_name, entity='LifeEvent', json=self.fixture_path)
+        for a in self.jsr.list_life_events():
+            self.assertTrue(self.dbr.life_event_in_db(a))
+
+    def test_update_servicetag(self):
+        call_command(self.command_name, entity='ServiceTag', json=self.fixture_path)
+        for a in self.jsr.list_service_tags():
+            self.assertTrue(self.dbr.service_tag_in_db(a))
+
+    def test_update_servicetype(self):
+        call_command(self.command_name, entity='ServiceType', json=self.fixture_path)
+        #print "DEBUG: testing service types"
+        for a in self.jsr.list_service_types():
+            #print "DEBUG: service type: %s" % a 
+            self.assertTrue(self.dbr.service_type_in_db(a))
+
+    def test_update_service(self):
+        call_command(self.command_name, entity='Service', json=self.fixture_path)
+        for a in self.jsr.list_services():
+            self.assertTrue(self.dbr.service_in_db(a))
+
+    def test_update_subservice(self):
+        call_command(self.command_name, entity='SubService', json=self.fixture_path)
+        for a in self.jsr.list_subservices():
+            self.assertTrue(self.dbr.subservice_in_db(a))
+
+    def _test_update_dimension(self):
+        call_command(self.command_name, entity='Dimension', json=self.fixture_path)
+        for a in self.jsr.list_dimensions():
+            self.assertTrue(self.dbr.dimension_in_db(a))
+
 
 class ServiceDBRepoTestCase(TestCase):
     def setUp(self):
@@ -119,6 +159,7 @@ class ServiceDBRepoTestCase(TestCase):
 
     # services
     def test_list_services(self):
+        # TODO - FIXME - this is obviously bogus!
         self.assertEqual([], self.dbr.list_services())
         for l in self.randomWords:
             self.dbr.create_service_type(l)
@@ -154,6 +195,7 @@ class ServiceDBRepoTestCase(TestCase):
             'service_types', 'service_tags', 'life_events')
         for s in self.service_fixtures:
             self.dbr.create_service(s)
+            self.assertTrue(self.dbr.service_same_as_db(s))
             for word in self.randomWords:
                 s2 = s
                 for k in optional_fields:
@@ -224,12 +266,10 @@ class ServiceDBRepoTestCase(TestCase):
         self.dbr.create_service_type(label)
         self.assertTrue(self.dbr.service_type_in_db(label))
 
-
     def test_create_service_type(self):
         with patch('govservices.models.ServiceType.save') as mock_save:
             self.dbr.create_service_type('foo')
             self.assertTrue(mock_save.called)
-
 
     def test_delete_service_type(self):
         self.dbr.create_service_type('foo')
@@ -305,14 +345,14 @@ class ServiceDBRepoTestCase(TestCase):
         '''
         for ss in self.fixture:
             self.dbr.create_subservice(ss)
-            self.assertTrue(self.dbr.json_subservice_in_db(ss))
+            self.assertTrue(self.dbr.subservice_in_db(ss))
             for word in self.randomWords:
                 ss['desc'] = word
-                self.assertTrue(self.dbr.json_subservice_in_db(ss))
+                self.assertTrue(self.dbr.subservice_in_db(ss))
                 ss['infoUrl'] = word
-                self.assertTrue(self.dbr.json_subservice_in_db(ss))
+                self.assertTrue(self.dbr.subservice_in_db(ss))
                 ss['primaryAudience']
-                self.assertTrue(self.dbr.json_subservice_in_db(ss))
+                self.assertTrue(self.dbr.subservice_in_db(ss))
 
     def test_json_subservice_same_as_db(self):
         '''
@@ -320,7 +360,7 @@ class ServiceDBRepoTestCase(TestCase):
         '''
         for ss in self.fixture:
             self.dbr.create_subservice(ss)
-            self.assertTrue(self.dbr.json_subservice_in_db(ss))
+            self.assertTrue(self.dbr.subservice_in_db(ss))
             for word in self.randomWords:
                 s2 = ss
                 for k in ('desc', 'infoUrl', 'primaryAudience'):
@@ -329,15 +369,15 @@ class ServiceDBRepoTestCase(TestCase):
 
     def test_create_subservice(self):
         for ss in self.fixture:
-            self.assertFalse(self.dbr.json_subservice_in_db(ss))
+            self.assertFalse(self.dbr.subservice_in_db(ss))
             self.dbr.create_subservice(ss)
-            self.assertTrue(self.dbr.json_subservice_in_db(ss))
+            self.assertTrue(self.dbr.subservice_in_db(ss))
         
     def test_delete_subservice(self):
         for ss in self.fixture:
             self.dbr.create_subservice(ss)
             self.dbr.delete_subservice(ss)
-            self.assertFalse(self.dbr.json_subservice_in_db(ss))
+            self.assertFalse(self.dbr.subservice_in_db(ss))
 
     # Dimensions
     def test_list_dimensions(self):
@@ -413,13 +453,13 @@ class JSONParser(TestCase):
                 self.assertFalse(
                     self.jsr.agency_found_in_json(a))
 
-    def test_list_service_dimensions(self):
+    def test_list_dimensions(self):
         '''
         we expect to get a list of service dimensions
         pk (agency, dim_id) 
         and the rest...
         '''
-        found_dims = self.jsr.list_service_dimensions()
+        found_dims = self.jsr.list_dimensions()
         expected_dims = test_fixtures.EXPECTED_AGENCY_DIMENSIONS
         for fd in found_dims:
             for k in fd.keys():
