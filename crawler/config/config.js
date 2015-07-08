@@ -53,12 +53,12 @@ var conf = convict({
     env: 'CRAWL_INTERVAL'
   },
   logFile: {
-    doc: 'logfile location',
+    doc: 'logfile location - full path. Note: _std.log or _err.log will be automatically appended.',
     //TODO: Path validation
     format: function check(val) {
       return true;
     },
-    default: './logs/crawl.log',
+    default: './logs/crawl',
     arg: 'logfile',
     env: 'CRAWL_LOGFILE'
   },
