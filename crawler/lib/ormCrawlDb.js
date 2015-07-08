@@ -6,7 +6,6 @@ var logger = require('../config/logger');
 
 //TODO: Add flag for query logging
 
-
 module.exports = {
     db: new Sequelize(
         conf.get('dbName'),
@@ -57,6 +56,14 @@ module.exports = {
 
     newQueueList: function(limit) {
         orm = this;
+
+        var configOrder;
+        if (conf.get('flipOrder')) {
+          configOrder = [['nextFetchDateTime'], ['created_at', 'DESC']];
+        } else {
+          configOrder = [['nextFetchDateTime', 'DESC'], ['created_at']];
+        }
+
         return new Promise(function(resolve, reject) {
             var now = moment().format();
             orm.webDocument.findAll({
@@ -67,6 +74,7 @@ module.exports = {
                     }, {
                         nextFetchDateTime: null
                     }),
+                order: configOrder,
                 limit:limit
             })
             .then(function(result) {

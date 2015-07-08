@@ -28,7 +28,7 @@
             },
             path: {
               name: 'path',
-                type: Sequelize.STRING
+                type: Sequelize.TEXT
             },
             port: {
               name: 'port',

@@ -1,1 +1,1 @@
-*/5 * * * * /src/wrapper.sh
+*/10 * * * * /src/wrapper.sh

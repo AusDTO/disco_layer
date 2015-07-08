@@ -1,21 +1,39 @@
-
-var winston = require('winston')
+var logger = require('winston')
 
 var conf = require('./config.js');
+var stdLog = conf.get('logFile') + '_std' ;
+var errLog = conf.get('logFile') + '_err';
 
-var winston = new winston.Logger({
-   transports: [
-     new winston.transports.Console({level:'info'}),
-     new winston.transports.File({ filename: conf.get('logFile'), level: 'info', maxsize: 1024, tailable: true})
-     ]
- });
-//enable debug logging if requested (default is info)
 if (conf.get('debug')) {
-	winston.transports.file.level = 'debug'
-	winston.transports.console.level = 'debug'
-	winston.info('Debug logging enabled');
+  logger.transports.Console.level = 'debug';
+  //logger.remove(winston.transports.Console);
+
+  logger.add(winston.transports.File, {
+    name: 'standard',
+    filename: stdLog,
+    level: 'debug'
+  });
+  logger.add(winston.transports.File, {
+    name: 'error',
+    filename: errLog,
+    level: 'error'
+  });
+  logger.info('Debug logging enabled');
+} else {
+  logger.transports.Console.level = 'info';
+  //logger.remove(winston.transports.Console);
+  logger.add(winston.transports.File, {
+    name: 'standard',
+    filename: stdLog,
+    level: 'info'
+  });
+  logger.add(winston.transports.File, {
+    name: 'error',
+    filename: errLog,
+    level: 'error'
+  });
 }
 
-winston.info('Logging Configured');
+logger.info('Logging Configured');
 
-module.exports = winston
+module.exports = logger;
