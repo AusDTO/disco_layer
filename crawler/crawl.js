@@ -10,10 +10,6 @@ var util = require('./lib/buildWebDocument');
 
 var crawlDb = require('./lib/ormCrawlDb')
 
-
-
-
-
 debugger;
 logger.info("CrawlJob Settings: " + JSON.stringify(conf._instance));
 
@@ -204,6 +200,7 @@ crawlDb.connect()
                 if (results.length > 0) {
                     logger.info('Initialising queue with  ' + results.length + ' items from DB');
                     results.forEach(function(item) {
+                      logger.info(">>>Queued: " + item.url);
                         crawlJob.queueURL(item.url);
                     });
                 } else {
