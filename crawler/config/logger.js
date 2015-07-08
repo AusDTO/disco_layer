@@ -1,8 +1,8 @@
 var logger = require('winston')
 
 var conf = require('./config.js');
-var stdLog = conf.get('logFile') + '_std' ;
-var errLog = conf.get('logFile') + '_err';
+var stdLog = conf.get('logFile') + '_std.log' ;
+var errLog = conf.get('logFile') + '_err.log';
 
 if (conf.get('debug')) {
   logger.transports.Console.level = 'debug';

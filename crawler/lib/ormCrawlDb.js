@@ -14,7 +14,7 @@ module.exports = {
             host: conf.get('dbHost'),
             dialect: 'postgres',
             pool: {
-                max: 2,
+                max: 6,
                 min: 0,
                 idle: 10000
             }, logging: null
