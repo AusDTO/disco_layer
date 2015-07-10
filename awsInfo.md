@@ -30,21 +30,28 @@ https://docs.aws.amazon.com/AWSEC2/latest/UserGuide/managing-users.html
 
 
 ##Install Tools
-check git `git --version`
->Note: You will also possibly need to configure git ssh-keygen
-check docker `docker --version`
-Install docker-compose
+###Git
+    sudo apt-get install git
+    check git `git --version
+    //Output like: git version 1.9.1
+>Note: You may also possibly need to configure git ssh-keygen
 
-    sudo -i
-    curl -L https://github.com/docker/compose/releases/download/1.3.1/docker-compose-``uname -s``-``uname -m`` > /usr/local/bin/docker-compose
+###Docker
+    wget -qO- https://get.docker.com/ | sh
+    docker --version
+    //Output like: Docker version 1.7.0, build 0baf609
+###Docker-compose
+    curl -L https://github.com/docker/compose/releases/download/1.3.1/docker-compose-`uname -s`-`uname -m` > /usr/local/bin/docker-compose
     chmod +x /usr/local/bin/docker-compose
+    docker-compose --version
+    //Output like: docker-compose version: 1.3.1
+    //             CPython version: 2.7.9
+    //             OpenSSL version: OpenSSL 1.0.1e 11 Feb 2013
     exit
 Docker also has an issue with /var/lib/docker/devicemapper so to fix  rename to /var/lib/docker/devicemapper.old
 
-##Setup Deployment
-Create the deployment user deploy `sudo adduser deploy`
-As deploy, create our deployment folder `mkdir /opt/ausDTO`
-Clone appropriate projects into the folder
+###Emacs
+sudo apt-get install emacs24-nox
 
 ##Attach Storage
 -- Ensure that the ephemeral storage is setup when defining the instance.
@@ -56,11 +63,26 @@ In the aws EC2 console select the volumes and select the discoData volume:
 3. Attach Volume
 4. Select Instance
 
-Mount the filesystem `mount /dev/xvdf/ /data/disco/`
-Inspect the volume and if required create a filesystem `sudo mkfs -t ext4 /dev/xvdf`
+Mount the filesystem
+
+    mkdir /data
+    mkdir /data/disco
+    mount /dev/xvdf/ /data/disco/
+    cd /data/disco/
+
+THESE STEPS WILL DESTROY EXISTING DATA
+Inspect the volume and ONLY IF REQUIRED create a filesystem `sudo mkfs -t ext4 /dev/xvdf`
 Create a crawler directory so that you have /data/disco/crawler
 
 Now make sure it gets mounted on boot...
-Copy the fstab `sudo cp /etc/fstab /etc/fstab.orig`
-Add this line `/dev/xvdf   /data/disco ext4    defaults,nofail 0   2`
-Check config with mount -a
+
+    sudo cp /etc/fstab /etc/fstab.orig //Copy the fstab
+    vi /etc/fstab
+        // Add: /dev/xvdf   /data/disco ext4    defaults,nofail 0   2
+    mount -a
+
+##Setup Deployment User
+Create the deployment user deploy `sudo adduser deploy`
+As deploy, create our deployment folder `mkdir /opt/ausDTO`
+Clone appropriate projects into the folder
+sudo usermod -aG docker deploy

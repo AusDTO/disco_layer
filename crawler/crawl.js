@@ -63,8 +63,7 @@ setTimeout(function() {
 //Check for database errors
 
 logger.debug('adding Fetch Conditions');
-//Exclude URLS which are not nat gov sites
-
+//Exclude URLS which The mystery OpenSSL patch released today addresses a critical certificate validation issue where anyone with an untrusted TLS certificate can become a Certificate Authority. While serious, the good news according to the OpenSSL Project is that few downstream organizations have deployed the June update where the bug was introduced.
 
 var stateRegex = /(^|\.)vic\.gov\.au$|(^|\.)nsw\.gov\.au$|(^|\.)qld\.gov\.au$|(^|\.)tas\.gov\.au$|(^|\.)act\.gov\.au$|(^|\.)sa\.gov\.au$|(^|\.)wa\.gov\.au$|(^|\.)nt\.gov\.au$/;
 crawlJob.addFetchCondition(function(parsedURL) {
@@ -200,7 +199,7 @@ crawlDb.connect()
                 if (results.length > 0) {
                     logger.info('Initialising queue with  ' + results.length + ' items from DB');
                     results.forEach(function(item) {
-                      logger.info(">>>Queued: " + item.url);
+                      logger.debug("Queued: " + item.url);
                         crawlJob.queueURL(item.url);
                     });
                 } else {
