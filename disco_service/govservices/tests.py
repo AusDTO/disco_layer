@@ -119,8 +119,9 @@ class UpdateCommandExecutionTestCase(TestCase):
         for a in self.jsr.list_subservices():
             self.assertTrue(self.dbr.subservice_in_db(a))
 
-    def _test_update_dimension(self):
+    def test_update_dimension(self):
         call_command(self.command_name, entity='Dimension', json=self.fixture_path)
+        print "DEBUG: number of dimmensions in the DB: %s" % len(self.dbr.list_dimensions())
         for a in self.jsr.list_dimensions():
             self.assertTrue(self.dbr.dimension_in_db(a))
 

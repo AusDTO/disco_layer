@@ -271,6 +271,7 @@ class ServiceDBRepository(object):
     _subservices = []
     _services = []
     _dimensions = []
+    _agency_ormcache = {}
 
     def __init__(self):
         self.Agency = govservices.models.Agency
@@ -606,21 +607,17 @@ class ServiceDBRepository(object):
         return out
 
     def get_ORM_agency(self, label):
+        if label in self._agency_ormcache.keys():
+            return self._agency_ormcache[label]
         if label == None:
             raise Exception, 'label must not be None'
         try:
-            cache = self._agency_ormcache
-        except:
-            self._agency_ormcache = {}
-        if label in self._agency_ormcache.keys():
-            agency = self._agency_ormcache[label]
-            if agency == None:
-                msg = 'something wicked: agency %s found in cache with type %s'
-                raise Exception, msg % (label, type(agency))
-        else:
             agency = self.Agency.objects.get(acronym=label)
-            self._agency_ormcache[label] = agency
-        return agency
+        except:
+            msg = "DB miss in get_ORM_agency for %s"
+            raise Exception, msg % label
+        self._agency_ormcache[label] = agency
+        return self._agency_ormcache[label]
 
     def agency_in_db(self, json_a):
         '''
@@ -642,6 +639,7 @@ class ServiceDBRepository(object):
         # causing any tests to fail so I guess it isn't a big problem.
         agency = self.Agency(acronym=json_a)
         agency.save()
+        self._agency_ormcache[json_a] = agency
         return agency
 
     def delete_agency(self, label):
@@ -823,7 +821,8 @@ class ServiceDBRepository(object):
                 dim['desc'] = d.desc
             if d.info_url:
                 dim['info_url'] = d.info_url
-            self._dimensions.append(dim)
+            if dim not in self._dimensions:
+                self._dimensions.append(dim)
         return self._dimensions
 
 
