@@ -20,4 +20,3 @@ crawler:
   volumes:
     - /var/log/docker:/src/logs
     - /var/log/docker/mail/:var/mail
-###    - /home/nokout/projects/discoveryLayer/crawler:/src
