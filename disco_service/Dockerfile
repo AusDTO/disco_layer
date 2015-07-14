@@ -15,5 +15,4 @@ WORKDIR $PROJ
 RUN pip install -r requirements.txt
 RUN python manage.py migrate
 EXPOSE 8000
-COPY ./run_gunicorn.sh /
-ENTRYPOINT ["/run_gunicorn.sh"]
+ENTRYPOINT ["/run.sh"]
