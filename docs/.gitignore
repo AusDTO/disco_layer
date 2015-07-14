@@ -1,1 +1,2 @@
-build/source/_*
+build/
+#source/_*
