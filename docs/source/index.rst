@@ -6,6 +6,7 @@ AusDTO Discovery Layer - technical docs
 
    overview
    design
+   ideas
 
 
 Indices and tables
