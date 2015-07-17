@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8"/>
   <meta name="viewport" content="width=device-width, initial-scale=1"/>
-  <title>{{siteTitle}}</title>
+  <title>{{pageTitle}} | {{siteTitle}}</title>
 
     <link href="/bower_components/bootstrap/dist/css/bootstrap.min.css" media="all" rel="stylesheet" />
     <link href="/bower_components/bootstrap/dist/css/bootstrap-theme.min.css" media="all" rel="stylesheet" />
@@ -41,7 +41,24 @@
         </div><!--/.nav-collapse -->
     </div>
 </nav>
-
+<ol class="breadcrumb">
+{{#each breadcrumbs}}
+    <li><a href="{{this.href}}">{{this.title}}</a></li>
+{{/each}}
+    <li class="active">{{pageTitle}}</li>
+</ol>
+{{#each alertSuccess}}
+<div class="alert alert-success" role="alert">{{this}}</div>
+{{/each}}
+{{#each alertInfo}}
+<div class="alert alert-info" role="alert">{{this}}</div>
+{{/each}}
+{{#each alertWarning}}
+<div class="alert alert-warning" role="alert">{{this}}</div>
+{{/each}}
+{{#each alertDanger}}
+<div class="alert alert-danger" role="alert">{{this}}</div>
+{{/each}}
         {{{body}}}
 
 

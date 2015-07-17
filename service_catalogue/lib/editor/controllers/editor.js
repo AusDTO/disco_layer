@@ -7,6 +7,7 @@ var CONF = require('config');
 var S = require('string');
 var jf = require('jsonfile');
 var NodeGit = require("nodegit");
+var moment = require("moment");
 jf.spaces = 4;
 
 
@@ -28,7 +29,9 @@ var github = new GitHubApi({
 exports.home = function (req, res) {
     if (!req.hasOwnProperty('user')) {
         var context = {
-            siteTitle: "Node.js Bootstrap Demo Page"
+            siteTitle: "Service Catalogue",
+            pageTitle: "Editor",
+            breadcrumbs: [{href: "/", title: "Service Catalogue"}]
         };
         var template = __dirname + '/../views/home';
         res.render(template, context);
@@ -43,9 +46,11 @@ exports.home = function (req, res) {
         github.repos.getAll({per_page: 100}, function (err, list) {
 
             var context = {
-                siteTitle: "Node.js Bootstrap Demo Page",
+                siteTitle: "Service Catalogue",
                 user: req.user,
-                repos: list
+                repos: list,
+                pageTitle: "Editor",
+                breadcrumbs: [{href: "/", title: "Service Catalogue"}]
 
             };
 
@@ -61,6 +66,7 @@ exports.showOrganisation = function (req, res) {
 
     var repoName = req.params[1];
     var orgPath = req.params[2];
+    var alertDanger = [];
 
 // authentication check
     if (req.hasOwnProperty('user')) {
@@ -73,34 +79,49 @@ exports.showOrganisation = function (req, res) {
     try {
         model = jf.readFileSync(tmppath + "model.json");
     } catch (e) {
+        alertDanger.push(e);
     }
     var definition;
     try {
         definition = jf.readFileSync(tmppath + "definition.json");
     } catch (e) {
-
+        alertDanger.push(e);
     }
     var services = []
     fs.readdir(tmppath, function (err, files) {
         if (err) {
-            cb(null);
+            alertDanger.push(err);
         } else {
+            // load each service from service file
             files.forEach(function (file) {
                 if (file != 'model.json' && file != 'definition.json') {
-                    var service = jf.readFileSync(tmppath + file);
-                    services.push(service);
+                    try {
+                        var service = jf.readFileSync(tmppath + file);
+                        services.push(service);
+                    } catch (e) {
+                        console.log(file);
+                        alertDanger.push("Cannot parse JSON in " + file);
+                    }
                 }
             });
         }
         var context = {
-            siteTitle: "Node.js Bootstrap Demo Page",
+            siteTitle: "Service Catalogue",
             repoAccount: repoAccount,
             repoName: repoName,
             orgPath: orgPath,
             model: model,
             definition: definition,
-            services: services
+            services: services,
+            alertDanger: alertDanger,
+            pageTitle: orgPath,
+            breadcrumbs: [{href: "/", title: "Service Catalogue"}, {href: "/editor/", title: "Editor"},
+                {
+                    href: "/editor/repo/" + repoAccount + "/" + repoName,
+                    title: "Repository " + repoAccount + "/" + repoName
+                }]
         };
+
 
         var template = __dirname + '/../views/organisation';
         res.render(template, context);
@@ -114,7 +135,8 @@ exports.showServiceEditor = function (req, res) {
     var repoName = req.params[1];
     var orgPath = req.params[2];
     var serviceID = req.params[3];
-
+    var alertDanger = [];
+var alertSuccess = [];
     if (req.hasOwnProperty('user')) {
         var userName = req.user.username;
     } else {
@@ -151,10 +173,11 @@ exports.showServiceEditor = function (req, res) {
                 }
             });
         } catch (e) {
-
+            alertDanger.push(e);
         }
 
-        jf.writeFileSync(tmppath + serviceID + ".json", output)
+        jf.writeFileSync(tmppath + serviceID + ".json", output);
+        alertSuccess.push(serviceID + ".json saved successfully");
     }
     fs.readFile(tmppath + serviceID + ".json", function (err, latestFile) {
         var content = '""';
@@ -162,11 +185,19 @@ exports.showServiceEditor = function (req, res) {
             content = latestFile.toString();
         }
         var context = {
-            siteTitle: "Node.js Bootstrap Demo Page"
+            siteTitle: "Service Catalogue"
             , repoAccount: repoAccount,
             repoName: repoName,
             orgPath: orgPath,
             content: content,
+            pageTitle: "Service: " + serviceID,
+            alertDanger: alertDanger,
+            breadcrumbs: [{href: "/", title: "Service Catalogue"}, {href: "/editor/", title: "Editor"},
+                {
+                    href: "/editor/repo/" + repoAccount + "/" + repoName,
+                    title: "Repository " + repoAccount + "/" + repoName
+                },
+                {href: "/editor/edit/organisation/" + repoAccount + "/" + repoName + "/" + orgPath, title: orgPath}],
             schema: '{ $ref: "/schemas/service.json" }'
 
         };
@@ -214,6 +245,7 @@ exports.autocomplete = function (req, res) {
                 }
             });
         } catch (e) {
+
         }
 
         res.status(200).send(JSON.stringify(suggestions));
@@ -252,6 +284,7 @@ exports.showDimensionEditor = function (req, res) {
     try {
         model = jf.readFileSync(tmppath + "model.json");
     } catch (e) {
+
     }
     jf.readFile(tmppath + "definition.json", function (err, definition) {
         var content = '""';
@@ -276,13 +309,24 @@ exports.showDimensionEditor = function (req, res) {
 
 
                 var context = {
-                    siteTitle: "Node.js Bootstrap Demo Page"
+                    siteTitle: "Service Catalogue"
                     , repoAccount: repoAccount,
                     repoName: repoName,
                     orgPath: orgPath,
                     editor: 'dimension',
                     content: content,
-                    schema: schema
+                    schema: schema,
+
+                    pageTitle: "Dimension: " + dimID,
+                    breadcrumbs: [{href: "/", title: "Service Catalogue"}, {href: "/editor/", title: "Editor"},
+                        {
+                            href: "/editor/repo/" + repoAccount + "/" + repoName,
+                            title: "Repository " + repoAccount + "/" + repoName
+                        },
+                        {
+                            href: "/editor/edit/organisation/" + repoAccount + "/" + repoName + "/" + orgPath,
+                            title: orgPath
+                        }]
                 };
 
                 var template = __dirname + '/../views/editor';
@@ -326,6 +370,7 @@ exports.showComponentEditor = function (req, res) {
     try {
         model = jf.readFileSync(tmppath + "model.json");
     } catch (e) {
+
     }
     jf.readFile(tmppath + "definition.json", function (err, definition) {
         jf.readFile(__dirname + '/../../../public/schemas/service-dimension.json', function (err, fd) {
@@ -347,13 +392,24 @@ exports.showComponentEditor = function (req, res) {
                         })
                 }
                 var context = {
-                    siteTitle: "Node.js Bootstrap Demo Page"
+                    siteTitle: "Service Catalogue"
                     , repoAccount: repoAccount,
                     repoName: repoName,
                     orgPath: orgPath,
                     editor: 'dimension',
                     content: content,
-                    schema: schema
+                    schema: schema,
+
+                    pageTitle: "Component: " + componentID,
+                    breadcrumbs: [{href: "/", title: "Service Catalogue"}, {href: "/editor/", title: "Editor"},
+                        {
+                            href: "/editor/repo/" + repoAccount + "/" + repoName,
+                            title: "Repository " + repoAccount + "/" + repoName
+                        },
+                        {
+                            href: "/editor/edit/organisation/" + repoAccount + "/" + repoName + "/" + orgPath,
+                            title: orgPath
+                        }],
                 };
 
                 var template = __dirname + '/../views/editor';
@@ -397,6 +453,7 @@ exports.showChannelEditor = function (req, res) {
     try {
         model = jf.readFileSync(tmppath + "model.json");
     } catch (e) {
+
     }
     jf.readFile(tmppath + "definition.json", function (err, definition) {
         jf.readFile(__dirname + '/../../../public/schemas/service-dimension.json', function (err, fd) {
@@ -418,13 +475,24 @@ exports.showChannelEditor = function (req, res) {
                         })
                 }
                 var context = {
-                    siteTitle: "Node.js Bootstrap Demo Page"
-                    , repoAccount: repoAccount,
+                    siteTitle: "Service Catalogue",
+                    repoAccount: repoAccount,
                     repoName: repoName,
                     orgPath: orgPath,
                     editor: 'dimension',
                     content: content,
-                    schema: schema
+                    schema: schema,
+
+                    pageTitle: "Channel: " + channelID,
+                    breadcrumbs: [{href: "/", title: "Service Catalogue"}, {href: "/editor/", title: "Editor"},
+                        {
+                            href: "/editor/repo/" + repoAccount + "/" + repoName,
+                            title: "Repository " + repoAccount + "/" + repoName
+                        },
+                        {
+                            href: "/editor/edit/organisation/" + repoAccount + "/" + repoName + "/" + orgPath,
+                            title: orgPath
+                        }],
                 };
 
                 var template = __dirname + '/../views/editor';
@@ -463,12 +531,20 @@ exports.showOrgDefnEditor = function (req, res) {
             content = JSON.stringify(latestFile.serviceOrganisation);
         }
         var context = {
-            siteTitle: "Node.js Bootstrap Demo Page"
+            siteTitle: "Service Catalogue"
             , repoAccount: repoAccount,
             repoName: repoName,
             orgPath: orgPath,
             content: content,
-            schema: '{ $ref: "/schemas/organisation.json" }'
+            schema: '{ $ref: "/schemas/organisation.json" }',
+
+            pageTitle: "Org. Definition: " + orgPath,
+            breadcrumbs: [{href: "/", title: "Service Catalogue"}, {href: "/editor/", title: "Editor"},
+                {
+                    href: "/editor/repo/" + repoAccount + "/" + repoName,
+                    title: "Repository " + repoAccount + "/" + repoName
+                },
+                {href: "/editor/edit/organisation/" + repoAccount + "/" + repoName + "/" + orgPath, title: orgPath}],
 
         };
 
@@ -497,13 +573,19 @@ exports.showOrgModelEditor = function (req, res) {
             content = latestFile.toString();
         }
         var context = {
-            siteTitle: "Node.js Bootstrap Demo Page"
-            , repoAccount: repoAccount,
+            siteTitle: "Service Catalogue",
+            repoAccount: repoAccount,
             repoName: repoName,
             orgPath: orgPath,
             content: content,
-            schema: '{ $ref: "/schemas/organisation-model.json" }'
-
+            schema: '{ $ref: "/schemas/organisation-model.json" }',
+            pageTitle: "Org. Model: " + orgPath,
+            breadcrumbs: [{href: "/", title: "Service Catalogue"}, {href: "/editor/", title: "Editor"},
+                {
+                    href: "/editor/repo/" + repoAccount + "/" + repoName,
+                    title: "Repository " + repoAccount + "/" + repoName
+                },
+                {href: "/editor/edit/organisation/" + repoAccount + "/" + repoName + "/" + orgPath, title: orgPath}],
         };
 
         var template = __dirname + '/../views/editor';
@@ -520,16 +602,18 @@ exports.submit = function (req, res) {
         var userName = req.user.username;
     } else {
         res.redirect('/');
-        req.user.displayName = "mmm";
-        req.user.emails[0].value = "m@m.com";
-
     }
 
     var context = {
-        siteTitle: "Node.js Bootstrap Demo Page"
-        , repoAccount: repoAccount,
-        repoName: repoName
-
+        siteTitle: "Service Catalogue",
+        repoAccount: repoAccount,
+        repoName: repoName,
+        pageTitle: "Submit",
+        breadcrumbs: [{href: "/", title: "Service Catalogue"}, {href: "/editor/", title: "Editor"},
+            {
+                href: "/editor/repo/" + repoAccount + "/" + repoName,
+                title: "Repository " + repoAccount + "/" + repoName
+            }]
     };
     var repo;
     var index;
@@ -596,14 +680,6 @@ exports.submit = function (req, res) {
                 token: req.user.accessToken
             });
 
-            /*github.user.getOrgs({headers: {Accept: 'application/vnd.github.moondragon+json'}}, function (err, list) {
-             var repos = [];
-             for (org in list) {
-             github.repos.getFromOrg({org: org.login}, function (err, list) {
-             repos = repos + list;
-             });
-             }*/
-
             github.pullRequests.getAll({
                 user: repoAccount,
                 repo: repoName,
@@ -624,12 +700,8 @@ exports.submit = function (req, res) {
                     var template = __dirname + '/../views/submit';
                     res.render(template, context);
                 });
-
-
             });
         });
-
-
 }
 
 exports.showRepo = function (req, res) {
@@ -644,17 +716,17 @@ exports.showRepo = function (req, res) {
     }
 
     // Using the `clone` method from the `Git.Clone` module, bring down the NodeGit
-// test repository from GitHub.
+    // test repository from GitHub.
     var cloneURL = "https://github.com/" + repoAccount + "/" + repoName;
 
-// Ensure that the `tmp` directory is local to this file and not the CWD.
+    // Ensure that the `tmp` directory is local to this file and not the CWD.
     var localPath = CONF.app.tmp_dir + '/' + repoAccount + '/' + repoName + '/' + userName + '/';
 
-// Simple object to store clone options.
+    // Simple object to store clone options.
     var cloneOptions = {};
 
-// This is a required callback for OS X machines.  There is a known issue
-// with libgit2 being able to verify certificates from GitHub.
+    // This is a required callback for OS X machines.  There is a known issue
+    // with libgit2 being able to verify certificates from GitHub.
     cloneOptions.remoteCallbacks = {
         certificateCheck: function () {
             return 1;
@@ -664,17 +736,17 @@ exports.showRepo = function (req, res) {
         }
     };
 
-// Invoke the clone operation and store the returned Promise.
+    // Invoke the clone operation and store the returned Promise.
     var cloneRepository = NodeGit.Clone(cloneURL, localPath, cloneOptions);
 
-// If the repository already exists, the clone above will fail.  You can simply
-// open the repository in this case to continue execution.
+    // If the repository already exists, the clone above will fail.  You can simply
+    // open the repository in this case to continue execution.
     var errorAndAttemptOpen = function () {
         return NodeGit.Repository.open(localPath);
     };
 
-// Once the repository has been cloned or opened, you can work with a returned
-// `Git.Repository` instance.
+    // Once the repository has been cloned or opened, you can work with a returned
+    // `Git.Repository` instance.
 
     cloneRepository.catch(errorAndAttemptOpen)
         .then(function (repository) {
@@ -688,10 +760,12 @@ exports.showRepo = function (req, res) {
                         return fs.statSync(path.join(localPath, file)).isDirectory() && file != '.git';
                     });
                     var context = {
-                        siteTitle: "Node.js Bootstrap Demo Page"
-                        , contents: files
-                        , repoAccount: repoAccount,
-                        repoName: repoName
+                        siteTitle: "Service Catalogue",
+                        contents: files,
+                        repoAccount: repoAccount,
+                        repoName: repoName,
+                        pageTitle: "Repository " + repoAccount + "/" + repoName,
+                        breadcrumbs: [{href: "/", title: "Service Catalogue"}, {href: "/editor/", title: "Editor"}]
                     };
                     var template = __dirname + '/../views/repo';
                     repository.getCurrentBranch().then(function (ref) {
@@ -699,15 +773,15 @@ exports.showRepo = function (req, res) {
                         if (ref.name() == "refs/heads/master") {
                             repository.getHeadCommit()
                                 .then(function (commit) {
+                                    // create branch for changes to be recorded in
                                     repository.createBranch(
-                                        "new-branch",
+                                        "changes-"+userName+"-"+moment().format('YYYYMMDD'),
                                         commit,
                                         0, // force: Overwrite existing branch.
                                         repository.defaultSignature(),
                                         "Created new-branch on HEAD");
                                 }).then(function () {
                                     repository.checkoutBranch('new-branch');
-
                                     res.render(template, context);
                                 });
                         }

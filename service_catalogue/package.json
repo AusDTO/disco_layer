@@ -31,7 +31,8 @@
     "string":"*",
     "jsonfile": "*",
     "lunr": "*",
-"nodegit": "*"
+"nodegit": "*",
+    "moment": "*"
   },
   "devDependencies": {
     "after": "^0.8.1",
