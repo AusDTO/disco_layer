@@ -15,18 +15,18 @@ Specifics of who and when are contained in the git logs.
    digraph d {
       node [shape="rectangle" style=filled fillcolor=white];
       rankdir=LR;
-      ui [label="user\ninterfaces" shape=ellipse];
-      api [label="API" shape=ellipse];
-      colab [label="collaborate" shape=ellipse ];
+      ui [label="user\ninterfaces" shape=ellipse fillcolor=green];
+      api [label="API" shape=ellipse fillcolor=green];
+      colab [label="collaborate" shape=ellipse fillcolor=gold];
       pub [label="publish/release" shape=ellipse];
-      ddash [label="development\ndashboards" shape=ellipse];
-      pipe [label="development\npipeline" fillcolor=green];
+      ddash [label="development\ndashboards" shape=ellipse fillcolor=green];
+      pipe [label="development\npipeline"];
       build [label="built\nartefacts" shape=folder fillcolor=green]; 
       src [label="source\ncode" shape=folder fillcolor=green];
 
       subgraph cluster_private {
-	  deployed [label="deployed\ncomponents" shape=folder fillcolor=orange];
-	  backing [label="backing\nservices" shape=folder fillcolor=orange];
+	  deployed [label="deployed\ncomponents" shape=folder];
+	  backing [label="backing\nservices" shape=folder];
       }
       
       ui -> deployed;
@@ -43,7 +43,7 @@ Specifics of who and when are contained in the git logs.
       deployed -> build;
    }
 
-The green items are "strictly open". We encourage their reuse, and support them to the extent we can. The orange ones are private, because we need control to provide reliable services, however they are instances of the open artefacts. So no secret sauce, we just keep our discrete instance private (so that we can provide reliable API and user interfaces).
+The green items are "strictly open". We encourage their reuse, and support them to the extent we can. The white ones are private, because we need control to provide reliable services, however they are instances of the open artefacts. So no secret sauce, we just keep our discrete instance private (so that we can provide reliable API and user interfaces).
 
 
 Source Code
@@ -196,12 +196,32 @@ Deployed Components
 
 Commodity infrastructure as a service. Currently docker on Amazon AWS, but whatever.
 
-Architecturally, essentially "12 factor" stateless, horisontaly scailable apps. Push state to backing services.
+Architecturally, essentially "12 factor" stateless, horisontaly scailable apps. Push state to backing services, twelve factor style (http://12factor.net/).
 
 
 Backing Services
 ----------------
 
 Databases, message queues, search indexes, etc. Where possible, buy "as a service" value added infrastructure to leverage economies of scope and scale.
+
+.. graphviz::
+
+   digraph d {
+      node [shape=rectangle style=filled fillcolor=white];
+      disco [label="disco\nservice"];
+      discoworker [label="disco\nworker"];
+      crawler;
+      subgraph cluster_b {
+         label="outsourced backing services";
+	 database;
+	 elasticsearch;
+	 mq [label="message\nqueue"];
+      }
+      crawler -> database;
+      discoworker -> database;
+      discoworker -> mq;
+      discoworker -> elasticsearch;
+      disco -> elasticsearch;
+   }
 
 Self-hosted implementations are acceptible in the development ecosystems, but pushing to a backing service should be norm during beta and beyond. 

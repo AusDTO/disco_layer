@@ -108,9 +108,7 @@ This kind of algorithmic navigation technology is used extensively in online adv
 
 At it's heart, a recommendation engine can be framed as a search problem. The links provided by the recommendation engine are effectively the results of a carefully constructed search; "given everything we know about stuff, find higly relevant resources". When it works well, the user expereinces serendipitous links (Ah ha! that's what I'm hunting for). This means they catch a worm and get to feast, avoid a dreary day of scrtaching around in the dirt, and get to spend their time on things they would rather be doing.
 
-In the above context, "stuff" can be the content of the resource being viewed, information about this user, information about user behavior in general, other things we know about the topic of the page.
-
- for a broader overview, and https://youtube.com/watch?y=13yQbaW2V4Y for a nice presentation about using solr/lucern to implement recommendation engine features.
+In the above context, "stuff" can be the content of the resource being viewed, information about this user, information about user behavior in general, other things we know about the topic of the page. See https://youtube.com/watch?y=13yQbaW2V4Y for a nice presentation about using solr/lucern to implement recommendation engine features. The technical approach with elasticsearch would be equivalent.
 
 Now, focus on our specific problem domain:
  * all the government content
