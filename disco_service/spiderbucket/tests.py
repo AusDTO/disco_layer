@@ -199,12 +199,7 @@ class PageSyncSubscriberTestCase(BasePageValidationTestCase):
             self.assertTrue(m.called)
 
 
-class SolrSyncTestCase(TestCase):
-    # no longer required due to use of NulTask
-    # and plan to adopt celery-haystack
-    pass
-
-
+"""
 class BugFix001(BasePageValidationTestCase):
     '''
     with real world deployment, celery was throwing some 
@@ -213,6 +208,9 @@ class BugFix001(BasePageValidationTestCase):
     raise InvalidPageIDError, page_id
 
     Everything that calls sync_page_sink should always pass in a valid page_id!
+    (<type 'int'>). If it's a <type 'str'>, then I don't know what's going on.
+
+    But that's crazy, page.id IS AN INT.
     '''
     def test_insert_page_in_db(self):
         with patch('spiderbucket.tasks.sync_page_sinks.delay') as mock_sync:
@@ -221,4 +219,4 @@ class BugFix001(BasePageValidationTestCase):
             pid = mock_sync.call_args()[0]
             # expecting call with integer-typed page_id parameter
             self.assertEqual(type(pid), type(0))  
-
+"""
