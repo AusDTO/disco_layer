@@ -78,6 +78,9 @@ class DBCRUDTestCase(BasePageValidationTestCase):
         and has different data
         then update_page_in_db should call Page.save
         '''
+        # clobber downstream tasks
+        dispatch = patch("spiderbucket.tasks.sync_page_sinks.delay")
+        dispatch.start()
         tasks.insert_page_in_db(self.good_page)
         with patch('spiderbucket.tasks.Page.save') as mock_save:
             tasks.update_page_in_db(self.good_page_dirty)
@@ -88,6 +91,9 @@ class DBCRUDTestCase(BasePageValidationTestCase):
         if the page does not already exist
         then insert_page_in_db should call Page.save
         '''
+        dispatch = patch("spiderbucket.tasks.sync_page_sinks.delay")
+        dispatch.start()
+        tasks.insert_page_in_db(self.good_page)
         with patch('spiderbucket.tasks.Page.save') as mock_save:
             tasks.insert_page_in_db(self.good_page)
             self.assertTrue(mock_save.called)
@@ -97,6 +103,8 @@ class DBCRUDTestCase(BasePageValidationTestCase):
         of update_page_in_db makes a change
         that change is dispatched to the sync_page_sinks
         '''
+        dispatch = patch("spiderbucket.tasks.sync_page_sinks.delay")
+        dispatch.start()
         tasks.insert_page_in_db(self.good_page)
         with patch('spiderbucket.tasks.sync_page_sinks.delay') as mock_sync:
             tasks.update_page_in_db(self.good_page_dirty)
@@ -107,6 +115,9 @@ class DBCRUDTestCase(BasePageValidationTestCase):
         of insert_page_in_db makes a change
         that change is dispatched to the sync_page_sinks
         '''
+        dispatch = patch("spiderbucket.tasks.sync_page_sinks.delay")
+        dispatch.start()
+        tasks.insert_page_in_db(self.good_page)
         with patch('spiderbucket.tasks.sync_page_sinks.delay') as mock_sync:
             tasks.insert_page_in_db(self.good_page)
             self.assertTrue(mock_sync.called)
