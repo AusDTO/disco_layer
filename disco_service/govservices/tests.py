@@ -120,8 +120,10 @@ class UpdateCommandExecutionTestCase(TestCase):
             self.assertTrue(self.dbr.subservice_in_db(a))
 
     def test_update_dimension(self):
+        # what should we do if the dimensions reference agencies that are not in the DB?
+        call_command(self.command_name, entity='Agency', json=self.fixture_path)
         call_command(self.command_name, entity='Dimension', json=self.fixture_path)
-        print "DEBUG: number of dimmensions in the DB: %s" % len(self.dbr.list_dimensions())
+        #print "DEBUG: number of dimmensions in the DB: %s" % len(self.dbr.list_dimensions())
         for a in self.jsr.list_dimensions():
             self.assertTrue(self.dbr.dimension_in_db(a))
 
@@ -169,6 +171,7 @@ class ServiceDBRepoTestCase(TestCase):
 
     def test_service_in_db(self):
         for s in self.service_fixtures:
+            self.dbr.create_agency(s['agency']) # class attribute singleton wierdness
             self.dbr.create_service(s)
             self.assertTrue(self.dbr.service_in_db(s))
 
@@ -195,6 +198,7 @@ class ServiceDBRepoTestCase(TestCase):
             'description', 'comment', 'current', 'org_acronym',
             'service_types', 'service_tags', 'life_events')
         for s in self.service_fixtures:
+            self.dbr.create_agency(s['agency']) # class attribute singleton wierdness
             self.dbr.create_service(s)
             self.assertTrue(self.dbr.service_same_as_db(s))
             for word in self.randomWords:
@@ -383,6 +387,7 @@ class ServiceDBRepoTestCase(TestCase):
     # Dimensions
     def test_list_dimensions(self):
         for ss in self.dimension_fixture:
+            self.dbr.create_agency(ss['agency']) # class attribute singleton wierdness
             self.assertFalse(ss in self.dbr.list_dimensions())
             self.dbr.create_dimension(ss)
             self.assertTrue(ss in self.dbr.list_dimensions())
@@ -394,6 +399,7 @@ class ServiceDBRepoTestCase(TestCase):
         '''
         volatile_fields = ('name', 'dist', 'desc', 'info_url')
         for d in self.dimension_fixture:
+            self.dbr.create_agency(d['agency']) # class attribute singleton wierdness
             self.dbr.create_dimension(d)
             self.assertTrue(self.dbr.dimension_in_db(d))
             d2 = d
@@ -408,6 +414,7 @@ class ServiceDBRepoTestCase(TestCase):
         '''
         volatile_fields = ('name', 'dist', 'desc', 'info_url')
         for d in self.dimension_fixture:
+            self.dbr.create_agency(d['agency']) # class attribute singleton wierdness
             self.dbr.create_dimension(d)
             self.assertTrue(self.dbr.dimension_in_db(d))
             self.assertTrue(self.dbr.dimension_same_as_db(d))
