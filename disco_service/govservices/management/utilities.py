@@ -281,7 +281,7 @@ class ServiceDBRepository(object):
         self.ServiceType = govservices.models.ServiceType
         self.Service = govservices.models.Service
         self.Dimension = govservices.models.Dimension
- 
+
     # service
     def list_services(self):
         if len(self._services) > 0:
@@ -748,6 +748,7 @@ class ServiceDBRepository(object):
         dd = self.Dimension(
             dim_id = d['dim_id'],
             agency = a)
+        dd.save()
         if 'name' in d.keys():
             dd.name = d['name']
         if 'dist' in d.keys():
@@ -892,6 +893,7 @@ class Json2DBMigrator():
                 self.dbr.delete_life_events(le)
 
     def update_service(self):
+        self.update_agency() # needed before services
         for s in self.sjr.list_services():
             if not self.dbr.service_in_db(s):
                 #print "DEBUG service not in DB, inserting %s" % str((s['id'], s['agency'], s['name']))
@@ -906,6 +908,7 @@ class Json2DBMigrator():
                 self.dbr.delete_service(s)
 
     def update_dimension(self):
+
         for d in self.sjr.list_dimensions():
             if not self.dbr.dimension_in_db(d):
                 self.dbr.create_dimension(d)
