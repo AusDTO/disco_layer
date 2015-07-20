@@ -64,7 +64,7 @@ Development Pipeline
 
 The above diagram indicates that the development pipeline is a thing that provides a development dashboard, and depends on source code, built artefacts, backing services and deployed components.
 
-| Of course in reality it's not that simple. Open source development is highly organic  a marketplace for ideas, it resembles a bazaar more than anything else (https://en.wikipedia.org/wiki/The_Cathedral_and_the_Bazaar).
+Of course in reality it's not that simple. Open source development is a highly organic marketplace for ideas, it resembles a bazaar more than anything else (https://en.wikipedia.org/wiki/The_Cathedral_and_the_Bazaar).
 
 In the following diagrams:
  * collaboration is golden
@@ -72,7 +72,7 @@ In the following diagrams:
  * the ellipses are verb-like things, such as interfaces or activities
  * the rectangles are noun-like things
 
-The diagram also shows a box of white things labelled "administered cloud". The systems inside this box are *core DTO business*, we administer them ourselves and take responsability for their quality. System components outside this box are administered by partners, we are functionality dependant on them however they are our someone else's core business.
+The diagram also shows a box of white things labelled "administered cloud". The systems inside this box are *core DTO business*, we administer them ourselves and take responsability for their quality. If they break, we fix them. System components outside this box are administered by partners, we are functionality dependant on them however they are our someone else's core business (if they break, we complain).
 
 .. graphviz::
 
@@ -196,7 +196,7 @@ Deployed Components
 
 Commodity infrastructure as a service. Currently docker on Amazon AWS, but whatever.
 
-Architecturally, essentially "12 factor" stateless, horisontaly scailable apps. Push state to backing services, twelve factor style (http://12factor.net/).
+Architecturally stateless, horizontaly scailable, cloud-native design. Push state to backing services, twelve factor style (http://12factor.net/).
 
 
 Backing Services
