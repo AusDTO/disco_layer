@@ -43,7 +43,7 @@ Specifics of who and when are contained in the git logs.
       deployed -> build;
    }
 
-The green items are "strictly open". We encourage their reuse, and support them to the extent we can. The white ones are private, because we need control to provide reliable services, however they are instances of the open artefacts. So no secret sauce, we just keep our discrete instance private (so that we can provide reliable API and user interfaces).
+The green items are "strictly open". We encourage their reuse, and support them to the extent we can. The white ones are private, however they are instances of the open artefacts. So no secret sauce, we just keep our discrete instance private (so that we can provide reliable API and user interfaces).
 
 
 Source Code

@@ -124,4 +124,3 @@ In the simplest case, the information extraction step could simply take a copy o
 The metadata management step combines the extracted information with aditional data, such as context from the service catalogue. In a very simple case, this might be contextural information such as "this page is associated with that service" or observations about user behavior (e.g. this is a popular page). There are potentially many kinds of supplimentary data that could be incorporated here, however development will be driven by the requirements of the index maintainer.
 
 The search indexes are maintained using the excellent django-haystack library (http://haystacksearch.org/).
-
