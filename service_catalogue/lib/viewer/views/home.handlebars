@@ -3,7 +3,7 @@
 <div class="jumbotron">
     <div class="container">
         <h1>Search the Service Catalogue</h1>
-        <p>Search here or <A href="">view as a graph</a> or <a href="https://github.com/AusDTO/govHackServiceCatalogue">view raw data on GitHub</a></p>
+        <p>Search here or <A href="/viewer/graph">view as a graph</a> or <a href="https://github.com/AusDTO/govHackServiceCatalogue">view raw data on GitHub</a></p>
         <div class="input-group">
             <input type="text" placeholder="Search..." class="form-control" />
             <div class="input-group-btn">
@@ -51,7 +51,9 @@ var output = results.length +" results found.</br>";
 
             }
             output = output + results[i].name;
-
+            if (results[i].infoUrl && results[i].infoUrl != "") {
+                output = output + "</a>";
+            }
             if (results[i].serviceOrganisation.name && results[i].serviceOrganisation.name != "") {
                 output = output + " <span class='label label-primary'>"+results[i].serviceOrganisation.name +"</span>";
             }
@@ -63,9 +65,7 @@ var output = results.length +" results found.</br>";
             }
 
 
-            if (results[i].infoUrl && results[i].infoUrl != "") {
-                output = output + "</a>";
-            }
+
             output = output + '</b><br/>' + results[i].description + '<hr/>';
         }
         $('#output').html(output);
