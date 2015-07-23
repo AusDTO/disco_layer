@@ -1,12 +1,28 @@
 <script src="/bower_components/jquery/jquery.min.js"></script>
 <script src="/bower_components/lunr.js/lunr.min.js"></script>
+<div class="jumbotron">
+    <div class="container">
+        <h1>Search the Service Catalogue</h1>
+        <p>Search here or <A href="">view as a graph</a> or <a href="https://github.com/AusDTO/govHackServiceCatalogue">view raw data on GitHub</a></p>
+        <div class="input-group">
+            <input type="text" placeholder="Search..." class="form-control" />
+            <div class="input-group-btn">
+                <button class="btn btn-info">
+                    <span class="glyphicon glyphicon-search"></span>
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
 
-<input type="text"/>
+<div class="container">
+
 <div id="output"/></div>
+</div>
 <script>
     var data = {{{data}}};
     var index = lunr.Index.load({{{index}}});
-    console.log(index.search('foo'));
+    //console.log(index.search('foo'));
     var debounce = function (fn) {
         var timeout
         return function () {
@@ -26,13 +42,31 @@
         var results = index.search(query).map(function (result) {
             return data[result.ref];
         })
-var output = "";
+var output = results.length +" results found.</br>";
         for (var i in results) {
             if (results[i].infoUrl && results[i].infoUrl != "") {
-                output = output + "<b><a href='" + results[i].infoUrl + "'>"+results[i].name + '</a></b><br/>' + results[i].description + '<hr/>';
+                output = output + "<b><a href='" + results[i].infoUrl + "'>";
             } else {
-                output = output + "<b>" + results[i].name + '</b><br/>' + results[i].description + '<hr/>';
+                output = output + "<b>";
+
             }
+            output = output + results[i].name;
+
+            if (results[i].serviceOrganisation.name && results[i].serviceOrganisation.name != "") {
+                output = output + " <span class='label label-primary'>"+results[i].serviceOrganisation.name +"</span>";
+            }
+            for (var j in results[i].primaryAudience) {
+                output = output + " <span class='label label-info'>"+results[i].primaryAudience[j] +"</span>";
+            }
+            for (var j in results[i].primaryChannel) {
+                output = output + " <span class='label label-success'>"+results[i].primaryChannel[j] +"</span>";
+            }
+
+
+            if (results[i].infoUrl && results[i].infoUrl != "") {
+                output = output + "</a>";
+            }
+            output = output + '</b><br/>' + results[i].description + '<hr/>';
         }
         $('#output').html(output);
     }))
