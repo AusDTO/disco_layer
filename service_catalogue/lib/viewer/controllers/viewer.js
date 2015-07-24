@@ -6,7 +6,8 @@ var jf = require('jsonfile');
 var lunr = require('lunr');
 exports.graph = function (req, res) {
     var template = __dirname + '/../views/graph';
-    var context = {};
+    var context = { siteTitle: "Service Catalogue",
+            pageTitle: "Graph Viewer"};
 
     res.render(template, context);
 }
@@ -37,11 +38,11 @@ exports.graph_data = function (req, res) {
                             size: 0.5   ,
                             color: '#428bca'
                         });
-                        dimdata["edges"].push({
+                        /*dimdata["edges"].push({
                             id: data.organisationDefinition.serviceOrganisation.id + "AUSGOV",
                             source: data.organisationDefinition.serviceOrganisation.id + data.organisationDefinition.serviceOrganisation.id ,
                             target: "AUSGOV"
-                        });
+                        });*/
                         // dimensions
                         for (var i in data.organisationDefinition.serviceDimensions) {
                             nodeids.add(data.organisationDefinition.serviceOrganisation.id + data.organisationDefinition.serviceDimensions[i].id);
@@ -211,7 +212,8 @@ exports.home = function (req, res) {
             var context = {
                 data: JSON.stringify(dimdata), index: JSON.stringify(index),
                 alertDanger: alertDanger,
-                pageTitle: "Viewer"
+ siteTitle: "Service Catalogue",
+            pageTitle: "Viewer"
             }
 
             res.render(template, context);

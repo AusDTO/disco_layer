@@ -13,7 +13,7 @@
         border: 1px black;
     }
 </style>
-<div id="container"></div>
+<div id="container"><div id="loading" style="text-align:center">Loading graph...</a></div>
 <script>
 
         var g = {
@@ -79,6 +79,9 @@
 // Bind the events:
                 frListener.bind('start stop interpolate', function(e) {
                     console.log(e.type);
+                    if (e.type=='stop') {
+                    document.getElementById('loading').innerHTML = "";
+                    }
                 });
 
 // Start the Fruchterman-Reingold algorithm:
