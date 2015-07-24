@@ -23,7 +23,7 @@ language = None
 exclude_patterns = []
 pygments_style = 'sphinx'
 todo_include_todos = False
-html_theme = 'alabaster'
+html_theme = 'sphinx_rtd_theme'
 html_static_path = ['_static']
 htmlhelp_basename = 'DiscoveryLayerdoc'
 
