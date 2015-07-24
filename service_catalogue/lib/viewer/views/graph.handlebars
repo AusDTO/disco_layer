@@ -1,7 +1,10 @@
 <script src="/bower_components/jquery/jquery.min.js"></script>
-<script src="/bower_components/sigma.js/sigma.min.js"></script>
-<script src="/bower_components/sigma.js/plugins/sigma.parsers.json.min.js"></script>
-<script src="/bower_components/sigma.js/plugins/sigma.layout.forceAtlas2.min.js"></script>
+<script src="/js/linkurious/sigma.min.js"></script>
+<script src="/js/linkurious/plugins/sigma.parsers.json.min.js"></script>
+<script src="/js/linkurious/plugins/sigma.plugins.animate.min.js"></script>
+<script src="/js/linkurious/plugins/sigma.layout.forceLink.min.js"></script>
+<script src="/js/linkurious/plugins/sigma.layout.forceAtlas2.min.js"></script>
+<script src="/js/linkurious/plugins/sigma.layout.fruchtermanReingold.min.js"></script>
 <style type="text/css">
     #container {
         max-width: 100%;
@@ -42,17 +45,47 @@
                         len = nodes.length;
 
                 for (i = 0; i < len; i++) {
-                    nodes[i].x = Math.random();
-                    nodes[i].y = Math.random();
-                    nodes[i].size = s.graph.degree(nodes[i].id);
-                    nodes[i].color = nodes[i].center ? '#333' : '#666';
+                    if (s.graph.degree(nodes[i].id) > 0) {
+                        nodes[i].x = Math.random();
+                        nodes[i].y = Math.random();
+                        nodes[i].size = s.graph.degree(nodes[i].id);
+                        //nodes[i].color = nodes[i].center ? '#333' : '#666';
+                    } else {
+                        s.graph.dropNode(nodes[i].id);
+                    }
                 }
+
+/*
+                // Configure the ForceLink algorithm:
+                var fa = sigma.layouts.configForceLink(s, {
+                    worker: true,
+                    autoStop: true,
+                    background: true,
+                    scaleRatio: 10,
+                    gravity: 3,
+                    easing: 'cubicInOut'
+                });
+
+// Start the ForceLink algorithm:
+                sigma.layouts.startForceLink();      */
+
+                // Configure the Fruchterman-Reingold algorithm:
+                var frListener = sigma.layouts.fruchtermanReingold.configure(s, {
+                    iterations: 300,
+                    easing: 'quadraticInOut',
+                    duration: 100
+                });
+
+// Bind the events:
+                frListener.bind('start stop interpolate', function(e) {
+                    console.log(e.type);
+                });
+
+// Start the Fruchterman-Reingold algorithm:
+                sigma.layouts.fruchtermanReingold.start(s);
 
                 // Refresh the display:
                 s.refresh();
-
-                // ForceAtlas Layout
-                s.startForceAtlas2({worker: true, barnesHutOptimize: false});
             }
     );
 </script>

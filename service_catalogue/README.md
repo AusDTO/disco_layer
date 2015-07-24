@@ -1,0 +1,1 @@
+must set GITHUB_CLIENT_SECRET environment vgariable
