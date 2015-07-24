@@ -1,3 +1,5 @@
+github api secret via envvar
+
 - http://www.alpacajs.org/documentation.html ?
 - allow create new organisatio n(nfolder)
 - allow deleting components/dimensions/services

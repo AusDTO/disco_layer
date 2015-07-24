@@ -1,43 +1,94 @@
 <script src="/bower_components/jquery/jquery.min.js"></script>
-<script src="/bower_components/sigma.js/sigma.min.js"></script>
+<script src="/js/linkurious/sigma.min.js"></script>
+<script src="/js/linkurious/plugins/sigma.parsers.json.min.js"></script>
+<script src="/js/linkurious/plugins/sigma.plugins.animate.min.js"></script>
+<script src="/js/linkurious/plugins/sigma.layout.forceLink.min.js"></script>
+<script src="/js/linkurious/plugins/sigma.layout.forceAtlas2.min.js"></script>
+<script src="/js/linkurious/plugins/sigma.layout.fruchtermanReingold.min.js"></script>
 <style type="text/css">
     #container {
-        max-width: 800px;
-        height: 600px;
+        max-width: 100%;
+        height: 800px;
         margin: auto;
+        border: 1px black;
     }
 </style>
-<div id="container"></div>
+<div id="container"><div id="loading" style="text-align:center">Loading graph...</a></div>
 <script>
-    // Let's first initialize sigma:
-    var s = new sigma('container');
 
-    // Then, let's add some data to display:
-    s.graph.addNode({
-        // Main attributes:
-        id: 'n0',
-        label: 'Hello',
-        // Display attributes:
-        x: 0,
-        y: 0,
-        size: 1,
-        color: '#f00'
-    }).addNode({
-        // Main attributes:
-        id: 'n1',
-        label: 'World !',
-        // Display attributes:
-        x: 1,
-        y: 1,
-        size: 1,
-        color: '#00f'
-    }).addEdge({
-        id: 'e0',
-        // Reference extremities:
-        source: 'n0',
-        target: 'n1'
+        var g = {
+            nodes: [],
+            edges: []
+        };
+
+    s = new sigma({
+        graph: g,
+        container: 'graph-container',
+        renderer: {
+            container: document.getElementById('container'),
+            type: 'canvas'
+        },
+        settings: {
+            minNodeSize: 8,
+            maxNodeSize: 16
+        }
     });
 
-    // Finally, let's ask our sigma instance to refresh:
-    s.refresh();
+
+    sigma.parsers.json(
+            '/viewer/graph-data.json',
+            s,
+            function() {
+                // this is needed in case the original JSON doesn't have color / size / x-y attributes
+                var i,
+                        nodes = s.graph.nodes(),
+                        len = nodes.length;
+
+                for (i = 0; i < len; i++) {
+                    if (s.graph.degree(nodes[i].id) > 0) {
+                        nodes[i].x = Math.random();
+                        nodes[i].y = Math.random();
+                        nodes[i].size = s.graph.degree(nodes[i].id);
+                        //nodes[i].color = nodes[i].center ? '#333' : '#666';
+                    } else {
+                        s.graph.dropNode(nodes[i].id);
+                    }
+                }
+
+/*
+                // Configure the ForceLink algorithm:
+                var fa = sigma.layouts.configForceLink(s, {
+                    worker: true,
+                    autoStop: true,
+                    background: true,
+                    scaleRatio: 10,
+                    gravity: 3,
+                    easing: 'cubicInOut'
+                });
+
+// Start the ForceLink algorithm:
+                sigma.layouts.startForceLink();      */
+
+                // Configure the Fruchterman-Reingold algorithm:
+                var frListener = sigma.layouts.fruchtermanReingold.configure(s, {
+                    iterations: 300,
+                    easing: 'quadraticInOut',
+                    duration: 100
+                });
+
+// Bind the events:
+                frListener.bind('start stop interpolate', function(e) {
+                    console.log(e.type);
+                    if (e.type=='stop') {
+                    document.getElementById('loading').innerHTML = "";
+                    }
+                });
+
+// Start the Fruchterman-Reingold algorithm:
+                sigma.layouts.fruchtermanReingold.start(s);
+
+                // Refresh the display:
+                s.refresh();
+            }
+    );
 </script>

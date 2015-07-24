@@ -22,4 +22,5 @@ app.models = require('./models');
 // Module's Routes. Please note this is actually under /hello, because module is attached under /hello
 app.get('/', app.callbacks.home);
 app.get('/graph', app.callbacks.graph);
+app.get('/graph-data.json', app.callbacks.graph_data);
 app.get('/tree', app.callbacks.tree);
