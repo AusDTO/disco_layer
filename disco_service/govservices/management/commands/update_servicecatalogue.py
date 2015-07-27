@@ -1,4 +1,8 @@
 #-*- coding: utf-8; -*-
+"""
+It would be highly preferable to refactor this to use a REST API to interrogate
+the service catalogue, rather than messing about with the ServiceJsonRepository.
+"""
 import os
 from django.core.management.base import BaseCommand, CommandError
 from django.conf import settings
