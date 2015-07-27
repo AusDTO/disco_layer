@@ -25,6 +25,7 @@ INSTALLED_APPS = (
     'djcelery',
     'celery',
     'haystack',
+    'celery_haystack',
     'spiderbucket',
     'govservices',
 )
@@ -136,3 +137,5 @@ SERVICE_CATALOGUE_REPOSITORY_PATH = env(
     default=os.path.join(BASE_DIR, '../../serviceCatalogue/'))
 SERVICE_CATALOGUE_REPOSITORY_REMOTE = env(
     'SERVICE_CATALOGUE_REPOSITORY_REMOTE', default='origin')
+
+HAYSTACK_SIGNAL_PROCESSOR = 'celery_haystack.signals.CelerySignalProcessor'
