@@ -1,4 +1,8 @@
 #from django.test import TestCase
+"""
+This is a normalised model of the json graph created by the AusDTO service catalogue app.
+"""
+
 from unittest import TestCase
 import contextlib
 from django.core.management import call_command
