@@ -1,9 +1,10 @@
 import datetime
+from celery_haystack.indexes import CelerySearchIndex
 from haystack import indexes
 from spiderbucket.models import Page
 from govservices.models import Service
 
-class PageIndex(indexes.SearchIndex, indexes.Indexable):
+class PageIndex(CelerySearchIndex, indexes.Indexable):
     text = indexes.CharField(document=True, use_template=True)
     title = indexes.CharField(model_attr="title")
     url = indexes.CharField(model_attr="url")
@@ -26,7 +27,7 @@ class PageIndex(indexes.SearchIndex, indexes.Indexable):
         return "%s" % obj.title()
 
 
-class ServiceIndex(indexes.SearchIndex, indexes.Indexable):
+class ServiceIndex(CelerySearchIndex, indexes.Indexable):
     text = indexes.CharField(document=True, use_template=True)
     #url = indexes.CharField(model_attr="info_url")
     #acronym = indexes.CharField(model_attr="acronym")
