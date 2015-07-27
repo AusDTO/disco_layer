@@ -95,14 +95,15 @@ treatments (in the extringic+intrinsic contexts, userland+codebase).
 Then hack with inquisitive creativity, continuously trying to improve
 the codebase, indexing treatment and instrumentation in concert.
 '''
+# default haystack is elasticsearch on localhost
 HAYSTACK_CONNECTIONS = {
     'default': {
         'ENGINE': env(
             'HAYSTACK_DEFAULT_ENGINE',
-            default='haystack.backends.solr_backend.SolrEngine'),
+            default='haystack.backends.elasticsearch_backend.ElasticsearchSearchEngine'),
         'URL': env(
             'HAYSTACK_DEFAULT_URL',
-            default='http://127.0.0.1:8983/solr/collection1'),
+            default='http://127.0.0.1:9200/'),
         'INDEX_NAME': env(   # required by elasticsearch, ignored by solr
             'HAYSTACK_INDEX_NAME',
             default='haystack')
