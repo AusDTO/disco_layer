@@ -15,3 +15,4 @@ gitpython
 lettuce
 python-Levenshtein
 cssselect
+celery-haystack
