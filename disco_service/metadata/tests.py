@@ -79,10 +79,10 @@ class DBCRUDTestCase(BasePageValidationTestCase):
         then update_page_in_db should call Page.save
         '''
         # clobber downstream tasks
-        dispatch = patch("spiderbucket.tasks.sync_page_sinks.delay")
+        dispatch = patch("metadata.tasks.sync_page_sinks.delay")
         dispatch.start()
         tasks.insert_page_in_db(self.good_page)
-        with patch('spiderbucket.tasks.Page.save') as mock_save:
+        with patch('metadata.tasks.Page.save') as mock_save:
             tasks.update_page_in_db(self.good_page_dirty)
             self.assertTrue(mock_save.called)
 
@@ -91,10 +91,10 @@ class DBCRUDTestCase(BasePageValidationTestCase):
         if the page does not already exist
         then insert_page_in_db should call Page.save
         '''
-        dispatch = patch("spiderbucket.tasks.sync_page_sinks.delay")
+        dispatch = patch("metadata.tasks.sync_page_sinks.delay")
         dispatch.start()
         tasks.insert_page_in_db(self.good_page)
-        with patch('spiderbucket.tasks.Page.save') as mock_save:
+        with patch('metadata.tasks.Page.save') as mock_save:
             tasks.insert_page_in_db(self.good_page)
             self.assertTrue(mock_save.called)
 
@@ -103,10 +103,10 @@ class DBCRUDTestCase(BasePageValidationTestCase):
         of update_page_in_db makes a change
         that change is dispatched to the sync_page_sinks
         '''
-        dispatch = patch("spiderbucket.tasks.sync_page_sinks.delay")
+        dispatch = patch("metadata.tasks.sync_page_sinks.delay")
         dispatch.start()
         tasks.insert_page_in_db(self.good_page)
-        with patch('spiderbucket.tasks.sync_page_sinks.delay') as mock_sync:
+        with patch('metadata.tasks.sync_page_sinks.delay') as mock_sync:
             tasks.update_page_in_db(self.good_page_dirty)
             self.assertTrue(mock_sync.called)
 
@@ -115,10 +115,10 @@ class DBCRUDTestCase(BasePageValidationTestCase):
         of insert_page_in_db makes a change
         that change is dispatched to the sync_page_sinks
         '''
-        dispatch = patch("spiderbucket.tasks.sync_page_sinks.delay")
+        dispatch = patch("metadata.tasks.sync_page_sinks.delay")
         dispatch.start()
         tasks.insert_page_in_db(self.good_page)
-        with patch('spiderbucket.tasks.sync_page_sinks.delay') as mock_sync:
+        with patch('metadata.tasks.sync_page_sinks.delay') as mock_sync:
             tasks.insert_page_in_db(self.good_page)
             self.assertTrue(mock_sync.called)
 
@@ -138,7 +138,7 @@ class PushPageDictTestCase(BasePageValidationTestCase):
         push_page_dict should call update_page_in_db
         '''
         tasks.insert_page_in_db(self.good_page)
-        update_method = 'spiderbucket.tasks.update_page_in_db.delay'
+        update_method = 'metadata.tasks.update_page_in_db.delay'
         with patch(update_method) as mock_update:
             tasks.push_page_dict(self.good_page_dirty)
             self.assertTrue(mock_update.called)
@@ -148,7 +148,7 @@ class PushPageDictTestCase(BasePageValidationTestCase):
         If page does not exist in the db,
         push_page_dict should call insert_page_in_db
         '''
-        insert_method = 'spiderbucket.tasks.insert_page_in_db.delay'
+        insert_method = 'metadata.tasks.insert_page_in_db.delay'
         with patch(insert_method) as mock_insert:
             tasks.push_page_dict(self.good_page)
             self.assertTrue(mock_insert.called)
@@ -177,7 +177,7 @@ class PageSyncSubscriberTestCase(BasePageValidationTestCase):
         pss = tasks.PageSyncSubscribers()
         mocks = []
         for t in pss.list_delete_task_names():
-            patcher = patch("spiderbucket.tasks.%s.delay" % t)
+            patcher = patch("metadata.tasks.%s.delay" % t)
             mocks.append(patcher.start())
         tasks.sync_page_sinks(1) # absent
         for m in mocks:
@@ -191,32 +191,10 @@ class PageSyncSubscriberTestCase(BasePageValidationTestCase):
         pss = tasks.PageSyncSubscribers()
         mocks = []
         for t in pss.list_push_task_names():
-            patcher = patch("spiderbucket.tasks.%s.delay" % t)
+            patcher = patch("metadata.tasks.%s.delay" % t)
             mocks.append(patcher.start())
         tasks.insert_page_in_db(self.good_page)
         tasks.sync_page_sinks(1) # PRESUMPTION !
         for m in mocks:
             self.assertTrue(m.called)
 
-
-"""
-class BugFix001(BasePageValidationTestCase):
-    '''
-    with real world deployment, celery was throwing some 
-
-    "/opt/disco_service/spiderbucket/tasks.py", line 176, in sync_page_sinks
-    raise InvalidPageIDError, page_id
-
-    Everything that calls sync_page_sink should always pass in a valid page_id!
-    (<type 'int'>). If it's a <type 'str'>, then I don't know what's going on.
-
-    But that's crazy, page.id IS AN INT.
-    '''
-    def test_insert_page_in_db(self):
-        with patch('spiderbucket.tasks.sync_page_sinks.delay') as mock_sync:
-            tasks.insert_page_in_db(self.good_page)
-            self.assertTrue(mock_sync.called)
-            pid = mock_sync.call_args()[0]
-            # expecting call with integer-typed page_id parameter
-            self.assertEqual(type(pid), type(0))  
-"""

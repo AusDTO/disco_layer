@@ -27,7 +27,7 @@ INSTALLED_APPS = (
     'celery',
     'haystack',
     'celery_haystack',
-    'spiderbucket',
+    'metadata',
     'govservices',
 )
 
