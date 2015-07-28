@@ -4,7 +4,7 @@ from __future__ import unicode_literals
 from django.db import models
 
 
-class WebDocuments(models.Model):
+class WebDocument(models.Model):
     url = models.TextField(primary_key=True)
     host = models.CharField(max_length=255, blank=True, null=True)
     document = models.BinaryField(blank=True, null=True)
