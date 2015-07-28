@@ -1,7 +1,7 @@
 import datetime
 from celery_haystack.indexes import CelerySearchIndex
 from haystack import indexes
-from spiderbucket.models import Page
+from metadata.models import Page
 from govservices.models import Service
 
 class PageIndex(CelerySearchIndex, indexes.Indexable):
