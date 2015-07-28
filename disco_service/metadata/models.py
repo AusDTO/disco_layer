@@ -5,7 +5,8 @@ import base64
 class Resource(models.Model):
 
     url = models.CharField(max_length=256)
-    
+    _hash = models.CharField(
+        db_column='hash', max_length=255, blank=True, null=True)
     protocol = models.CharField(max_length=6, null=True, blank=True)
     host = models.CharField(max_length=256, null=True, blank=True)
     port = models.IntegerField(null=True, blank=True)
@@ -66,3 +67,4 @@ class Resource(models.Model):
             return long_excerpt
         else:
             return long_excerpt[:300]
+
