@@ -1,22 +1,25 @@
 from django.db import models
 from goose import Goose
-import base64
+#import base64
+from crawler.models import WebDocument
 
 class Resource(models.Model):
 
     url = models.CharField(max_length=256)
     _hash = models.CharField(
-        db_column='hash', max_length=255, blank=True, null=True)
+        db_column='hash', max_length=255,
+        blank=True, null=True)
     protocol = models.CharField(max_length=6, null=True, blank=True)
+    contenttype = models.CharField(max_length=256, null=True, blank=True)
     host = models.CharField(max_length=256, null=True, blank=True)
     port = models.IntegerField(null=True, blank=True)
     path = models.TextField(null=True, blank=True) 
     depth =  models.IntegerField(null=True, blank=True)
-    fetched =  models.NullBooleanField(blank=True)
-    status = models.CharField(max_length=256, null=True, blank=True)
+    #fetched =  models.NullBooleanField(blank=True)
+    #status = models.CharField(max_length=256, null=True, blank=True)
     lastFetchDateTime = models.DateTimeField(null=True, blank=True)
-    nextFetchDateTime =  models.DateTimeField(null=True, blank=True)
-    document = models.TextField(null=True, blank=True)
+    #nextFetchDateTime =  models.DateTimeField(null=True, blank=True)
+    #document = models.TextField(null=True, blank=True)
 
     ### implement as derived data / @property decorator
     #param_string = models.TextField(null=True, blank=True) # data available?
@@ -24,21 +27,25 @@ class Resource(models.Model):
     #document_decoded = models.TextField(null=True, blank=True)
     #excerpt = models.TextField(null=True, blank=True)
     #title = models.TextField(null=True, blank=True)
-    
+
     def __unicode__(self):
         return self.url
 
     def _decode(self):
-        return base64.standard_b64decode(self.document)
+        # cache this method
+        #return base64.standard_b64decode(self.document)
+        wd = WebDocument.objects.filter(url=self.url).get()
+        return wd.document 
 
     def _article(self):
-        # faster if cached?
+        # switch method depending on content_type
+        # for pdf, fall back to teseract if pdf2text yields not much
+        # (then use the larger, or maybe composit)
         g = Goose()
         return g.extract(raw_html=self._decode())
 
     def title(self):
-        # assumes type=HTML
-        # more to do for other types...
+        # assumes Goose interface
         try:
             return self._article().title
         except:
