@@ -4,9 +4,6 @@ import base64
 
 class Page(models.Model):
 
-    orient_rid = models.CharField(max_length=256)
-    orient_version = models.CharField(max_length=256)
-    orient_class = models.CharField(max_length=256)
     url = models.CharField(max_length=256)
     
     protocol = models.CharField(max_length=6, null=True, blank=True)
