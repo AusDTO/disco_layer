@@ -2,7 +2,7 @@ from django.db import models
 from goose import Goose
 import base64
 
-class Page(models.Model):
+class Resource(models.Model):
 
     url = models.CharField(max_length=256)
     
