@@ -1,10 +1,10 @@
 import datetime
 from celery_haystack.indexes import CelerySearchIndex
 from haystack import indexes
-from metadata.models import Page
+from metadata.models import Resource
 from govservices.models import Service
 
-class PageIndex(CelerySearchIndex, indexes.Indexable):
+class ResourceIndex(CelerySearchIndex, indexes.Indexable):
     text = indexes.CharField(document=True, use_template=True)
     title = indexes.CharField(model_attr="title")
     url = indexes.CharField(model_attr="url")
@@ -17,7 +17,7 @@ class PageIndex(CelerySearchIndex, indexes.Indexable):
     #nextFetchDateTime =  indexes.DateTimeField(model_attr="nextFetchDateTime")
 
     def get_model(self):
-        return Page
+        return Resource
 
     def index_queryset(self, using=None):
         """Used when the entire index for model is updated."""

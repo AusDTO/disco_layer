@@ -1,4 +1,4 @@
 from django.contrib import admin
-from metadata.models import Page
+from metadata.models import Resource
 
-admin.site.register(Page)
+admin.site.register(Resource)
