@@ -5,6 +5,7 @@ https://docs.djangoproject.com/en/1.8/ref/settings/
 import os
 import os.path
 from envparse import env
+import sys
 
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 SECRET_KEY = env(
@@ -72,7 +73,9 @@ DATABASES = {
         'PORT': env('DATABASE_DEFAULT_PORT', default=''),
     }
 }
-
+# use sqlite for testing
+if 'test' in sys.argv or 'test_coverage' in sys.argv:
+        DATABASES['default']['ENGINE'] = 'django.db.backends.sqlite3'
 '''
 ### CRAZY IDEA DEPARTMENT ###
 Use multiple haystack connections for A/B (ANOVA) split testing i.e:
