@@ -6,6 +6,7 @@ import os
 import os.path
 from envparse import env
 import sys
+from celery.schedules import crontab
 
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 SECRET_KEY = env(
@@ -122,6 +123,15 @@ CELERY_RESULT_BACKEND = env(
 CELERY_TASK_SERIALIZER = 'json'
 CELERY_RESULT_SERIALIZER = 'json'
 CELERY_ACCEPT_CONTENT=['json']
+
+CELERYBEAT_SCHEDULE = {
+    'sync-100-from-crawler': {
+        'task': 'metadata.tasks.sync_from_crawler',
+            'schedule': crontab(minute='*/5'),
+        'args': (100),
+    },
+}
+
 ### FIXME
 #CELERY_TIMEZONE = 'Au/'
 #CELERY_ENABLE_UTC = True
