@@ -1,7 +1,7 @@
 from celery import shared_task
 from django.db import connection # not often needed
 from .models import Resource
-from crawler.models import WebDocuments
+from crawler.models import WebDocument
 #from celery.utils.log import get_task_logger
 #import logging
 
@@ -21,7 +21,7 @@ def sync_from_crawler(limit=1000):
         raw_sql += ' limit = %s' % int(limit)
     cursor = connection.cursor()
     cursor.execute(raw_sql)
-    while row = cursor.fetchone():
+    for row in cursor:
         insert_resource_from_row.delay(row)
 
 @shared_task
