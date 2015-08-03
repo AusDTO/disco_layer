@@ -182,6 +182,7 @@ Various species of artefact, all versionsed in lock-step (hopefully driven from 
       deploy -> prod;
    }
 
+
 Docker images. Published through hub.docker.com.
 
 Release management: On every commit to source code, The CI service (Jenkins, part of Development Pipeline) creates a docker images if the tests pass. After testing, the docker image is posted to a private repository (e.g. quay.io). This may be abandoned if we move to continuous delivery. These are then published (pushed to hub.docker.io) in lock-step with deployment. In other words, deploy from the public repository, not the private one (if it needs to exist beyond the present pre-alpha stage).
