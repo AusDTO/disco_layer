@@ -1,13 +1,15 @@
 #Overview
 
-##crawler
-A node based crawler to download all government content to a document store.
-Currently requires a local orientDb instance. Does not talk to a remote.
+The AusDTO Discovery Layer is infrastructure in support of the aim outlined here:
 
-##genService
-A temporary script to take a service definition for an organisation and generate a document for each service.
+    https://www.dto.gov.au/blog/making-government-discoverable
 
-This is expected to be moved into a more complete tool for users to manage and update service information.
+It is at "Proof Of Concept" status (ALPHA), meaning it aims to address technical risks (answer the question "could that work?") rather than evaluate product-market fit (BETA status) or provide a reliable public service (PRODUCTION status).
 
-##service_catalogue
-A tool to edit and manage organisation service definitions
+More information:
+ * http://ausdto-discovery-layer.readthedocs.org (documentation)
+ * https://github.com/AusDTO/discoveryLayer (code)
+ * https://github.com/AusDTO/discoveryLayer/issues (tickets, support)
+ * http://waffle.io/AusDTO/discoveryLayer (kanban)
+ 
+Note also this depends on the https://github.com/AusDTO/discoCrawl and https://github.com/AusDTO/serviceCatalogue components. This is explained in more detail in the documentation at http://ausdto-discovery-layer.readthedocs.org/
