@@ -6,7 +6,7 @@ import os
 import os.path
 from envparse import env
 import sys
-from celery.schedules import crontab
+from datetime import timedelta
 
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 SECRET_KEY = env(
@@ -100,6 +100,7 @@ treatments (in the extringic+intrinsic contexts, userland+codebase).
 Then hack with inquisitive creativity, continuously trying to improve
 the codebase, indexing treatment and instrumentation in concert.
 '''
+
 # default haystack is elasticsearch on localhost
 HAYSTACK_CONNECTIONS = {
     'default': {
@@ -117,20 +118,20 @@ HAYSTACK_CONNECTIONS = {
 BROKER_URL = env(
     'BROKER_URL',
     default='amqp://guest:guest@127.0.0.1/spiderbucket')
+
+CELERYBEAT_SCHEDULE = {
+    "runs-every-30-seconds": {
+        "task": "metadata.tasks.sync_from_crawler",
+        "schedule": timedelta(seconds=30), # make it a higher number if it's slow
+        "args": () #100 # make it a large number when it's working
+     },
+}
 CELERY_RESULT_BACKEND = env(
     'CELERY_RESULT_BACKEND',
     default='djcelery.backends.database:DatabaseBackend')
 CELERY_TASK_SERIALIZER = 'json'
 CELERY_RESULT_SERIALIZER = 'json'
 CELERY_ACCEPT_CONTENT=['json']
-
-CELERYBEAT_SCHEDULE = {
-    'sync-100-from-crawler': {
-        'task': 'metadata.tasks.sync_from_crawler',
-            'schedule': crontab(minute='*/5'),
-        'args': (100),
-    },
-}
 
 ### FIXME
 #CELERY_TIMEZONE = 'Au/'
