@@ -122,7 +122,7 @@ BROKER_URL = env(
 
 CELERYBEAT_SCHEDULE = {
     "runs-every-30-seconds": {
-        "task": "metadata.tasks.sync_from_crawler",
+        "task": "crawler.tasks.sync_from_crawler",
         "schedule": timedelta(seconds=30), # make it a higher number if it's slow
         "args": () #100 # make it a large number when it's working
      },
