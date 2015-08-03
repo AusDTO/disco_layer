@@ -15,3 +15,16 @@ def insert_resource_from_row(row):
     r.lastFetchDateTime = row[8]
     r.save()
 
+@shared_task
+def update_resource_from_row(row):
+    r = Resource(url=row[0])
+    r._hash = row[1]
+    r.protocol = row[2]
+    r.contenttype = row[3]
+    r.host = row[4]
+    r.port = row[5]
+    r.path = row[6]
+    r.depth = row[7]
+    r.lastFetchDateTime = row[8]
+    r.save()
+    

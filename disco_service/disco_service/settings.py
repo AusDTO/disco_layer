@@ -120,13 +120,21 @@ BROKER_URL = env(
     'BROKER_URL',
     default='amqp://guest:guest@127.0.0.1/spiderbucket')
 
+CRAWLER_HEARTBEAT_SECONDS = 30 # make it a higher number if it's slow
+CRAWLER_HEARTBEAT_SIZE = 100 # make it a large number when it's working OK
 CELERYBEAT_SCHEDULE = {
-    "runs-every-30-seconds": {
+    "insert_new_resources_every_30_seconds": {
         "task": "crawler.tasks.sync_from_crawler",
-        "schedule": timedelta(seconds=30), # make it a higher number if it's slow
-        "args": () #100 # make it a large number when it's working
+        "schedule": timedelta(seconds=CRAWLER_HEARTBEAT_SECONDS), 
+        "args": (CRAWLER_HEARTBEAT_SIZE)
+     },
+    "update_changed_resources_every_30_seconds": {
+        "task": "crawler.tasks.sync_updates_from_crawler",
+        "schedule": timedelta(seconds=CRAWLER_HEARTBEAT_SECONDS), 
+        "args": (CRAWLER_HEARTBEAT_SIZE) 
      },
 }
+
 CELERY_RESULT_BACKEND = env(
     'CELERY_RESULT_BACKEND',
     default='djcelery.backends.database:DatabaseBackend')
