@@ -30,6 +30,7 @@ INSTALLED_APPS = (
     'celery_haystack',
     'metadata',
     'govservices',
+    'crawler',
 )
 
 MIDDLEWARE_CLASSES = (
