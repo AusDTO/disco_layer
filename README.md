@@ -2,7 +2,7 @@
 
 The AusDTO Discovery Layer is infrastructure in support of the aim outlined here:
 
-    https://www.dto.gov.au/blog/making-government-discoverable
+https://www.dto.gov.au/blog/making-government-discoverable
 
 It is at "Proof Of Concept" status (ALPHA), meaning it aims to address technical risks (answer the question "could that work?") rather than evaluate product-market fit (BETA status) or provide a reliable public service (PRODUCTION status).
 
