@@ -4,6 +4,7 @@ AusDTO Discovery Layer - technical docs
 .. toctree::
    :maxdepth: 2
 
+   copyright
    overview
    design
    ideas
