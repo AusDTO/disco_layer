@@ -4,6 +4,17 @@ import sys
 import os
 import shlex
 
+from gitdiscribe import Gitdiscribe
+
+gd = Gitdiscribe('../../')
+if gd.tag != '':
+    VERSION = gd.tag_number
+    #gd.write_version_file()
+else:
+    #from version import VERSION
+    VERSION='0.0.0 (unknown)'
+RELEASE=gd.sha1_short
+
 extensions = [
     'sphinx.ext.autodoc',
     'sphinx.ext.coverage',
@@ -17,8 +28,8 @@ master_doc = 'index'
 project = u'AusDTO Discovery Layer'
 copyright = u'2015, Commonwealth of Australia'
 author = u'Digital Transformation Office'
-version = '0.1' # github
-release = '0.1.0' # tags!
+version = VERSION
+release = RELEASE
 language = None
 exclude_patterns = []
 pygments_style = 'sphinx'
