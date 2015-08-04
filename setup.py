@@ -1,12 +1,17 @@
 from distutils.core import setup
 from gitdiscribe import Gitdiscribe
 
+'''
+# this seems to be breaking in readthedocs, although it works locally
 gd = Gitdiscribe('.')
 if gd.tag != '':
   VERSION = gd.tag_number
   gd.write_version_file()
 else:
     from version import VERSION
+'''
+# assume the checked-in version is up to date
+from version import VERSION
 
 setup(
     name = 'AusDTODiscoService',
