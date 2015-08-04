@@ -1,5 +1,5 @@
 # written by gitdiscribe
-FULL_VERSION = "0.0.1-pre-alpha"
+FULL_VERSION = "0.0.1-pre-alpha-1"
 VERSION = "0.0.1-pre-alpha"
-GIT_REVISION = "0"
-GIT_COMMIT = "26ee0da2903f9ae2bd221c6cd2c8b89b69c3e04f"
+GIT_REVISION = "1"
+GIT_COMMIT = "25d088c8210536f018333441ea8f456f6ba58745"
