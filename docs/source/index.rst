@@ -1,5 +1,5 @@
-AusDTO Discovery Layer - technical docs
-=======================================
+AusDTO Discovery Layer
+======================
 
 |kanban-backlog| |kanban-bugs| |kanban-enhancements| |kanban-wip| |kanban-done|
 
