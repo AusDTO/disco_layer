@@ -4,8 +4,14 @@ import sys
 import os
 import shlex
 
+sys.path.append(os.path.abspath('.'))
+
+# Don't set VERSION manually, it's difficult to keep it in sync.
+# Use git tags instead (single version of the versioning truth)
+# and use them for documentation.
+# TODO: Use git tags for ALPHA/BETA/PRODUCTION control too.
 from gitdiscribe import Gitdiscribe
-gd = Gitdiscribe('../../')
+gd = Gitdiscribe('.')
 if gd.tag != '':
     VERSION = gd.tag_number
     gd.write_version_file()
@@ -28,7 +34,7 @@ author = u'Digital Transformation Office'
 version = VERSION
 release = VERSION
 language = None
-exclude_patterns = []
+exclude_patterns = ['_build']
 pygments_style = 'sphinx'
 todo_include_todos = False
 html_theme = 'sphinx_rtd_theme'
