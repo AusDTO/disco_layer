@@ -1,13 +1,9 @@
 Overview
 ========
 
-These are technical documents, they are only concerned with what and how. 
-
-This blog post explains why and where:
+These are technical documents, they are only concerned with what and how. Specifics of who and when are contained in the git logs. This blog post explains why and where:
 
 https://www.dto.gov.au/news-media/blog/making-government-discoverable
-
-Specifics of who and when are contained in the git logs.
 
 
 .. graphviz::
@@ -15,54 +11,57 @@ Specifics of who and when are contained in the git logs.
    digraph d {
       node [shape="rectangle" style=filled fillcolor=white];
       rankdir=LR;
-      ui [label="user\ninterfaces" shape=ellipse fillcolor=green];
-      api [label="API" shape=ellipse fillcolor=green];
-      colab [label="collaborate" shape=ellipse fillcolor=gold];
-      pub [label="publish/release" shape=ellipse];
-      ddash [label="development\ndashboards" shape=ellipse fillcolor=green];
-      pipe [label="development\npipeline"];
-      build [label="built\nartefacts" shape=folder fillcolor=green]; 
-      src [label="source\ncode" shape=folder fillcolor=green];
 
-      subgraph cluster_private {
-	  deployed [label="deployed\ncomponents" shape=folder];
-	  backing [label="backing\nservices" shape=folder];
+      pui [label="user\ninterface" shape=ellipse fillcolor=green];
+      api [label="API" shape=ellipse fillcolor=green];
+      
+      subgraph cluster_app {
+         label="discovery service"
+	 worker;
+	 nginx [label="reverse\nproxy"];
+	 app [label="apps" shape=folder];
+      }
+      subgraph cluster_support {
+         label="supporting tools";
+	 crawler;
+	 mt [label="metadata\nmanagement"];
       }
       
-      ui -> deployed;
-      api -> deployed;
-      colab -> src;
-      pub -> build;
-      ddash -> pipe;
-      pipe -> src;
-      pipe -> build;
-      pipe -> backing;
-      pipe -> deployed;
-      build -> src;
-      deployed -> backing;
-      deployed -> build;
+      pui -> nginx;
+      api -> nginx;
+
+      bs [label="backing\nservices" fillcolor=lightgrey];
+      pub [label="public\ndata" shape=folder fillcolor=green];
+      pub -> mt [dir=back];
+      pub -> crawler [dir=back];
+      pub -> worker [dir=back];
+      crawler -> bs;
+      nginx -> app -> bs;
+      nginx -> bs;
+      worker -> bs;
    }
 
-The green items are "strictly open". We encourage their reuse, and support them to the extent we can. The white ones are private, however they are instances of the open artefacts. So no secret sauce, we just keep our discrete instance private (so that we can provide reliable API and user interfaces).
+
+The user discovery later aims to provide useful features that enable users and 3rd party applications to discover government resources. It is currently in pre-ALPHA status, meaning a working technical assessment, not yet considered suitable for public use (even by "early-adopters").
 
 
 Development
 -----------
 
-Discovery layer itself:
+Discovery service:
 
  * http://github.com/AusDTO/discoveryLayer Code
  * http://github.com/AusDTO/discoveryLayer/issues Discussion
  * http://waffle.io/AusDTO/discoveryLayer Kanban
  * http://ausdto-discovery-layer.readthedocs.org/ Documentation
 
-Also depends on disco_crawler:
+Crawler:
 
  * http://github.com/AusDTO/disco_crawler Code 
  * http://github.com/AusDTO/disco_crawler/issues Discussion
  * http://ausdto-disco-crawler.readthedocs.org/ Documentation
 
-And depends on serviceCatalogue:
+Metadata management (currently service catalogue):
 
  * http://github.com/AusDTO/serviceCatalogue Code 
  * http://github.com/AusDTO/serviceCatalogue/issues Discussion
