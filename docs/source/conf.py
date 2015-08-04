@@ -4,6 +4,14 @@ import sys
 import os
 import shlex
 
+from gitdiscribe import Gitdiscribe
+gd = Gitdiscribe('../../')
+if gd.tag != '':
+    VERSION = gd.tag_number
+    gd.write_version_file()
+else:
+    from version import VERSION
+
 extensions = [
     'sphinx.ext.autodoc',
     'sphinx.ext.coverage',
@@ -14,11 +22,11 @@ extensions = [
 templates_path = ['_templates']
 source_suffix = '.rst'
 master_doc = 'index'
-project = u'Discovery Layer'
-copyright = u'2015, AusDTO'
-author = u'AusDTO'
-version = '0.1'
-release = '0.1.0'
+project = u'AusDTO Discovery Layer'
+copyright = u'2015, Commonwealth of Australia'
+author = u'Digital Transformation Office'
+version = VERSION
+release = VERSION
 language = None
 exclude_patterns = []
 pygments_style = 'sphinx'
@@ -32,12 +40,13 @@ latex_elements = {
 }
 
 latex_documents = [
-  (master_doc, 'DiscoveryLayer.tex', u'Discovery Layer Documentation',
-   u'AusDTO', 'manual'),
+  (master_doc, 'DiscoveryLayer.tex', u'AusDTO Discovery Layer',
+   u'Commonwealth of Australia, Digital Transformation Office', 'manual'),
 ]
 
 texinfo_documents = [
-  (master_doc, 'DiscoveryLayer', u'Discovery Layer Documentation',
-   author, 'DiscoveryLayer', 'One line description of project.',
+  (master_doc, 'DiscoveryLayer', u'AusDTO Discovery Layer',
+   author, 'Commonwealth of Australia, Digital Transformation Office',
+   'Technical Documentation',
    'Miscellaneous'),
 ]

@@ -1,227 +1,92 @@
 Overview
 ========
 
-These are technical documents, they are only concerned with what and how. 
+Copyright
+---------
 
-This blog post explains why and where:
+.. image:: logo-cc.png
+
+This documentation is protected by copyright.
+
+With the exception of any material protected by trademark, all material included in this document is licensed under a `Creative Commons Attribution 3.0 Australia licence`_.
+
+.. _Creative Commons Attribution 3.0 Australia licence: http://creativecommons.org/licenses/by/3.0/au/
+
+The CC BY 3.0 AU Licence is a standard form license agreement that allows you to copy, distribute, transmit and adapt material in this publication provided that you attribute the work. Further details of the relevant licence conditions are available on the Creative Commons website (accessible using the links provided) as is the full legal code for the `CC BY 3.0 AU licence`_.
+
+.. _CC BY 3.0 AU licence: http://creativecommons.org/licenses/by/3.0/au/legalcode
+
+The form of attribution for any permitted use of any materials from this publication (and any material sourced from it) is:
+
+Source: Licensed from the Commonwealth of Australia under a Creative Commons Attribution 3.0 Australia Licence. The Commonwealth of Australia does not necessarily endorse the content of this publication.
+
+
+Introduction
+------------
+
+These are technical documents, they are only concerned with what and how. Specifics of who and when are contained in the git logs. This blog post explains why and where:
 
 https://www.dto.gov.au/news-media/blog/making-government-discoverable
 
-Specifics of who and when are contained in the git logs.
-
+The user discovery later aims to provide useful features that enable users and 3rd party applications to discover government resources. It is currently in pre-ALPHA status, meaning a working technical assessment, not yet considered suitable for public use (even by "early-adopters").
 
 .. graphviz::
 
    digraph d {
       node [shape="rectangle" style=filled fillcolor=white];
       rankdir=LR;
-      ui [label="user\ninterfaces" shape=ellipse fillcolor=green];
-      api [label="API" shape=ellipse fillcolor=green];
-      colab [label="collaborate" shape=ellipse fillcolor=gold];
-      pub [label="publish/release" shape=ellipse];
-      ddash [label="development\ndashboards" shape=ellipse fillcolor=green];
-      pipe [label="development\npipeline"];
-      build [label="built\nartefacts" shape=folder fillcolor=green]; 
-      src [label="source\ncode" shape=folder fillcolor=green];
 
-      subgraph cluster_private {
-	  deployed [label="deployed\ncomponents" shape=folder];
-	  backing [label="backing\nservices" shape=folder];
+      pui [label="user\ninterface" shape=ellipse fillcolor=green];
+      api [label="API" shape=ellipse fillcolor=green];
+      
+      subgraph cluster_app {
+         label="discovery service"
+	 worker;
+	 nginx [label="reverse\nproxy"];
+	 app [label="apps" shape=folder];
+      }
+      subgraph cluster_support {
+         label="supporting tools";
+	 crawler;
+	 mt [label="metadata\nmanagement"];
       }
       
-      ui -> deployed;
-      api -> deployed;
-      colab -> src;
-      pub -> build;
-      ddash -> pipe;
-      pipe -> src;
-      pipe -> build;
-      pipe -> backing;
-      pipe -> deployed;
-      build -> src;
-      deployed -> backing;
-      deployed -> build;
+      pui -> nginx;
+      api -> nginx;
+
+      bs [label="backing\nservices" fillcolor=lightgrey];
+      pub [label="public\ndata" shape=folder fillcolor=green];
+      pub -> mt [dir=back];
+      pub -> crawler [dir=back];
+      pub -> worker [dir=back];
+      crawler -> bs;
+      nginx -> app -> bs;
+      nginx -> bs;
+      worker -> bs;
    }
 
-The green items are "strictly open". We encourage their reuse, and support them to the extent we can. The white ones are private, however they are instances of the open artefacts. So no secret sauce, we just keep our discrete instance private (so that we can provide reliable API and user interfaces).
+
+TODO: define each box in the above diagram
 
 
-Source Code
+Development
 -----------
 
-github. Get over it.
+Discovery service:
 
-http://github.com/AusDTO/
+ * http://github.com/AusDTO/discoveryLayer Code
+ * http://github.com/AusDTO/discoveryLayer/issues Discussion
+ * http://waffle.io/AusDTO/discoveryLayer Kanban
+ * http://ausdto-discovery-layer.readthedocs.org/ Documentation
 
+Crawler:
 
-Right now, many of our projects are not shared publically (private repositories in GitHub). This is for a variety of reasons, we expect "almost all repositories are public" to be the norm soon.
+ * http://github.com/AusDTO/disco_crawler Code 
+ * http://github.com/AusDTO/disco_crawler/issues Discussion
+ * http://ausdto-disco-crawler.readthedocs.org/ Documentation
 
-Use tickets for issues etc, model ourselves on other sucessful open source projects. This is the primary developer collaboration channel. Documentation and other built artefacts are funnels into this collaboration channel. Tournaments augment this channel (not the other way around).
+Metadata management (currently service catalogue):
 
-
-Development Pipeline
---------------------
-
-The above diagram indicates that the development pipeline is a thing that provides a development dashboard, and depends on source code, built artefacts, backing services and deployed components.
-
-Of course in reality it's not that simple. Open source development is a highly organic marketplace for ideas, it resembles a bazaar more than anything else (https://en.wikipedia.org/wiki/The_Cathedral_and_the_Bazaar).
-
-In the following diagrams:
- * collaboration is golden
- * the green items are public / open
- * the ellipses are verb-like things, such as interfaces or activities
- * the rectangles are noun-like things
-
-The diagram also shows a box of white things labelled "administered cloud". The systems inside this box are *core DTO business*, we administer them ourselves and take responsability for their quality. If they break, we fix them. System components outside this box are administered by partners, we are functionality dependant on them however they are our someone else's core business (if they break, we complain).
-
-.. graphviz::
-
-   digraph d {
-      node [shape=ellipse style=filled fillcolor=white];
-
-      repo [label="AusDTO\nrepository" fillcolor=green shape=rectangle];
-      maint [label="<<DTO>>\nmaintainer" shape=rectangle];
-      developer [shape=rectangle fillcolor=gold];
-      od [label="open\ndata" shape=rectangle fillcolor=green];
-      ddash [label="development\ndashboard" fillcolor=green];
-
-      fork [label="fork\nrepo" fillcolor=gold];
-      prepo [label="personal\nrepository" fillcolor=gold shape=rectangle];
-      developer -> fork;
-      fork ->prepo;
-      fork -> repo;
-
-      edit [label="change\ncode" fillcolor=gold];
-      developer -> edit -> prepo;
-
-      pr [label="pull\nrequest" fillcolor=gold];
-      developer -> pr;
-      pr -> prepo;
-      pr -> repo;
-      
-      tickets [fillcolor=gold label="ticket\nconversations"];
-      developer -> tickets -> repo;
-      maint -> tickets;
-      tickets -> od;
-      merge [fillcolor=green];
-      tag [fillcolor=green];
-      maint -> merge -> pr;
-      maint -> tag -> repo;
-
-      subgraph cluster_admin {
-         label="administered cloud";
-	 jenkins [shape=rectangle];
-	 ci [label="automated\ntesting"];
-	 cp [label="automated\npublishing"];
-	 disco [label="disco\nservices" shape=component];
-	 workers [label="disco\nworkers" shape=component];
-	 cd [label="automated\ndeployment"];
-      }
-      analytics [label="analytic\nfeedback"];
-      built [label="built\nartefacts" shape=rectangle fillcolor=green];
-      ui [label="user\ninterface" fillcolor=green];
-      api [label=API fillcolor=green];
-
-      bs [label="backing\nservices" shape=rectangle];
-
-      disco -> bs;
-      workers -> bs;
-
-      repo -> ci [dir=back];
-      ci -> jenkins;
-      ddash -> jenkins
-      jenkins -> cp;
-      cp -> built;
-      jenkins -> cd;
-      cd -> built;
-      cd -> disco;
-      cd -> workers;
-      ui -> disco;
-      api -> disco;
-
-      analytics -> od;
-      analytics -> bs;
-   }
-
-
-
-Built Artefacts
----------------
-
-Various species of artefact, all versionsed in lock-step (hopefully driven from tags in git). Dogfood/exemplify the tagging and version control elements from the design guide / service standard (when it's written - pester Steve).
-
-.. graphviz::
-
-   digraph d {
-      node [shape="rectangle" style=filled fillcolor=white];
-
-      deploy [label="automated\ndeployment" shape=ellipse];
-      pub [label="automted\npublishing" shape=ellipse];
-      subgraph cluster_built {
-         label="built artefacts";
-	 rtd [label="readthedocs.org"];
-	 dh [label="hub.docker.io"];
-	 pypi [label="package\ndistribution\nsystem"];
-      }
-      pub -> rtd;
-      pub -> dh;
-      pub -> pypi;
-
-      prod [label="deployed\nsystem" ];
-
-      node [shape=ellipse fillcolor=green];
-      docs [label="developer\ndocs"];
-      containers [label="linux\ncontainers"];
-      libs [label="packaged\nlibraries"];
-      
-      rtd -> docs [dir=back];
-      dh -> containers [dir=back];
-      pypi -> libs [dir=back];
-      
-      deploy -> containers;      
-      deploy -> prod;
-   }
-
-Docker images. Published through hub.docker.com.
-
-Release management: On every commit to source code, The CI service (Jenkins, part of Development Pipeline) creates a docker images if the tests pass. After testing, the docker image is posted to a private repository (e.g. quay.io). This may be abandoned if we move to continuous delivery. These are then published (pushed to hub.docker.io) in lock-step with deployment. In other words, deploy from the public repository, not the private one (if it needs to exist beyond the present pre-alpha stage).
-
-Technical documentation. Published through readthedocs.org.
-
-Source code packages. Released through github (if required), package management systems, etc.
-
-
-Deployed Components
--------------------
-
-Commodity infrastructure as a service. Currently docker on Amazon AWS, but whatever.
-
-Architecturally stateless, horizontaly scailable, cloud-native design. Push state to backing services, twelve factor style (http://12factor.net/).
-
-
-Backing Services
-----------------
-
-Databases, message queues, search indexes, etc. Where possible, buy "as a service" value added infrastructure to leverage economies of scope and scale.
-
-.. graphviz::
-
-   digraph d {
-      node [shape=rectangle style=filled fillcolor=white];
-      disco [label="disco\nservice"];
-      discoworker [label="disco\nworker"];
-      crawler;
-      subgraph cluster_b {
-         label="outsourced backing services";
-	 database;
-	 elasticsearch;
-	 mq [label="message\nqueue"];
-      }
-      crawler -> database;
-      discoworker -> database;
-      discoworker -> mq;
-      discoworker -> elasticsearch;
-      disco -> elasticsearch;
-   }
-
-Self-hosted implementations are acceptible in the development ecosystems, but pushing to a backing service should be norm during beta and beyond. 
+ * http://github.com/AusDTO/serviceCatalogue Code 
+ * http://github.com/AusDTO/serviceCatalogue/issues Discussion
+ * http://ausdto-service-catalogue.readthedocs.org/ Documentation
