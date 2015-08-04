@@ -1,7 +1,7 @@
 from distutils.core import setup
 from gitdiscribe import Gitdiscribe
 
-gd = Gitdiscribe('../')
+gd = Gitdiscribe('.')
 if gd.tag != '':
   VERSION = gd.tag_number
   gd.write_version_file()
