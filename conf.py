@@ -10,12 +10,16 @@ sys.path.append(os.path.abspath('.'))
 # Use git tags instead (single version of the versioning truth)
 # and use them for documentation.
 # TODO: Use git tags for ALPHA/BETA/PRODUCTION control too.
-from gitdiscribe import Gitdiscribe
-gd = Gitdiscribe('.')
-if gd.tag != '':
-    VERSION = gd.tag_number
-    gd.write_version_file()
-else:
+try:
+    # this won't work when runing from site-packages, per #80
+    from gitdiscribe import Gitdiscribe
+    gd = Gitdiscribe('.')
+    if gd.tag != '':
+        VERSION = gd.tag_number
+        gd.write_version_file()
+    else:
+        from version import VERSION
+except:
     from version import VERSION
 
 extensions = [
