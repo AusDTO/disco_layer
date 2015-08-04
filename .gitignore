@@ -4,3 +4,8 @@
 *~
 #*#
 npm-debug.log
+staticfiles/
+setup_dev_env.sh
+\#*\#
+\.\#*
+_build
