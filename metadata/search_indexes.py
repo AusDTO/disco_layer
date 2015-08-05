@@ -1,3 +1,13 @@
+"""
+metadata.search_indexes
+=======================
+
+.. autoclass:: metadata.search_indexes.ResourceIndex
+
+.. autoclass:: metadata.search_indexes.ServiceIndex
+
+"""
+
 import datetime
 from celery_haystack.indexes import CelerySearchIndex
 from haystack import indexes

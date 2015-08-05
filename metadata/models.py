@@ -1,10 +1,24 @@
+"""
+metadata.models
+===============
+
+.. autoclass:: metadata.models.Resource
+   :members:
+   :private-members: _article _decode
+
+
+"""
+
 from django.db import models
 from goose import Goose
 #import base64
 from crawler.models import WebDocument
 
 class Resource(models.Model):
-
+    """ORM class wrapping persistent data of the web resource
+    
+    Contains hooks into the code for resource processing
+    """
     url = models.CharField(max_length=256)
     _hash = models.CharField(
         db_column='hash', max_length=255,
@@ -32,12 +46,13 @@ class Resource(models.Model):
         return self.url
 
     def _decode(self):
+        """Lookup content of the coresponding WebDocument.document"""
         # cache this method
-        #return base64.standard_b64decode(self.document)
         wd = WebDocument.objects.filter(url=self.url).get()
         return wd.document 
 
     def _article(self):
+        """Analyse resource content, return Goose interface"""
         # switch method depending on content_type
         # for pdf, fall back to teseract if pdf2text yields not much
         # (then use the larger, or maybe composit)
@@ -45,6 +60,7 @@ class Resource(models.Model):
         return g.extract(raw_html=self._decode())
 
     def title(self):
+        """Attempt to produce a single line description of the resource"""
         # assumes Goose interface
         try:
             return self._article().title
@@ -52,6 +68,7 @@ class Resource(models.Model):
             return "(no title)"
 
     def excerpt(self):
+        """Attempt to produce a plain text version of resource content"""
         # memcache this,
         # would require working evict-on-save (use signals, test it)
         try:
@@ -64,10 +81,10 @@ class Resource(models.Model):
 
     def sr_summary(self):
         '''
-        Doesn't even break on word boundaries... This is a rude hack. 
+        Search result summary.
 
-        There should be a much, much smarter thing that populates a 
-        short display excerpt in the index.
+        This is a rude hack, it doesn't even break on word boundaries.
+        There should be much smarter ways of doing this.
         '''
         long_excerpt = self.excerpt()
         if len(long_excerpt) < 300:
