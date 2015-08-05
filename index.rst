@@ -7,8 +7,7 @@ AusDTO Discovery Layer
 
    overview
    design
-   possibilities
-
+   code
 
 Indices and tables
 ==================
