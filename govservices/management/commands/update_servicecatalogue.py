@@ -1,7 +1,13 @@
 #-*- coding: utf-8; -*-
 """
+govservices.management.commands.update_servicecatalogue
+=======================================================
+
 It would be highly preferable to refactor this to use a REST API to interrogate
 the service catalogue, rather than messing about with the ServiceJsonRepository.
+
+.. autoclass:: Command
+
 """
 import os
 from django.core.management.base import BaseCommand, CommandError
@@ -11,6 +17,17 @@ from govservices.management.utilities import ServiceDBRepository
 from govservices.management.utilities import Json2DBMigrator
 
 class Command(BaseCommand):
+    """
+    manage.py extension. Call with:
+
+        `python manage.py update_servicecatalogue`
+
+    or:
+
+        `python manage.py update_servicecatalogue <entity>`
+
+    where <entity> is the name of one of the classes in metadata.models
+    """
     help = 'update the service catalogue in the DB, from the json files'
     # the filesystem json interface is in the repo
     # at ./catalogues/serviceDocuments/<agency>/<service spec>
