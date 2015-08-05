@@ -1,10 +1,30 @@
-# TODO: insert the output of 'django-admin sqlcustom [app_label]'
-# into your database.
+"""
+crawler.models
+==============
+
+An ORM interface to the DB which is shared with the disco_crawler node.js app. 
+
+.. autoclass:: WebDocument
+"""
 from __future__ import unicode_literals
 from django.db import models
 
 
 class WebDocument(models.Model):
+    """
+    Resource downloaded by the disco_crawler node.js app.
+
+    The document attribute is a copy of the resource which was downloaded.
+
+    url uniquely defines the resource (there is no numeric primary key). 
+    host, path, port and protocol are attributes about the HTTP request
+    used to retrieve the resource. lastfetchdatetime and nextfetchdatetime
+    are heuristically determined and drive the behavior of the crawler. _hash
+    is indexed and has a coresponding attribute in the metadata.Resource class
+    (these are compared to determine if the metadata is dirty).
+
+    The rest of the attributes are derived from the content of the document.
+    """
     url = models.TextField(primary_key=True)
     host = models.CharField(max_length=255, blank=True, null=True)
     document = models.BinaryField(blank=True, null=True)
