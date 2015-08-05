@@ -4,7 +4,14 @@ import sys
 import os
 import shlex
 
+# required for loading stuff
 sys.path.append(os.path.abspath('.'))
+
+# required to make django stuff go
+os.environ.setdefault("DJANGO_SETTINGS_MODULE", "disco_service.settings")
+
+# these modules will be processed with autodoc
+import crawler.models
 
 # Don't set VERSION manually, it's difficult to keep it in sync.
 # Use git tags instead (single version of the versioning truth)
@@ -24,6 +31,7 @@ except:
 
 extensions = [
     'sphinx.ext.autodoc',
+    'sphinx.ext.autosummary',
     'sphinx.ext.coverage',
     'sphinx.ext.viewcode',
     'sphinx.ext.graphviz',
