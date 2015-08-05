@@ -210,7 +210,114 @@ BETA version of the discovery layer probably requires throttling and/or other fo
 Components
 ----------
 
-TODO: define each rectangle in above diagram
+In the diagrams on this page, ellipses are "verbish" (interfaces and activities) and rectangles are "nounish" (components of the discovery layer system).
 
-TODO: salvage good bits of the following gumphf into above definitions.
+Content database
+^^^^^^^^^^^^^^^^
 
+Pipeline:
+ * Crawl a database of content from the Commonwealth web.
+ * Extract information into a metadata repository, from the content database.
+
+.. graphviz::
+
+   digraph d {
+      node [shape=rectangle style=filled fillcolor=white];
+      crawl [label="crawl" shape=ellipse];
+      content_db [label="database of all\nthe content"];
+      crawl -> content_db;
+      extract [label="extract\ninformation" shape=ellipse];
+      extract -> content_db;
+   }
+
+
+The content_database is shared with the disco_crawler component. Access from python is via the ORM wrapper in `/crawler/models.py`. See also `crawler/tasks.py` for the synchronisation jobs that drive information extraction process.
+
+
+Content metadata
+^^^^^^^^^^^^^^^^
+
+Pipeline:
+ * Extract information into a metadata repository, from the content database.
+ * Enrich content metadata using public data.
+ * Maintain search indexes from content metadata.
+
+.. graphviz::
+
+   digraph d {
+      node [shape=rectangle style=filled fillcolor=white];
+      stage_db [label="content\nmetadata"];
+      extract [label="extract\ninformation" shape=ellipse];
+      enrich [label="enrich\nmetadata" shape=ellipse];
+      maintain [label="maintain\nindexes" shape=ellipse];
+      extract -> stage_db;
+      enrich -> stage_db;
+      maintain -> stage_db;
+   }
+
+Content metadata is managed from python code through the django ORM layer (see `<app>/models.py` in the repo), primarially by asynchronous worker processes (celery tasks, see `<app>/tasks.py`).
+
+
+Public data
+^^^^^^^^^^^
+
+Pipeline:
+ * Enrich content metadata using public data.
+
+.. graphviz::
+
+   digraph d {
+      node [shape=rectangle style=filled fillcolor=white];
+      od [label="public\ndata" shape=folder fillcolor=green];
+      enrich [label="enrich\nmetadata" shape=ellipse];
+      stage_db [label="content\nmetadata"];
+      enrich -> stage_db;
+      od -> enrich [dir=back];
+   }
+
+
+The initial design intent was to draw all public data from the CKAN API at data.gov.au, although any open public API would be OK.
+
+Due to the nature of duct tape, chewing gum and number 8 wire employed in pre-alpha development, none of the data is currently being drawn from APIs at the moment. Currently it's only the service catalogue drawn from a repository hosted in github.com.
+
+
+Search indexes
+^^^^^^^^^^^^^^
+
+Pipeline:
+ * Maintain search indexes from content metadata.
+
+.. graphviz::
+
+   digraph d {
+      node [shape=rectangle style=filled fillcolor=white];
+      maintain [label="maintain\nindexes" shape=ellipse];
+      indexes [label="search\nindexes"];
+      raw_api [label="low-level\nsearch API" fillcolor=green shape=ellipse];
+      maintain -> indexes;
+      raw_api -> indexes;
+   }
+
+
+Search indexes are currently ElasticSearch, although theoretically could be any index backend supported by django-haystack.
+
+
+Discovery services
+^^^^^^^^^^^^^^^^^^
+.. graphviz::
+
+   digraph d {
+      node [shape=rectangle style=filled fillcolor=white];
+      raw_api [label="low-level\nsearch API" fillcolor=green shape=ellipse];
+      disco [label="discovery\nservices"];
+      api [label="high-level\nAPI" shape=ellipse fillcolor=green];
+      ui [label="user\ninterface" shape=ellipse fillcolor=green];      
+      disco -> raw_api;
+      api -> disco;
+      ui -> disco;
+      
+   }
+
+The disco services are implemented as python/django applications, run in a stateless wsgi container (gunicorn) behind a reverse proxy (nginx). Django is used to produce both the user interface (responsive web) and high-level API (REST).
+
+See Dockerfile for specific details of how this is component is packaged, configured and run.
