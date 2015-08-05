@@ -1,3 +1,36 @@
+"""
+govservices.models
+==================
+
+.. autoclass:: Agency
+   :undoc-members:
+   :members:
+
+.. autoclass:: SubService
+   :undoc-members:
+   :members:
+
+.. autoclass:: ServiceTag
+   :undoc-members:
+   :members:
+
+.. autoclass:: LifeEvent
+   :undoc-members:
+   :members:
+
+.. autoclass:: ServiceType
+   :undoc-members:
+   :members:
+
+.. autoclass:: Service
+   :undoc-members:
+   :members:
+
+.. autoclass:: Dimension
+   :undoc-members:
+   :members:
+
+"""
 from django.db import models
 
 class Agency(models.Model):

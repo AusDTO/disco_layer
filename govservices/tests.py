@@ -1,6 +1,9 @@
 #from django.test import TestCase
 """
-This is a normalised model of the json graph created by the AusDTO service catalogue app.
+govservices.tests
+=================
+
+Suite of tests assuring that the code which manipulates govservices is working correctly.
 """
 
 from unittest import TestCase
