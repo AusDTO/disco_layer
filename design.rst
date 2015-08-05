@@ -144,7 +144,7 @@ Using celery_haystack, index-management tasks are triggered by "save" signals on
 
 .. note::
 
-   The US Digital GovSearch service is trying out a search index management feture called i14y (Beta, http://search.digitalgov.gov/developer/) to push CMS content changes to their search layer for reindexing.
+   The US Digital GovSearch service is trying out a search index management feature called i14y (Beta, http://search.digitalgov.gov/developer/) to push CMS content changes to their search layer for reindexing.
    
    That's a nice idea here too; furnish a callback API that dispatches change to the crawler schedule and metadata maintenance. Possibly the GovCMS solr inegration hooks could be extended...
 
