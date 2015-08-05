@@ -172,10 +172,8 @@ Interfaces
 In the above diagram, green ellipses represent interfaces. The colour green is used to indicate that the items are open for public access.
 
 
-user interface
+User interface
 ^^^^^^^^^^^^^^
-
-The discovery service **high-level API** is a REST integration surface, designed to support/enable discoverability features in other applications (such as Commonwealth web sites). They are essentially wrappers that exploit the power of the low-level search API in a way that is convenient to users. The DEV team considers it highly-likely that signifacant value could be added at this layer.
 
 The discovery service **user interface** is a mobile-friendly web application. It is a place to impliment "consierge service" type features, that assist people locate government resources. The DEV team consideres it least likely to be important over the long term, but likely to be useful for demonstrations and proofs of concept.
 
@@ -184,8 +182,10 @@ These are imagined to be user-friendly features for finding (searching and/or br
 In adition to conventional search features, the "search oriented architecture" paradigm contains a number of patterns (such as faceted browsing) that are likely to be worthy of experiment during ALPHA and BETA stages of development.  
 
 
-high-level API
+High-level API
 ^^^^^^^^^^^^^^
+
+The discovery service **high-level API** is a REST integration surface, designed to support/enable discoverability features in other applications (such as Commonwealth web sites). They are essentially wrappers that exploit the power of the low-level search API in a way that is convenient to users. The DEV team considers it highly-likely that signifacant value could be added at this layer.
 
 Two kinds of high-level API features are considered likely to prove useful.
 
@@ -197,7 +197,7 @@ The first type of high-level API is simply a REST endpoint supporting json or xm
 The second type of high-level API is the python language interface provided by django-haystack, the framework used to interface and manage the search indexes. This API is used internally to make the first kind of API and the user interfaces. It's also potentially useful for extending the service with new functionality, and analytic use-cases (as evidenced by ipython notebook content analysis, TODO).
  
 
-low-level search API
+Low-level search API
 ^^^^^^^^^^^^^^^^^^^^
 
 The **low-level search API** is simply the read-only part of the native elasticsearch interface. It's our post-processed data, derived from public web pages and open data, using our open source code. We don't know if or how other people might use this interface, but would be delighted if that happened.
