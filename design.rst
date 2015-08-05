@@ -123,8 +123,10 @@ Technically this would be when faceting data is incorporated; user journeys (sce
 Given a feedback loops from passive behavior analysis (web traffic) or navigation choice-decision experiments (A-B split testing, ANOVA/MANOVA designs etc), information extraction could be treated as a behavior laboritory for creating value in search-oriented architecture at other layers. Different information extraction schemes (treatments) could be operated to produce/maintain parallel indexes, and discovery-layer nodes could be randomly assigned to indexes.  
 
 
-maintain indexes
-^^^^^^^^^^^^^^^^
+Index maintainance
+^^^^^^^^^^^^^^^^^^
+
+The search indexes are maintained using the excellent django-haystack library (http://haystacksearch.org/). Specifically, using the asynchronous celery_haystack module (https://github.com/django-haystack/celery-haystack).
 
 .. graphviz::
 
@@ -138,13 +140,13 @@ maintain indexes
    }
 
 
-The search indexes are maintained using the excellent django-haystack library (http://haystacksearch.org/). Specifically, using the asynchronous celery_haystack module (https://github.com/django-haystack/celery-haystack).
-
-Using this module, index-management tasks are triggered by "save" signals on the ORM model that the index is based on. Because the crawler is NOT using the ORM, inserts/updates/deleted by the crawler do not automatically trigger these tasks. Instead, scheduled jobs compare content hash fields in the drawler's database and the metadata to detect differences and dispatch metadata updates apropriately.
+Using celery_haystack, index-management tasks are triggered by "save" signals on the ORM model that the index is based on. Because the crawler is NOT using the ORM, inserts/updates/deleted by the crawler do not automatically trigger these tasks. Instead, scheduled jobs compare content hash fields in the drawler's database and the metadata to detect differences and dispatch metadata updates apropriately.
 
 .. note::
 
-   The US Digital GovSearch service is trying out a search index management feture called i14y (Beta) to push CMS content changes to their search layer for reindexing. http://search.digitalgov.gov/developer/
+   The US Digital GovSearch service is trying out a search index management feture called i14y (Beta, http://search.digitalgov.gov/developer/) to push CMS content changes to their search layer for reindexing.
+   
+   That's a nice idea here too; furnish a callback API that dispatches change to the crawler schedule and metadata maintenance. Possibly the GovCMS solr inegration hooks could be extended...
 
 
 Interfaces
