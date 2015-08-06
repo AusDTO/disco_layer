@@ -19,8 +19,8 @@ def sync_from_crawler(limit=1000):
     """dispatch metadata.Resource inserts for **new** crawler.WebDocuments"""
     raw_sql = '''
         select
-            url, _hash, protocol, contenttype,
-            host, port, path, depth, "lastFetchDateTime"
+            url, hash, protocol, "contentType",
+            host, port, path, "lastFetchDateTime"
         from "webDocuments"
         where "fetchStatus" = 'downloaded'
         and url not in (
@@ -39,8 +39,8 @@ def sync_updates_from_crawler(limit=1000):
     """dispatch metadata.Resource updates for **changed** crawler.WebDocuments"""
     raw_sql = '''
         select
-            url, _hash, protocol, contenttype,
-            host, port, path, depth, "lastFetchDateTime"
+            url, hash, protocol, "contentType",
+            host, port, path, "lastFetchDateTime"
         from
             "webDocuments" as wd,
             metadata_resource as mr

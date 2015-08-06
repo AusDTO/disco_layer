@@ -12,10 +12,13 @@ touch ./logs/access.log
 touch ./logs/gunicorn.log
 tail -n 0 -f ./logs/*.log &
 
-if [ "$(DISCO_ROLE)" -eq "WORKER" ]
-then:
+if [ "$DISCO_ROLE" == "WORKER" ]
+then
     exec python manage.py celery worker -l info "$@"
-else:
+elif [ "$DISCO_ROLE" == "BEAT" ]
+then
+    exec python manage.py celery beat -l info "$@" 
+else
     exec gunicorn disco_service.wsgi:application \
 	--name disco_service \
 	--bind 0.0.0.0:8000 \

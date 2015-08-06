@@ -1,6 +1,18 @@
 """
+settings module
+===============
+
+Standard django project configuration file
+
 https://docs.djangoproject.com/en/1.8/topics/settings/
 https://docs.djangoproject.com/en/1.8/ref/settings/
+
+.. note::
+
+   enbparse.env used to create default values that are overriden by
+   environment variables (where present). This is how settings are
+   managed in Docker containers, http://12factor.net style.
+
 """
 import os
 import os.path
@@ -78,29 +90,6 @@ DATABASES = {
 # use sqlite for testing
 if 'test' in sys.argv or 'test_coverage' in sys.argv:
         DATABASES['default']['ENGINE'] = 'django.db.backends.sqlite3'
-'''
-### CRAZY IDEA DEPARTMENT ###
-Use multiple haystack connections for A/B (ANOVA) split testing i.e:
- * create multiple indexes, each with a different "treatment"
- * create a connection per index, and randomly assign them to sessions
- * analyse "scorecard performance" of each treatment condition
- * iterate:
-    - drop poorly performing treatments
-    - innovate new treatments...
-    - innovate scorecard evaluations
- * stream experimental results into an event pipeline:
-    - perform scorecard evaluation in near-real time.
-    - use rules (statistical significance, sampling heuristics, etc.)
-      to drive automatic blue/green deployment and rollback.
-
-In other words, standardise on how we measure performance of the whole
-discovery ecosystem (scorecard evaluation - like a headless dashboard),
-and create a way to continuously monitor performance. Use this to
-automatically manage the 'survival of the fittest' search index
-treatments (in the extringic+intrinsic contexts, userland+codebase).
-Then hack with inquisitive creativity, continuously trying to improve
-the codebase, indexing treatment and instrumentation in concert.
-'''
 
 # default haystack is elasticsearch on localhost
 HAYSTACK_CONNECTIONS = {
@@ -120,18 +109,19 @@ BROKER_URL = env(
     'BROKER_URL',
     default='amqp://guest:guest@127.0.0.1/spiderbucket')
 
-CRAWLER_HEARTBEAT_SECONDS = 30 # make it a higher number if it's slow
-CRAWLER_HEARTBEAT_SIZE = 100 # make it a large number when it's working OK
+CRAWLER_HEARTBEAT_SECONDS = 1800  # optimise query! index, joins not subselects, ???
+# not working as expected
+#CRAWLER_HEARTBEAT_SIZE = 100 # make it a large number when it's working OK
 CELERYBEAT_SCHEDULE = {
-    "insert_new_resources_every_30_seconds": {
+    "periodically_insert_new_resources": {
         "task": "crawler.tasks.sync_from_crawler",
         "schedule": timedelta(seconds=CRAWLER_HEARTBEAT_SECONDS), 
-        "args": (CRAWLER_HEARTBEAT_SIZE)
+        "args": ()  # CRAWLER_HEARTBEAT_SIZE,)
      },
-    "update_changed_resources_every_30_seconds": {
+    "periodically_update_changed_resources": {
         "task": "crawler.tasks.sync_updates_from_crawler",
         "schedule": timedelta(seconds=CRAWLER_HEARTBEAT_SECONDS), 
-        "args": (CRAWLER_HEARTBEAT_SIZE) 
+        "args": ()  # CRAWLER_HEARTBEAT_SIZE,) 
      },
 }
 
