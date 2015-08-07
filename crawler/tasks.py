@@ -13,6 +13,8 @@ from celery import shared_task
 from django.db import connection
 from .models import WebDocument
 from metadata.tasks import insert_resource_from_row
+from celery.utils.log import get_task_logger
+logger = get_task_logger(__name__)
 
 @shared_task
 def sync_from_crawler(limit=None):
@@ -25,6 +27,7 @@ def sync_from_crawler(limit=None):
             limit = int(limit)
         except:
             limit = DEFAULT_LIMIT
+    logger.debug('sync_from_crawler: limit={0}'.format(limit,))
 
     raw_sql = '''
         select
@@ -36,10 +39,15 @@ def sync_from_crawler(limit=None):
             select url
             from metadata_resource
         )
-        LIMIT=%d''' % limit
+        LIMIT %d''' % limit
+    logger.debug(raw_sql)
+
     cursor = connection.cursor()
     cursor.execute(raw_sql)
     for row in cursor:
+        row = list(row)
+        row[7] = row[7].isoformat()
+        logger.debug('sync_from_crawler: dispatching {0}'.format(row,))
         insert_resource_from_row.delay(row)
 
 @shared_task
@@ -56,16 +64,18 @@ def sync_updates_from_crawler(limit=None):
 
     raw_sql = '''
         select
-            url, hash, protocol, "contentType",
-            host, port, path, "lastFetchDateTime"
+            wd.url, wd.hash, wd.protocol, wd."contentType",
+            wd.host, wd.port, wd.path, wd."lastFetchDateTime"
         from
             "webDocuments" as wd,
             metadata_resource as mr
         where wd."fetchStatus" = 'downloaded'
         and wd.url = mr.url
-        and wd._hash != mr._hash
-        LIMIT=%d''' % limit
+        and wd.hash != mr.hash
+        LIMIT %d''' % limit
     cursor = connection.cursor()
     cursor.execute(raw_sql)
     for row in cursor:
+        row=list(row)
+        row[7] = row[7].isoformat()
         update_resource_from_row.delay(row)
