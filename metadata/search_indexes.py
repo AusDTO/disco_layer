@@ -22,7 +22,7 @@ class ResourceIndex(CelerySearchIndex, indexes.Indexable):
     host = indexes.CharField(model_attr="host")
     port = indexes.IntegerField(model_attr="port")
     #path = indexes.CharField(model_attr="path")
-    depth =  indexes.IntegerField(model_attr="depth")
+    #depth =  indexes.IntegerField(model_attr="depth")
     #lastFetchDateTime = indexes.DateTimeField(model_attr="lastFetchDateTime")
     #nextFetchDateTime =  indexes.DateTimeField(model_attr="nextFetchDateTime")
 
