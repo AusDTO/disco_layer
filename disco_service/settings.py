@@ -109,7 +109,7 @@ BROKER_URL = env(
     'BROKER_URL',
     default='amqp://guest:guest@127.0.0.1/spiderbucket')
 
-CRAWLER_HEARTBEAT_SECONDS = 1800  # optimise query! index, joins not subselects, ???
+CRAWLER_HEARTBEAT_SECONDS = 180  # optimise query! index, joins not subselects, ???
 # not working as expected
 #CRAWLER_HEARTBEAT_SIZE = 100 # make it a large number when it's working OK
 CELERYBEAT_SCHEDULE = {
