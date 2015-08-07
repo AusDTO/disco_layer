@@ -25,7 +25,7 @@ def insert_resource_from_row(row):
     r.host = row[4]
     r.port = row[5]
     r.path = row[6]
-    r.lastFetchDateTime = row[8]
+    r.lastFetchDateTime = row[7]
     r.save()
 
 @shared_task
@@ -41,6 +41,6 @@ def update_resource_from_row(row):
     r.host = row[4]
     r.port = row[5]
     r.path = row[6]
-    r.lastFetchDateTime = row[8]
+    r.lastFetchDateTime = row[7]
     r.save()
     
