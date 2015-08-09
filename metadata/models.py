@@ -11,7 +11,6 @@ metadata.models
 
 from django.db import models
 from goose import Goose
-#import base64
 from crawler.models import WebDocument
 
 class Resource(models.Model):
@@ -29,18 +28,7 @@ class Resource(models.Model):
     port = models.IntegerField(null=True, blank=True)
     path = models.TextField(null=True, blank=True) 
     depth =  models.IntegerField(null=True, blank=True)
-    #fetched =  models.NullBooleanField(blank=True)
-    #status = models.CharField(max_length=256, null=True, blank=True)
     lastFetchDateTime = models.DateTimeField(null=True, blank=True)
-    #nextFetchDateTime =  models.DateTimeField(null=True, blank=True)
-    #document = models.TextField(null=True, blank=True)
-
-    ### implement as derived data / @property decorator
-    #param_string = models.TextField(null=True, blank=True) # data available?
-    # derived data
-    #document_decoded = models.TextField(null=True, blank=True)
-    #excerpt = models.TextField(null=True, blank=True)
-    #title = models.TextField(null=True, blank=True)
 
     def __unicode__(self):
         return self.url
