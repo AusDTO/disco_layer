@@ -11,3 +11,4 @@ setup_dev_env.sh
 _build
 celerybeat-schedule
 celerybeat.pid
+logs/
