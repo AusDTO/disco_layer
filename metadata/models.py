@@ -18,13 +18,13 @@ class Resource(models.Model):
     
     Contains hooks into the code for resource processing
     """
-    url = models.CharField(max_length=256)
+    url = models.CharField(max_length=1024)
     _hash = models.CharField(
-        db_column='hash', max_length=255,
+        db_column='hash', max_length=512,
         blank=True, null=True)
     protocol = models.CharField(max_length=6, null=True, blank=True)
-    contenttype = models.CharField(max_length=256, null=True, blank=True)
-    host = models.CharField(max_length=256, null=True, blank=True)
+    contenttype = models.CharField(max_length=512, null=True, blank=True)
+    host = models.CharField(max_length=512, null=True, blank=True)
     port = models.IntegerField(null=True, blank=True)
     path = models.TextField(null=True, blank=True) 
     depth =  models.IntegerField(null=True, blank=True)
