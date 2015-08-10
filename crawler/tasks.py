@@ -13,6 +13,7 @@ from celery import shared_task
 from django.db import connection
 from .models import WebDocument
 from metadata.tasks import insert_resource_from_row
+from metadata.tasks import update_resource_from_row
 from celery.utils.log import get_task_logger
 logger = get_task_logger(__name__)
 
