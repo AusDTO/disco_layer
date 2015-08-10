@@ -19,7 +19,7 @@ logger = get_task_logger(__name__)
 @shared_task
 def sync_from_crawler(limit=None):
     """dispatch metadata.Resource inserts for **new** crawler.WebDocuments"""
-    DEFAULT_LIMIT = 1000
+    DEFAULT_LIMIT = 12000 # 2/3 of throughput given 3 minute beat
     if limit is None:
         limit = DEFAULT_LIMIT
     if type(limit) != type(9):
