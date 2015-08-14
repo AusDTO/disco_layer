@@ -28,6 +28,17 @@ def insert_resource_from_row(row):
     r.lastFetchDateTime = row[7]
     r.save()
 
+
+@shared_task
+def delete_resource_with_url(url):
+    """ wrap metadata.Resource destructor.
+
+    another one without input validation!
+    """
+    r = Resource(url=url)
+    r.delete()
+
+
 @shared_task
 def update_resource_from_row(row):
     """ ORM lookup then update
