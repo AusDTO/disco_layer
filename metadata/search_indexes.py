@@ -21,10 +21,6 @@ class ResourceIndex(CelerySearchIndex, indexes.Indexable):
     protocol = indexes.CharField(model_attr="protocol")
     host = indexes.CharField(model_attr="host")
     port = indexes.IntegerField(model_attr="port")
-    #path = indexes.CharField(model_attr="path")
-    #depth =  indexes.IntegerField(model_attr="depth")
-    #lastFetchDateTime = indexes.DateTimeField(model_attr="lastFetchDateTime")
-    #nextFetchDateTime =  indexes.DateTimeField(model_attr="nextFetchDateTime")
 
     def get_model(self):
         return Resource
@@ -52,7 +48,4 @@ class ServiceIndex(CelerySearchIndex, indexes.Indexable):
 
     def prepare_agency(self, obj):
         return "%s" % obj.acronym()
-
-    #def prepare_url(self, obj):
-    #    return "foo"
 
