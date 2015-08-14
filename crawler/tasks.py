@@ -52,6 +52,44 @@ def sync_from_crawler(limit=None):
         insert_resource_from_row.delay(row)
 
 @shared_task
+def delete_metadata_when_missing(limit=None):
+    """delete from metadata.Resource when the crawler finds it missing
+
+    per #76... delete if
+
+    if metadata.url == webDocument.url AND:
+
+    (metadata.hash is not null AND webDocument.hash is null) OR
+    (webDocument.httpCode != (2xx or 3xx)) OR
+    (fetchStatus == )
+
+
+    "failed", "notfound", "redirected" sh
+    """
+    DEFAULT_LIMIT = 1000
+    if limit is None:
+        limit = DEFAULT_LIMIT
+    if type(limit) != type(9):
+        try:
+            limit = int(limit)
+        except:
+            limit = DEFAULT_LIMIT
+
+    raw_sql = '''
+        select
+            wd.url
+        from
+            "webDocuments" as wd
+        where wd."fetchStatus" in ("failed", "notfound", "redirected")
+        and wd.url in (select url from metadata_resource)
+        LIMIT %d''' % limit
+    cursor = connection.cursor()
+    cursor.execute(raw_sql)
+    for row in cursor:
+        delete_resource_with_url.delay(row[0])
+
+
+@shared_task
 def sync_updates_from_crawler(limit=None):
     """dispatch metadata.Resource updates for **changed** crawler.WebDocuments"""
     DEFAULT_LIMIT = 1000
@@ -80,3 +118,4 @@ def sync_updates_from_crawler(limit=None):
         row=list(row)
         row[7] = row[7].isoformat()
         update_resource_from_row.delay(row)
+
