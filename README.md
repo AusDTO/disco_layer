@@ -16,4 +16,17 @@ More information:
 Note also this depends on the https://github.com/AusDTO/discoCrawl and https://github.com/AusDTO/serviceCatalogue components. This is explained in more detail in the documentation at http://ausdto-discovery-layer.readthedocs.org/
 
 
+## install
+
+pre-requsites (ubuntu packages):
+ * python-dev
+ * python-pip
+ * libpq-dev
+ * python-virtualenv
+
+Then
+
+   virtualenv .venv
+   . .venv/bin/activate
+   pip install -r requirements.txt
 
