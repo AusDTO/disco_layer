@@ -21,3 +21,4 @@ gitdiscribe
 kombu
 billiard
 pytz
+Sphinx
