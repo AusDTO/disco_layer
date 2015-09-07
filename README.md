@@ -23,10 +23,17 @@ pre-requsites (ubuntu packages):
  * python-pip
  * libpq-dev
  * python-virtualenv
+ * libxslt1-dev
 
-Then
+which can be set up with:
 
-   virtualenv .venv
-   . .venv/bin/activate
+   sudo apt-get install  python-dev python-pip libpq-dev python-virtualenv libxslt1-dev
+
+Then (recommended approach):
+
+   virtualenv .venv  # or whatever you want your virtualenv called
+   . .venv/bin/activate  # substitute .venv if you named it differently 
    pip install -r requirements.txt
 
+
+Of course, you can install the dependancies in your site-python if you  wish. 
