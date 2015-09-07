@@ -9,7 +9,7 @@ https://docs.djangoproject.com/en/1.8/ref/settings/
 
 .. note::
 
-   enbparse.env used to create default values that are overriden by
+   envparse.env used to create default values that are overriden by
    environment variables (where present). This is how settings are
    managed in Docker containers, http://12factor.net style.
 
@@ -21,6 +21,7 @@ import sys
 from datetime import timedelta
 
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+
 SECRET_KEY = env(
     'SECRET_KEY',
     default='this_is_not_a_real_secret_key_234db#1k2l#GfnGqn')
